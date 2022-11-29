@@ -1,0 +1,109 @@
+site_name: EDS-TeVa
+repo_url: https://gitlab.eds.aphp.fr/datasciencetools/edsteva
+repo_name: edsteva
+
+copyright: Copyright &copy; 2022 – Assistance Publique - Hôpitaux de Paris
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/aphp
+
+theme:
+  name: material
+  custom_dir: docs/mkdocs_theme
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light mode
+  logo: assets/logo/edsteva_logo.svg
+  favicon: assets/logo/edsteva_logo.svg
+  features:
+    - navigation.tracking
+    - navigation.instant
+    - navigation.indexes
+    - navigation.top
+    - content.code.annotate
+    - announce.dismiss
+
+nav:
+  - index.md
+  - Components:
+    - components/loading_data.ipynb
+    - components/probe.md
+    - components/model.md
+    - components/visualization.md
+  - Tutorials:
+    - tutorials/index.md
+  - Code Reference: reference/
+  - contributing.md
+  - changelog.md
+
+watch:
+  - "edsteva"
+
+plugins:
+  - charts:
+      use_data_path: false
+  - search
+  - markdown-filter
+  - autorefs
+  - bibtex:
+      bib_file: "docs/references.bib"
+  - gen-files:
+      scripts:
+        - docs/generate_reference.py
+        - docs/generate_development.py
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            show_signature_annotations: true
+            docstring_section_style: spacy
+            heading_level: 3
+            members_order: source
+            separate_signature: true
+            show_root_toc_entry: true
+  - mknotebooks
+  - literate-nav:
+      nav_file: SUMMARY.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: vegalite
+          class: vegalite
+          format: !!python/name:mkdocs_charts_plugin.fences.fence_vegalite
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - footnotes
+  - md_in_html
+  - attr_list
+  - pymdownx.details
+  - tables
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/vega@5
+  - https://cdn.jsdelivr.net/npm/vega-lite@5
+  - https://cdn.jsdelivr.net/npm/vega-embed@6
+  - assets/stylesheets/extra.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - assets/termynal/termynal.js
+
+extra_css:
+  - assets/stylesheets/extra.css
+  - assets/termynal/termynal.css

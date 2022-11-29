@@ -1,5 +1,9 @@
 <div align="center">
 
+<p align="center">
+  <a href="https://datasciencetools-pages.eds.aphp.fr/edsteva"><img src="docs/assets/logo/edsteva_logo_small.svg" alt="EDS-TeVa"></a>
+</p>
+
 # EDS-TeVa
 
 <p align="center">
@@ -19,7 +23,7 @@
 
 ---
 
-EDS-TeVa provides a set of tools that aims at modeling the adoption over time and across space of the Electronic Health Records. temporal variability of data induced by the dynamics of the clinical IT system.
+EDS-TeVa provides a set of tools that aims at modeling the adoption over time and across space of the Electronic Health Records.
 
 ## Requirements
 EDS-TeVa stands on the shoulders of [Spark 2.4](https://spark.apache.org/docs/2.4.8/index.html) which requires:
