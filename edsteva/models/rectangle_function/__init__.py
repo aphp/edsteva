@@ -1,0 +1,1 @@
+from edsteva.models.rectangle_function.rectangle_function import RectangleFunction
