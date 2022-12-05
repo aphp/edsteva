@@ -534,8 +534,8 @@ Check out the new <a class="autorefs autorefs-internal" href="components/model/#
   
   
     <li class="md-nav__item">
-      <a href="components/loading_data.ipynb" class="md-nav__link">
-        None
+      <a href="components/loading_data/" class="md-nav__link">
+        Loading data
       </a>
     </li>
   
@@ -2329,8 +2329,8 @@ Check out the new <a class="autorefs autorefs-internal" href="components/model/#
 
 <h2 id="working-example-administrative-records-relative-to-visits">Working example: administrative records relative to visits</h2>
 <p>Let's consider a basic category of data: administrative records relative to visits. Visits are characterized by a stay type (full hospitalisation, emergency, consultation, etc.). In this example, the objective is to estimate the availability of visits records with respect to time, care site and stay type.</p>
-<h3 id="1-load-your-data">1. Load your [data][loading-data]</h3>
-<p>As detailled in [the dedicated section][loading-data], EDS-TeVa is expecting to work with <a href="https://pandas.pydata.org/">Pandas</a> or <a href="https://koalas.readthedocs.io/en/latest/">Koalas</a> DataFrames.  We provide various connectors to facilitate data fetching, namely a [Hive][loading-from-hive-hivedata] connector, a [Postgres][loading-from-postgres-postgresdata] connector and a [LocalData][persistingreading-a-sample-tofrom-disk-localdata].</p>
+<h3 id="1-load-your-data">1. Load your <a class="autorefs autorefs-internal" href="components/loading_data/#loading-data">data</a></h3>
+<p>As detailled in <a class="autorefs autorefs-internal" href="components/loading_data/#loading-data">the dedicated section</a>, EDS-TeVa is expecting to work with <a href="https://pandas.pydata.org/">Pandas</a> or <a href="https://koalas.readthedocs.io/en/latest/">Koalas</a> DataFrames.  We provide various connectors to facilitate data fetching, namely a <a class="autorefs autorefs-internal" href="components/loading_data/#loading-from-hive-hivedata">Hive</a> connector, a <a class="autorefs autorefs-internal" href="components/loading_data/#loading-from-postgres-postgresdata">Postgres</a> connector and a <a class="autorefs autorefs-internal" href="components/loading_data/#persistingreading-a-sample-tofrom-disk-localdata">LocalData</a>.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Using a Hive DataBase</label><label for="__tabbed_2_2">Using a Postgres DataBase</label><label for="__tabbed_2_3">Using a Local DataBase</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -2394,7 +2394,7 @@ c(t) = \frac{n_{visit}(t)}{n_{99}}
 </div>
 <p>The <a class="autorefs autorefs-internal" href="components/probe/#available-probes">VisitProbe</a> is already available by default in the library:</p>
 <h4 id="21-compute-your-probe">2.1 Compute your Probe</h4>
-<p>The <a class="autorefs autorefs-internal" href="reference/probes/base/#edsteva.probes.base.BaseProbe.compute"><code>compute()</code></a> method takes a [Data][loading-data] object as input and stores the computed completeness predictor <span class="arithmatex">\(c(t)\)</span> in the <a class="autorefs autorefs-internal" href="components/probe/#predictor-schema"><code>predictor</code></a> attribute of a <a class="autorefs autorefs-internal" href="components/probe/#probe"><code>Probe</code></a>:</p>
+<p>The <a class="autorefs autorefs-internal" href="reference/probes/base/#edsteva.probes.base.BaseProbe.compute"><code>compute()</code></a> method takes a <a class="autorefs autorefs-internal" href="components/loading_data/#loading-data">Data</a> object as input and stores the computed completeness predictor <span class="arithmatex">\(c(t)\)</span> in the <a class="autorefs autorefs-internal" href="components/probe/#predictor-schema"><code>predictor</code></a> attribute of a <a class="autorefs autorefs-internal" href="components/probe/#probe"><code>Probe</code></a>:</p>
 <p><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">edsteva.probes</span> <span class="kn">import</span> <span class="n">VisitProbe</span>
 
 <span class="n">probe_path</span> <span class="o">=</span> <span class="s2">&quot;my_path/visit.pkl&quot;</span>
@@ -3301,13 +3301,13 @@ An example is available <a href="assets/charts/interactive_fitted_visit.html">he
       
       
         
-        <a href="components/probe/" class="md-footer__link md-footer__link--next" aria-label="Next: Probe" rel="next">
+        <a href="components/loading_data/" class="md-footer__link md-footer__link--next" aria-label="Next: Loading data" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Probe
+              Loading data
             </div>
           </div>
           <div class="md-footer__button md-icon">

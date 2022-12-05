@@ -8,19 +8,19 @@
       
       
       
-      <link rel="icon" href="../../../assets/logo/edsteva_logo.svg">
+      <link rel="icon" href="../../assets/logo/edsteva_logo.svg">
       <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
     
     
       
-        <title>utils - EDS-TeVa</title>
+        <title>Loading data - EDS-TeVa</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.472b142f.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.472b142f.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.08040f6c.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.08040f6c.min.css">
         
       
       
@@ -37,19 +37,19 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/extra.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/extra.css">
     
-      <link rel="stylesheet" href="../../../assets/termynal/termynal.css">
+      <link rel="stylesheet" href="../../assets/termynal/termynal.css">
     
-      <link rel="stylesheet" href="../../../css/ansi-colours.css">
+      <link rel="stylesheet" href="../../css/ansi-colours.css">
     
-      <link rel="stylesheet" href="../../../css/jupyter-cells.css">
+      <link rel="stylesheet" href="../../css/jupyter-cells.css">
     
-      <link rel="stylesheet" href="../../../css/pandas-dataframe.css">
+      <link rel="stylesheet" href="../../css/pandas-dataframe.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#edstevavizutils" class="md-skip">
+        <a href="#loading-data" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +94,7 @@
             
             
 <p><strong>New features: </strong>
-Check out the new <a class="autorefs autorefs-internal" href="../../../components/model/#available-models"><strong>RectangleModel</strong></a> !</p>
+Check out the new <a class="autorefs autorefs-internal" href="../model/#available-models"><strong>RectangleModel</strong></a> !</p>
 
           </div>
           
@@ -109,9 +109,9 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="EDS-TeVa" class="md-header__button md-logo" aria-label="EDS-TeVa" data-md-component="logo">
+    <a href="../.." title="EDS-TeVa" class="md-header__button md-logo" aria-label="EDS-TeVa" data-md-component="logo">
       
-  <img src="../../../assets/logo/edsteva_logo.svg" alt="logo">
+  <img src="../../assets/logo/edsteva_logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -127,7 +127,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              utils
+              Loading data
             
           </span>
         </div>
@@ -230,9 +230,9 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="EDS-TeVa" class="md-nav__button md-logo" aria-label="EDS-TeVa" data-md-component="logo">
+    <a href="../.." title="EDS-TeVa" class="md-nav__button md-logo" aria-label="EDS-TeVa" data-md-component="logo">
       
-  <img src="../../../assets/logo/edsteva_logo.svg" alt="logo">
+  <img src="../../assets/logo/edsteva_logo.svg" alt="logo">
 
     </a>
     EDS-TeVa
@@ -260,7 +260,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         Home
       </a>
     </li>
@@ -273,12 +273,14 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
       
       
@@ -309,11 +311,66 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../../../components/loading_data/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Loading data
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Loading data
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#loading-from-hive-hivedata" class="md-nav__link">
+    Loading from Hive: HiveData
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#persistingreading-a-sample-tofrom-disk-localdata" class="md-nav__link">
+    Persisting/Reading a sample to/from disk: LocalData
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-from-postgres-postgresdata" class="md-nav__link">
+    Loading from PostGres: PostgresData
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -325,7 +382,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../../components/probe/" class="md-nav__link">
+      <a href="../probe/" class="md-nav__link">
         Probe
       </a>
     </li>
@@ -339,7 +396,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../../components/model/" class="md-nav__link">
+      <a href="../model/" class="md-nav__link">
         Model
       </a>
     </li>
@@ -353,7 +410,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../../components/visualization/" class="md-nav__link">
+      <a href="../visualization/" class="md-nav__link">
         Visualization
       </a>
     </li>
@@ -373,14 +430,12 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
       
       
       
@@ -405,14 +460,12 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
               
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" >
       
       
       
@@ -438,7 +491,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../">edsteva</a>
+          <a href="../../reference/">edsteva</a>
           
             <label for="__nav_3_1">
               <span class="md-nav__icon md-icon"></span>
@@ -490,7 +543,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../io/">io</a>
+          <a href="../../reference/io/">io</a>
           
             <label for="__nav_3_1_2">
               <span class="md-nav__icon md-icon"></span>
@@ -513,7 +566,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../io/files/" class="md-nav__link">
+      <a href="../../reference/io/files/" class="md-nav__link">
         files
       </a>
     </li>
@@ -527,7 +580,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../io/hive/" class="md-nav__link">
+      <a href="../../reference/io/hive/" class="md-nav__link">
         hive
       </a>
     </li>
@@ -541,7 +594,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../io/i2b2_mapping/" class="md-nav__link">
+      <a href="../../reference/io/i2b2_mapping/" class="md-nav__link">
         i2b2_mapping
       </a>
     </li>
@@ -555,7 +608,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../io/postgres/" class="md-nav__link">
+      <a href="../../reference/io/postgres/" class="md-nav__link">
         postgres
       </a>
     </li>
@@ -569,7 +622,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../io/settings/" class="md-nav__link">
+      <a href="../../reference/io/settings/" class="md-nav__link">
         settings
       </a>
     </li>
@@ -608,7 +661,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../io/synthetic/">synthetic</a>
+          <a href="../../reference/io/synthetic/">synthetic</a>
           
             <label for="__nav_3_1_2_7">
               <span class="md-nav__icon md-icon"></span>
@@ -631,7 +684,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../io/synthetic/care_site/" class="md-nav__link">
+      <a href="../../reference/io/synthetic/care_site/" class="md-nav__link">
         care_site
       </a>
     </li>
@@ -645,7 +698,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../io/synthetic/synthetic/" class="md-nav__link">
+      <a href="../../reference/io/synthetic/synthetic/" class="md-nav__link">
         synthetic
       </a>
     </li>
@@ -659,7 +712,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../io/synthetic/utils/" class="md-nav__link">
+      <a href="../../reference/io/synthetic/utils/" class="md-nav__link">
         utils
       </a>
     </li>
@@ -673,7 +726,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../io/synthetic/visit/" class="md-nav__link">
+      <a href="../../reference/io/synthetic/visit/" class="md-nav__link">
         visit
       </a>
     </li>
@@ -724,7 +777,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../metrics/">metrics</a>
+          <a href="../../reference/metrics/">metrics</a>
           
             <label for="__nav_3_1_3">
               <span class="md-nav__icon md-icon"></span>
@@ -747,7 +800,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../metrics/error/" class="md-nav__link">
+      <a href="../../reference/metrics/error/" class="md-nav__link">
         error
       </a>
     </li>
@@ -761,7 +814,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../metrics/error_after_t0/" class="md-nav__link">
+      <a href="../../reference/metrics/error_after_t0/" class="md-nav__link">
         error_after_t0
       </a>
     </li>
@@ -775,7 +828,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../metrics/error_between_t0_t1/" class="md-nav__link">
+      <a href="../../reference/metrics/error_between_t0_t1/" class="md-nav__link">
         error_between_t0_t1
       </a>
     </li>
@@ -819,7 +872,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../models/">models</a>
+          <a href="../../reference/models/">models</a>
           
             <label for="__nav_3_1_4">
               <span class="md-nav__icon md-icon"></span>
@@ -842,7 +895,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../models/base/" class="md-nav__link">
+      <a href="../../reference/models/base/" class="md-nav__link">
         base
       </a>
     </li>
@@ -877,7 +930,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../models/rectangle_function/">rectangle_function</a>
+          <a href="../../reference/models/rectangle_function/">rectangle_function</a>
           
             <label for="__nav_3_1_4_3">
               <span class="md-nav__icon md-icon"></span>
@@ -919,7 +972,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../models/rectangle_function/algos/">algos</a>
+          <a href="../../reference/models/rectangle_function/algos/">algos</a>
           
             <label for="__nav_3_1_4_3_2">
               <span class="md-nav__icon md-icon"></span>
@@ -942,7 +995,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../models/rectangle_function/algos/loss_minimization/" class="md-nav__link">
+      <a href="../../reference/models/rectangle_function/algos/loss_minimization/" class="md-nav__link">
         loss_minimization
       </a>
     </li>
@@ -963,7 +1016,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../models/rectangle_function/rectangle_function/" class="md-nav__link">
+      <a href="../../reference/models/rectangle_function/rectangle_function/" class="md-nav__link">
         rectangle_function
       </a>
     </li>
@@ -1005,7 +1058,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../models/step_function/">step_function</a>
+          <a href="../../reference/models/step_function/">step_function</a>
           
             <label for="__nav_3_1_4_4">
               <span class="md-nav__icon md-icon"></span>
@@ -1049,7 +1102,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../models/step_function/algos/">algos</a>
+          <a href="../../reference/models/step_function/algos/">algos</a>
           
             <label for="__nav_3_1_4_4_2">
               <span class="md-nav__icon md-icon"></span>
@@ -1072,7 +1125,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../models/step_function/algos/loss_minimization/" class="md-nav__link">
+      <a href="../../reference/models/step_function/algos/loss_minimization/" class="md-nav__link">
         loss_minimization
       </a>
     </li>
@@ -1086,7 +1139,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../models/step_function/algos/quantile/" class="md-nav__link">
+      <a href="../../reference/models/step_function/algos/quantile/" class="md-nav__link">
         quantile
       </a>
     </li>
@@ -1107,7 +1160,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../models/step_function/step_function/" class="md-nav__link">
+      <a href="../../reference/models/step_function/step_function/" class="md-nav__link">
         step_function
       </a>
     </li>
@@ -1160,7 +1213,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../probes/">probes</a>
+          <a href="../../reference/probes/">probes</a>
           
             <label for="__nav_3_1_5">
               <span class="md-nav__icon md-icon"></span>
@@ -1183,7 +1236,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../probes/base/" class="md-nav__link">
+      <a href="../../reference/probes/base/" class="md-nav__link">
         base
       </a>
     </li>
@@ -1197,7 +1250,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../probes/note/" class="md-nav__link">
+      <a href="../../reference/probes/note/" class="md-nav__link">
         note
       </a>
     </li>
@@ -1211,7 +1264,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../probes/utils/" class="md-nav__link">
+      <a href="../../reference/probes/utils/" class="md-nav__link">
         utils
       </a>
     </li>
@@ -1225,7 +1278,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../probes/visit/" class="md-nav__link">
+      <a href="../../reference/probes/visit/" class="md-nav__link">
         visit
       </a>
     </li>
@@ -1271,7 +1324,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../../utils/">utils</a>
+          <a href="../../reference/utils/">utils</a>
           
             <label for="__nav_3_1_6">
               <span class="md-nav__icon md-icon"></span>
@@ -1294,7 +1347,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../utils/checks/" class="md-nav__link">
+      <a href="../../reference/utils/checks/" class="md-nav__link">
         checks
       </a>
     </li>
@@ -1308,7 +1361,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../utils/framework/" class="md-nav__link">
+      <a href="../../reference/utils/framework/" class="md-nav__link">
         framework
       </a>
     </li>
@@ -1322,7 +1375,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../utils/loss_functions/" class="md-nav__link">
+      <a href="../../reference/utils/loss_functions/" class="md-nav__link">
         loss_functions
       </a>
     </li>
@@ -1336,7 +1389,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../utils/typing/" class="md-nav__link">
+      <a href="../../reference/utils/typing/" class="md-nav__link">
         typing
       </a>
     </li>
@@ -1355,14 +1408,12 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
               
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_7" type="checkbox" id="__nav_3_1_7" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_7" type="checkbox" id="__nav_3_1_7" >
       
       
       
@@ -1382,7 +1433,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../">viz</a>
+          <a href="../../reference/viz/">viz</a>
           
             <label for="__nav_3_1_7">
               <span class="md-nav__icon md-icon"></span>
@@ -1426,7 +1477,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../dashboards/">dashboards</a>
+          <a href="../../reference/viz/dashboards/">dashboards</a>
           
             <label for="__nav_3_1_7_2">
               <span class="md-nav__icon md-icon"></span>
@@ -1449,7 +1500,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../dashboards/estimates_dashboard/" class="md-nav__link">
+      <a href="../../reference/viz/dashboards/estimates_dashboard/" class="md-nav__link">
         estimates_dashboard
       </a>
     </li>
@@ -1486,7 +1537,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../dashboards/predictor_dashboard/">predictor_dashboard</a>
+          <a href="../../reference/viz/dashboards/predictor_dashboard/">predictor_dashboard</a>
           
             <label for="__nav_3_1_7_2_3">
               <span class="md-nav__icon md-icon"></span>
@@ -1509,7 +1560,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../dashboards/predictor_dashboard/fitted_probe/" class="md-nav__link">
+      <a href="../../reference/viz/dashboards/predictor_dashboard/fitted_probe/" class="md-nav__link">
         fitted_probe
       </a>
     </li>
@@ -1523,7 +1574,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../dashboards/predictor_dashboard/probe/" class="md-nav__link">
+      <a href="../../reference/viz/dashboards/predictor_dashboard/probe/" class="md-nav__link">
         probe
       </a>
     </li>
@@ -1537,7 +1588,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../dashboards/predictor_dashboard/wrapper/" class="md-nav__link">
+      <a href="../../reference/viz/dashboards/predictor_dashboard/wrapper/" class="md-nav__link">
         wrapper
       </a>
     </li>
@@ -1588,7 +1639,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../plots/">plots</a>
+          <a href="../../reference/viz/plots/">plots</a>
           
             <label for="__nav_3_1_7_3">
               <span class="md-nav__icon md-icon"></span>
@@ -1611,7 +1662,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../plots/estimates_densities/" class="md-nav__link">
+      <a href="../../reference/viz/plots/estimates_densities/" class="md-nav__link">
         estimates_densities
       </a>
     </li>
@@ -1625,7 +1676,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../plots/normalized_probe/" class="md-nav__link">
+      <a href="../../reference/viz/plots/normalized_probe/" class="md-nav__link">
         normalized_probe
       </a>
     </li>
@@ -1662,7 +1713,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="../plots/plot_probe/">plot_probe</a>
+          <a href="../../reference/viz/plots/plot_probe/">plot_probe</a>
           
             <label for="__nav_3_1_7_3_4">
               <span class="md-nav__icon md-icon"></span>
@@ -1685,7 +1736,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../plots/plot_probe/fitted_probe/" class="md-nav__link">
+      <a href="../../reference/viz/plots/plot_probe/fitted_probe/" class="md-nav__link">
         fitted_probe
       </a>
     </li>
@@ -1699,7 +1750,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../plots/plot_probe/probe/" class="md-nav__link">
+      <a href="../../reference/viz/plots/plot_probe/probe/" class="md-nav__link">
         probe
       </a>
     </li>
@@ -1713,7 +1764,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../plots/plot_probe/wrapper/" class="md-nav__link">
+      <a href="../../reference/viz/plots/plot_probe/wrapper/" class="md-nav__link">
         wrapper
       </a>
     </li>
@@ -1739,59 +1790,11 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          utils
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../reference/viz/utils/" class="md-nav__link">
         utils
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#edsteva.viz.utils" class="md-nav__link">
-    edsteva.viz.utils
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#edsteva.viz.utils.save_html" class="md-nav__link">
-    save_html()
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1825,7 +1828,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../../contributing/" class="md-nav__link">
+      <a href="../../contributing/" class="md-nav__link">
         Contributing
       </a>
     </li>
@@ -1840,7 +1843,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
   
   
     <li class="md-nav__item">
-      <a href="../../../changelog/" class="md-nav__link">
+      <a href="../../changelog/" class="md-nav__link">
         Changelog
       </a>
     </li>
@@ -1874,15 +1877,22 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#edsteva.viz.utils" class="md-nav__link">
-    edsteva.viz.utils
+  <a href="#loading-from-hive-hivedata" class="md-nav__link">
+    Loading from Hive: HiveData
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#edsteva.viz.utils.save_html" class="md-nav__link">
-    save_html()
+  <a href="#persistingreading-a-sample-tofrom-disk-localdata" class="md-nav__link">
+    Persisting/Reading a sample to/from disk: LocalData
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-from-postgres-postgresdata" class="md-nav__link">
+    Loading from PostGres: PostgresData
   </a>
   
 </li>
@@ -1902,135 +1912,545 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
                   
 
 
-<h1 id="edstevavizutils"><code>edsteva.viz.utils</code></h1>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var requireJsScript = document.createElement('script');
+    requireJsScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js';
 
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var jupyterWidgetsScript = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
 
-<div class="doc doc-object doc-module">
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
 
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
 
-<a id="edsteva.viz.utils"></a>
-  <div class="doc doc-contents first">
+    jupyterWidgetsScript.src = widgetRendererSrc;
 
-  
+    document.body.appendChild(requireJsScript);
+    document.body.appendChild(jupyterWidgetsScript);
+  }
 
-  <div class="doc doc-children">
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
 
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="loading-data">Loading Data</h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here is a tutorial for loading your data which is the first step in the <a class="autorefs autorefs-internal" href="../../#1-load-your-data">EDS-TeVa usage workflow</a>.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
 
+<div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">config</span> <span class="n">Completer</span><span class="o">.</span><span class="n">use_jedi</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="o">%</span><span class="n">load_ext</span> <span class="n">autoreload</span>
+<span class="o">%</span><span class="n">autoreload</span> <span class="mi">2</span>
 
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-
-<h3 class="doc doc-heading" id="edsteva.viz.utils.save_html">
-        <span class="doc doc-object-name doc-function-name">save_html</span>
-
-
-</h3>
-<div class="highlight"><pre><span></span><code><span class="n">save_html</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">alt</span><span class="o">.</span><span class="n">Chart</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 </code></pre></div>
 
-  <div class="doc doc-contents ">
-  
-      <p>Save chart in the specified file</p>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>3 classes are available to facilitate data access:</p>
+<ul>
+<li><code>HiveData</code>: Getting data from a Hive cluster, returning <code>Koalas</code> DataFrames.</li>
+<li><code>LocalData</code>: Getting data from tables saved on disk, returning <code>Pandas</code> DataFrames.</li>
+<li><code>PostgresData</code>: Getting data from a PostGreSQL DB, returning <code>Pandas</code> DataFrames.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
 
-  <table>
-    <thead>
-      <tr>
-        <th><b>PARAMETER</b></th>
-        <th><b>DESCRIPTION</b></th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td><code>obj</code></td>
-          <td class="doc-param-details">
-            <p>Altair chart to be saved</p>
-            <p>
-                <span class="doc-param-annotation">
-                  <b>TYPE:</b>
-                    <code><span title="altair">alt</span>.<span title="altair.Chart">Chart</span></code>
-                </span>
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td><code>filename</code></td>
-          <td class="doc-param-details">
-            <p>Folder path where to save the chart in HTML format.</p>
-<p><strong>EXAMPLE</strong>: <code>"my_folder/my_file.html"</code></p>
-            <p>
-                <span class="doc-param-annotation">
-                  <b>TYPE:</b>
-                    <code>str</code>
-                </span>
-            </p>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-      <details class="quote">
-        <summary>Source code in <code>edsteva/viz/utils.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save_html</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">alt</span><span class="o">.</span><span class="n">Chart</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Save chart in the specified file</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    obj : alt.Chart</span>
-<span class="sd">        Altair chart to be saved</span>
-<span class="sd">    filename : str</span>
-<span class="sd">        Folder path where to save the chart in HTML format.</span>
-
-<span class="sd">        **EXAMPLE**: `&quot;my_folder/my_file.html&quot;`</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;save&quot;</span><span class="p">):</span>
-        <span class="n">obj</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The chart has been saved in </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-      </details>
-  </div>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">edsteva.io</span> <span class="kn">import</span> <span class="n">HiveData</span><span class="p">,</span> <span class="n">LocalData</span><span class="p">,</span> <span class="n">PostgresData</span>
+</code></pre></div>
 
 </div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="loading-from-hive-hivedata">Loading from Hive: <code>HiveData</code></h2>
+<p>The <code>HiveData</code> class expects two parameters:  </p>
+<ul>
+<li>A <code>SparkSession</code> variable</li>
+<li>The name of the Database to connect to</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="admonition aphp">
+<p class="admonition-title">Using <strong>Spark</strong> kernels</p>
+<p>All kernels designed to use Spark are configured to expose 3 variables at startup:  </p>
+<ul>
+<li><code>spark</code>, the current SparkSession</li>
+<li><code>sc</code>, the current SparkContext</li>
+<li><code>sql</code>, a function to execute SQL code on the Hive Database.  </li>
+</ul>
+<p>In this case you can just provide the <code>spark</code> variable to <code>HiveData</code> !</p>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>If needed, the following snippet allows to create the necessary variables:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
 
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pyspark</span> <span class="kn">import</span> <span class="n">SparkConf</span><span class="p">,</span> <span class="n">SparkContext</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql.session</span> <span class="kn">import</span> <span class="n">SparkSession</span>
 
-
-  </div>
-
-  </div>
+<span class="n">conf</span> <span class="o">=</span> <span class="n">SparkConf</span><span class="p">()</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">SparkContext</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">conf</span><span class="p">)</span>
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span> \
+                    <span class="o">.</span><span class="n">enableHiveSupport</span><span class="p">()</span> \
+                    <span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+<span class="n">sql</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span>
+</code></pre></div>
 
 </div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The class <code>HiveData</code> provides a convenient interface to OMOP data stored in Hive.<br />
+The OMOP tables can be accessed as attribute and they are represented as <a href="https://koalas.readthedocs.io/en/latest/getting_started/10min.html#10-minutes-to-Koalas">Koalas DataFrames</a>.
+You simply need to mention your Hive database name.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">data</span> <span class="o">=</span> <span class="n">HiveData</span><span class="p">(</span>
+    <span class="n">spark</span><span class="p">,</span> 
+    <span class="n">DB_NAME</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>By default, only a subset of tables are added as attributes:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">data</span><span class="o">.</span><span class="n">available_tables</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_text output_subarea output_execute_result">
+<pre>
+<code>[&#39;care_site&#39;,
+ &#39;concept&#39;,
+ &#39;condition_occurrence&#39;,
+ &#39;person&#39;,
+ &#39;procedure_occurrence&#39;,
+ &#39;visit_detail&#39;,
+ &#39;visit_occurrence&#39;]</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><code>Koalas</code> DataFrames, like <code>Spark</code> DataFrames, rely on a <em>lazy</em> execution plan: As long as no data needs to be specifically collected, saved or displayed, no code is executed. It is simply saved for a later execution.<br />
+The main interest of Koalas DataFrames is that you can use (most of) the Pandas API:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">person</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">person</span>
+<span class="n">person</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;person_id&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="scoped">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>location_id</th>
+      <th>year_of_birth</th>
+      <th>month_of_birth</th>
+      <th>day_of_birth</th>
+      <th>birth_datetime</th>
+      <th>death_datetime</th>
+      <th>gender_source_value</th>
+      <th>gender_source_concept_id</th>
+      <th>cdm_source</th>
+    </tr>
+  </thead>
+<tbody>
+    <tr>
+      <th>0</th>
+      <td>3347087777</td>
+      <td>1949</td>
+      <td>8</td>
+      <td>2</td>
+      <td>1949-08-02</td>
+      <td>NaT</td>
+      <td>f</td>
+      <td>2008119903</td>
+      <td>ORBIS</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>9818741928</td>
+      <td>1975</td>
+      <td>7</td>
+      <td>6</td>
+      <td>1975-07-06</td>
+      <td>NaT</td>
+      <td>m</td>
+      <td>2008119900</td>
+      <td>ORBIS</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3345464435</td>
+      <td>1990</td>
+      <td>9</td>
+      <td>7</td>
+      <td>1990-09-07</td>
+      <td>NaT</td>
+      <td>f</td>
+      <td>2008119903</td>
+      <td>ORBIS</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3346060919</td>
+      <td>1964</td>
+      <td>5</td>
+      <td>18</td>
+      <td>1964-05-18</td>
+      <td>NaT</td>
+      <td>f</td>
+      <td>2008119903</td>
+      <td>ORBIS</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>3347197472</td>
+      <td>1990</td>
+      <td>2</td>
+      <td>2</td>
+      <td>1990-02-02</td>
+      <td>NaT</td>
+      <td>m</td>
+      <td>2008119900</td>
+      <td>ORBIS</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">person</span><span class="p">[</span><span class="s1">&#39;is_over_50&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">person</span><span class="p">[</span><span class="s1">&#39;birth_datetime&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">1971</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="n">stats</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">person</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;is_over_50&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">person_id</span>
+    <span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Once data has been sufficiently aggregated, it can be converted back to Pandas, e.g. for plotting.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">stats_pd</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
+</code></pre></div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Similarily, if you want to work on the <code>Spark</code> DataFrame instead, a similar method is available:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">person_spark</span> <span class="o">=</span> <span class="n">person</span><span class="o">.</span><span class="n">to_spark</span><span class="p">()</span>
+</code></pre></div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="persistingreading-a-sample-tofrom-disk-localdata">Persisting/Reading a sample to/from disk: <code>LocalData</code></h2>
+<p>Working with Pandas DataFrame is, when possible, more convenient.<br />
+You have the possibility to save your database or at least a subset of it.<br />
+Doing so allows you to work on it later without having to go through <code>Spark</code> again.  </p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="admonition warning">
+<p class="admonition-title">Careful with cohort size</p>
+<p>Do not save it if your cohort is <strong>big</strong>: This saves <strong>all</strong> available tables on disk.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>For instance, let us define a dummy subset of 1000 patients:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">visits</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">visit_occurrence</span>
+
+<span class="n">selected_visits</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">visits</span>
+    <span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">visits</span><span class="p">[</span><span class="s2">&quot;stay_source_value&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;MCO&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">sample_patients</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">selected_visits</span><span class="p">[</span><span class="s2">&quot;person_id&quot;</span><span class="p">]</span>
+    <span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>And save every table restricted to this small cohort as a <code>parquet</code> file:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">folder</span><span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">MY_FOLDER_PATH</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">tables_to_save</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;person&quot;</span><span class="p">,</span> <span class="s2">&quot;visit_detail&quot;</span><span class="p">,</span> <span class="s2">&quot;visit_occurrence&quot;</span><span class="p">]</span>
+
+<span class="n">data</span><span class="o">.</span><span class="n">persist_tables_to_folder</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> 
+                              <span class="n">tables</span><span class="o">=</span><span class="n">tables_to_save</span><span class="p">,</span>
+                              <span class="n">person_ids</span><span class="o">=</span><span class="n">sample_patients</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Once you saved some data to disk, a dedicated class can be used to access it:<br />
+The class <code>LocalData</code> can be used to load OMOP data from a folder containing several parquet files. The tables
+are accessed as attributes and are returned as Pandas DataFrame.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>In this case, the whole table will be loaded into memory on a single jupyter server. Consequently it is advised to only use this for small datasets.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">data</span> <span class="o">=</span> <span class="n">LocalData</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">data</span><span class="o">.</span><span class="n">available_tables</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_text output_subarea output_execute_result">
+<pre>
+<code>[&#39;visit_occurrence&#39;, &#39;visit_detail&#39;, &#39;person&#39;]</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">person</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">person</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">person</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;shape: </span><span class="si">{</span><span class="n">person</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>type: &lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;
+shape: (1000, 10)
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="loading-from-postgres-postgresdata">Loading from PostGres: <code>PostgresData</code></h2>
+<p>OMOP data can be stored in a PostreSQL database. The <code>PostgresData</code> class provides a convinient interface to it.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This class relies on the file <code>~/.pgpass</code> that contains your identifiers for several databases.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">data</span> <span class="o">=</span> <span class="n">PostgresData</span><span class="p">(</span><span class="n">dbname</span><span class="o">=</span><span class="n">DB</span><span class="p">,</span> 
+                    <span class="n">schema</span><span class="o">=</span><span class="s2">&quot;omop&quot;</span><span class="p">,</span> 
+                    <span class="n">user</span><span class="o">=</span><span class="n">USER</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;select count(*) from person&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="scoped">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>count</th>
+    </tr>
+  </thead>
+<tbody>
+    <tr>
+      <th>0</th>
+      <td>12688670</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script type="application/vnd.jupyter.widget-state+json">
+{"state": {}, "version_major": 2, "version_minor": 0}
+</script>
 
 
 
@@ -2056,7 +2476,7 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../plots/plot_probe/wrapper/" class="md-footer__link md-footer__link--prev" aria-label="Previous: wrapper" rel="prev">
+        <a href="../.." class="md-footer__link md-footer__link--prev" aria-label="Previous: Home" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -2065,20 +2485,20 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
               <span class="md-footer__direction">
                 Previous
               </span>
-              wrapper
+              Home
             </div>
           </div>
         </a>
       
       
         
-        <a href="../../../contributing/" class="md-footer__link md-footer__link--next" aria-label="Next: Contributing" rel="next">
+        <a href="../probe/" class="md-footer__link md-footer__link--next" aria-label="Next: Probe" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Contributing
+              Probe
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -2126,12 +2546,12 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tracking", "navigation.instant", "navigation.indexes", "navigation.top", "content.code.annotate", "announce.dismiss"], "search": "../../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tracking", "navigation.instant", "navigation.indexes", "navigation.top", "content.code.annotate", "announce.dismiss"], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d6c3db9e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d6c3db9e.min.js"></script>
       
-        <script src="../../../js/mkdocs-charts-plugin.js"></script>
+        <script src="../../js/mkdocs-charts-plugin.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
       
@@ -2139,13 +2559,13 @@ Check out the new <a class="autorefs autorefs-internal" href="../../../component
       
         <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
       
-        <script src="../../../assets/stylesheets/extra.js"></script>
+        <script src="../../assets/stylesheets/extra.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
-        <script src="../../../assets/termynal/termynal.js"></script>
+        <script src="../../assets/termynal/termynal.js"></script>
       
     
   </body>

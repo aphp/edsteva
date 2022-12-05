@@ -313,8 +313,8 @@ Check out the new <a class="autorefs autorefs-internal" href="../model/#availabl
   
   
     <li class="md-nav__item">
-      <a href="../loading_data.ipynb" class="md-nav__link">
-        None
+      <a href="../loading_data/" class="md-nav__link">
+        Loading data
       </a>
     </li>
   
@@ -2051,14 +2051,14 @@ Check out the new <a class="autorefs autorefs-internal" href="../model/#availabl
 <h1 id="probe">Probe</h1>
 <p><a class="autorefs autorefs-internal" href="#available-probes">Choosing</a> or <a class="autorefs autorefs-internal" href="#defining-a-custom-probe">customizing</a> a Probe is the second step in the <a class="autorefs autorefs-internal" href="../../#2-choose-a-probe-or-create-a-new-probe">EDS-TeVa usage workflow</a>.</p>
 <h2 id="definition">Definition</h2>
-<p>A <strong>Probe</strong> is a python class designed to characterize data availability of a target variable over time <span class="arithmatex">\(t\)</span>. It aggregates the [loaded data][loading-data] to obtain a completeness predictor <span class="arithmatex">\(c(t)\)</span>.</p>
+<p>A <strong>Probe</strong> is a python class designed to characterize data availability of a target variable over time <span class="arithmatex">\(t\)</span>. It aggregates the <a class="autorefs autorefs-internal" href="../loading_data/#loading-data">loaded data</a> to obtain a completeness predictor <span class="arithmatex">\(c(t)\)</span>.</p>
 <figure>
 <p><img alt="Image title" src="../../assets/uml_class/probe_class.svg" />
   </p>
 <figcaption>Probe class diagram</figcaption>
 </figure>
 <h3 id="input">Input</h3>
-<p>As detailled in [the dedicated section][loading-data], the Probe class is expecting a <a class="autorefs autorefs-internal" href="../../reference/io/#edsteva.io"><strong><code>Data</code></strong></a> object with <a href="https://pandas.pydata.org/">Pandas</a> or <a href="https://koalas.readthedocs.io/en/latest/">Koalas</a> DataFrames.  We provide various connectors to facilitate data fetching, namely a [Hive][loading-from-hive-hivedata] connector, a [Postgres][loading-from-postgres-postgresdata] connector and a [LocalData][persistingreading-a-sample-tofrom-disk-localdata].</p>
+<p>As detailled in <a class="autorefs autorefs-internal" href="../loading_data/#loading-data">the dedicated section</a>, the Probe class is expecting a <a class="autorefs autorefs-internal" href="../../reference/io/#edsteva.io"><strong><code>Data</code></strong></a> object with <a href="https://pandas.pydata.org/">Pandas</a> or <a href="https://koalas.readthedocs.io/en/latest/">Koalas</a> DataFrames.  We provide various connectors to facilitate data fetching, namely a <a class="autorefs autorefs-internal" href="../loading_data/#loading-from-hive-hivedata">Hive</a> connector, a <a class="autorefs autorefs-internal" href="../loading_data/#loading-from-postgres-postgresdata">Postgres</a> connector and a <a class="autorefs autorefs-internal" href="../loading_data/#persistingreading-a-sample-tofrom-disk-localdata">LocalData</a>.</p>
 <h3 id="attributes">Attributes</h3>
 <ul>
 <li><a class="autorefs autorefs-internal" href="../../reference/probes/base/#edsteva.probes.base.BaseProbe"><strong><code>predictor</code></strong></a> is a <a href="https://pandas.pydata.org/pandas-docs/version/1.3/reference/api/pandas.DataFrame.html"><code>Pandas.DataFrame</code></a> computed by the <a class="autorefs autorefs-internal" href="../../reference/probes/base/#edsteva.probes.base.BaseProbe.compute"><code>compute()</code></a> method. It contains the desired completeness predictor <span class="arithmatex">\(c(t)\)</span> for each column in the <a class="autorefs autorefs-internal" href="../../reference/probes/visit/#edsteva.probes.visit.VisitProbe"><code>_index</code></a> attribute (care site, stay type and any other needed column).</li>
@@ -2417,7 +2417,7 @@ c_{note}(t) = \frac{n_{with\,doc}(t)}{n_{visit}(t)}
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../.." class="md-footer__link md-footer__link--prev" aria-label="Previous: Home" rel="prev">
+        <a href="../loading_data/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Loading data" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -2426,7 +2426,7 @@ c_{note}(t) = \frac{n_{with\,doc}(t)}{n_{visit}(t)}
               <span class="md-footer__direction">
                 Previous
               </span>
-              Home
+              Loading data
             </div>
           </div>
         </a>
