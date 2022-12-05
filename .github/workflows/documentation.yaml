@@ -33,5 +33,5 @@ jobs:
       - name: Build documentation
         run: |
           git fetch origin gh-pages
-          mike delete main
-          mike deploy --push main
+          poetry run mike delete main
+          poetry run mike deploy --push main
