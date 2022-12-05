@@ -69,11 +69,11 @@ jobs:
           version: 1.2.2
           virtualenvs-in-project: true
       - name: Load cached venv
-          id: cached-poetry-dependencies
-          uses: actions/cache@v3
-          with:
-            path: .venv
-            key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
@@ -85,8 +85,8 @@ jobs:
           java-version: 1.8
       - name: Test with Pytest
         run: |
-        poetry run pyclean edsteva/ tests/
-        poetry run pytest tests --cov edsteva --cov-report xml
+          poetry run pyclean edsteva/ tests/
+          poetry run pytest tests --cov edsteva --cov-report xml
       - name: Upload coverage
         uses: codecov/codecov-action@v2
 
