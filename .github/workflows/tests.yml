@@ -21,7 +21,6 @@ jobs:
           commit-filter: '[skip ci];[ci skip];[skip github]'
           commit-filter-separator: ';'
           
-jobs:
   Linting:
     name: Running pre-commit
     needs: check_skip
