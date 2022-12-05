@@ -41,3 +41,7 @@ repos:
     rev: '1.2.2'
     hooks:
       - id: poetry-check
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.19.2
+    hooks:
+      - id: check-github-workflows

@@ -1,6 +1,6 @@
 ---
 name: "Feature request"
-about: Use this template if you'd like EDS-NLP to add a new feature.
+about: Use this template if you'd like EDS-TeVa to add a new feature.
 title: "Feature request: [feature]"
 ---
 

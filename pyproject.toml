@@ -1,11 +1,14 @@
 [tool.poetry]
 name = "edsteva"
 version = "1.0.0"
-description = "EDS-TeVa provides a set of tools that aims at characterizing the temporal variability of data induced by the dynamics of the clinical IT system."
+description = "EDS-TeVa provides a set of tools that aims at modeling the adoption over time and across space of the Electronic Health Records."
 authors = ["Adam Remaki <adam.remaki@aphp.fr>", "Vicent Maladiere <vincent.maladiere@aphp.fr>", "Benoit Playe <benoit.playe@aphp.fr>", "Romain Bey <romain.bey@aphp.fr>", "Paul Bernard <paul.bernard@aphp.fr>"]
+keywords = ["OMOP", "Data Analysis", "Electronic health record"]
+readme = "README.md"
 maintainers = ["Adam Remaki <adam.remaki@aphp.fr>", "Vicent Maladiere <vincent.maladiere@aphp.fr>"]
-repository = "https://gitlab.eds.aphp.fr/datasciencetools/edsteva"
-documentation = "https://datasciencetools-pages.eds.aphp.fr/edsteva/"
+homepage = "https://github.com/aphp/edsteva"
+repository = "https://github.com/aphp/edsteva"
+documentation = "https://aphp.github.io/edsteva/latest/"
 
 [tool.poetry.dependencies]
 python = "~3.7.1"
@@ -44,6 +47,7 @@ jinja2 = "<3.1.0"
 mkdocstrings = "^0.19.0"
 mkdocstrings-python = "^0.8.0"
 mknotebooks = "^0.7.1"
+mike = "^1.1.2"
 
 [tool.poetry.group.test.dependencies]
 flake8 = "^3.0.1"
