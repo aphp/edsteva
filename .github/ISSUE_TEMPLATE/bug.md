@@ -15,6 +15,7 @@ about: Use this template if you came across a bug or unexpected behaviour differ
 
 ```python
 import edsteva
+
 # ...
 ```
 
