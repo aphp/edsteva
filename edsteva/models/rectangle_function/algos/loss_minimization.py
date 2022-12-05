@@ -2,13 +2,11 @@ from typing import Callable, List
 
 import numpy as np
 import pandas as pd
-from joblib import Parallel, delayed
 
 from edsteva.utils.checks import check_columns
 from edsteva.utils.loss_functions import l2_loss
 
 
-# TODO: rename "index" to be more specific, e.g. "partition_cols"
 def loss_minimization(
     predictor: pd.DataFrame,
     index: List[str],
@@ -16,27 +14,63 @@ def loss_minimization(
     y_col: str = "c",
     loss_function: Callable = l2_loss,
     min_rect_month_width=3,
-    n_jobs=-1,
 ):
-    check_columns(df=predictor, required_columns=index + [x_col, y_col])
+    r"""Computes the threshold $t_0$ and $t_1$ of a predictor $c(t)$ by minimizing the following loss function:
 
+    $$
+    \begin{aligned}
+    \mathcal{L}(t_0, t_1) & = \frac{\sum_{t = t_{min}}^{t_{max}} \mathcal{l}(c(t), f_{t_0, t_1}(t))}{t_{max} - t_{min}} \\
+    (\hat{t_0}, \hat{t_1}) & = \underset{t_0, t_1}{\mathrm{argmin}}(\mathcal{L}(t_0, t_1))
+    \end{aligned}
+    $$
+
+    Where the loss function $\mathcal{l}$ is by default the L2 distance and the estimated completeness $c_0$ is the mean completeness between $t_0$ and $t_1$.
+
+    $$
+    \begin{aligned}
+    \mathcal{l}(c(t), f_{t_0, t_1}(t)) & = |c(t) - f_{t_0, t_1}(t)|^2 \\
+    c_0 & = \frac{\sum_{t = t_0}^{t_1} c(t)}{t_1 - t_0}
+    \end{aligned}
+    $$
+
+
+
+    Parameters
+    ----------
+    predictor : pd.DataFrame
+        $c(t)$ computed in the Probe.
+    index : List[str]
+        Variable from which data is grouped.
+
+        **EXAMPLE**: `["care_site_level", "stay_type", "note_type", "care_site_id"]`
+    x_col : str, optional
+        Column name for the time variable $t$.
+    y_col : str, optional
+        Column name  for the completeness variable $c(t)$.
+    loss_function : Callable, optional
+        The loss function $\mathcal{L}$.
+    min_rect_month_width : int, optional
+        Min number of months between $t_0$ and $t_1$.
+    """
+    check_columns(df=predictor, required_columns=index + [x_col, y_col])
     cols = index + [x_col, y_col]
     iter = predictor[cols].groupby(index)
-    with Parallel(n_jobs=n_jobs) as parallel:
-        best_t0_c0_t1 = parallel(
-            delayed(_compute_one_double_threshold)(
-                group,
-                x_col,
-                y_col,
-                loss_function,
-                min_rect_month_width,
-            )
-            for _, group in iter
+    results = []
+    for partition, group in iter:
+        row = dict(zip(index, partition))
+        t_0, c_0, t_1 = _compute_one_double_threshold(
+            group,
+            x_col,
+            y_col,
+            loss_function,
+            min_rect_month_width,
         )
-    results = pd.DataFrame([dict(zip(index, partition)) for partition, _ in iter])
-    results[["t_0", "c_0", "t_1"]] = best_t0_c0_t1
+        row["t_0"] = t_0
+        row["c_0"] = c_0
+        row["t_1"] = t_1
+        results.append(row)
 
-    return results
+    return pd.DataFrame(results)
 
 
 def _compute_one_double_threshold(
