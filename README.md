@@ -23,7 +23,7 @@
 </p>
 </div>
 
-**Source Code**: <a href="https://github.com/aphp/edsnlp" target="_blank">https://github.com/aphp/edsnlp</a>
+**Source Code**: <a href="https://github.com/aphp/edsteva" target="_blank">https://github.com/aphp/edsteva</a>
 
 ---
 
