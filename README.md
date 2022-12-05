@@ -1,3 +1,7 @@
+<p align="center">
+&#9888 <b>DISCLAIMER: </b>EDS-TeVa is intended to be a module of <a href="https://github.com/aphp/EDS-Scikit">EDS-Scikit</a>
+</p>
+
 <div align="center">
 
 <p align="center">
