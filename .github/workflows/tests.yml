@@ -115,5 +115,4 @@ jobs:
       - name: Install dependencies
         run: poetry install --only docs
       - name: Build documentation
-        run: |
-          mkdocs build --clean
+        run: mkdocs build --clean
