@@ -41,7 +41,7 @@ jobs:
         run: |
           poetry config repositories.testpypi https://test.pypi.org/legacy/
           poetry config pypi-token.testpypi ${{ secrets.TEST_PYPI_TOKEN }}
-          poetry publish
+          poetry publish -r testpypi
       - name: Set up Git
         run: |
           git config user.name ${{ github.actor }}
