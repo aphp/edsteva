@@ -21,7 +21,7 @@ jobs:
           commit-filter: '[skip ci];[ci skip];[skip github]'
           commit-filter-separator: ';'
 
-  Linting:
+  linting:
     name: Running pre-commit
     needs: check_skip
     if: ${{ needs.check_skip.outputs.skip == 'false' }}
@@ -46,7 +46,8 @@ jobs:
       - name: Run pre-commit
         run: SKIP=no-commit-to-branch pre-commit run --all-files
 
-  Testing:
+  testing:
+    name: Testing with PyTest
     needs: check_skip
     if: ${{ needs.check_skip.outputs.skip == 'false' }}
     runs-on: "ubuntu-latest"
@@ -90,6 +91,7 @@ jobs:
         uses: codecov/codecov-action@v2
 
   Documentation:
+    name: Building Documentation
     needs: check_skip
     if: ${{ needs.check_skip.outputs.skip == 'false' }}
     runs-on: ubuntu-latest
@@ -110,17 +112,8 @@ jobs:
         with:
           version: 1.2.2
           virtualenvs-in-project: true
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: |
-          poetry config experimental.new-installer false
-          poetry install --without dev
+        run: poetry install --only docs
       - name: Build documentation
         run: |
           mkdocs build --clean

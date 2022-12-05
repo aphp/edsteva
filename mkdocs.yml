@@ -38,8 +38,6 @@ nav:
     - components/probe.md
     - components/model.md
     - components/visualization.md
-  - Tutorials:
-    - tutorials/index.md
   - Code Reference: reference/
   - contributing.md
   - changelog.md
