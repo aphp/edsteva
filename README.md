@@ -12,16 +12,16 @@
 
 <p align="center">
 <a href="https://aphp.github.io/edsteva/latest/" target="_blank">
-    <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Tests%20and%20Linting?label=tests&style=flat-square" alt="Tests">
+    <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Tests%20and%20Linting?label=tests&style=flat" alt="Tests">
 </a>
 <a href="https://aphp.github.io/edsteva/latest/" target="_blank">
-    <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Documentation?label=docs&style=flat-square" alt="Documentation">
+    <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Documentation?label=docs&style=flat" alt="Documentation">
 </a>
 <a href="https://pypi.org/project/edsteva/" target="_blank">
-    <img src="https://img.shields.io/pypi/v/edsteva?color=blue&style=flat-square" alt="PyPI">
+    <img src="https://img.shields.io/pypi/v/edsteva?color=blue&style=flat" alt="PyPI">
 </a>
-<a href="https://codecov.io/gh/aphp/edsteva" target="_blank">
-    <img src="https://img.shields.io/codecov/c/github/aphp/edsteva?logo=codecov&style=flat-square" alt="Codecov">
+<a href="https://codecov.io/github/aphp/edsteva?branch=main" target="_blank">
+    <img src="https://codecov.io/github/aphp/edsteva/coverage.svg?branch=main" alt="Codecov">
 </a>
 <a href="https://github.com/psf/black" target="_blank">
     <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Black">
@@ -58,7 +58,7 @@ pip install edsteva
 ```
 We recommend pinning the library version in your projects, or use a strict package manager like [Poetry](https://python-poetry.org/).
 
-```shell
+```
 pip install edsteva==0.1.0
 ```
 ## Example
