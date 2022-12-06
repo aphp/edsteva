@@ -37,11 +37,17 @@ EDS-TeVa stands on the shoulders of [Spark 2.4](https://spark.apache.org/docs/2.
 
 ## Installation
 
-You can install EDS-TeVa through Pip:
+You can install EDS-TeVa through ``pip``:
 
 ```shell
 pip install edsteva
 ```
+We recommend pinning the library version in your projects, or use a strict package manager like [Poetry](https://python-poetry.org/).
+
+```shell
+pip install edsteva==0.1.0
+```
+
 
 ## Example
 
