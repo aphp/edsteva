@@ -90,7 +90,7 @@ jobs:
       - name: Check dependencies licenses
         run: poetry run pylic check
 
-  Documentation:
+  documentation:
     name: Building Documentation
     needs: check_skip
     if: ${{ needs.check_skip.outputs.skip == 'false' }}

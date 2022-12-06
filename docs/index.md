@@ -1,18 +1,24 @@
+!!! Warning "DISCLAIMER"
+    EDS-TeVa is intended to be a module of [EDS-Scikit](https://github.com/aphp/EDS-Scikit)
+
 <p align="center">
-  <a href="https://datasciencetools-pages.eds.aphp.fr/edsteva"><img src="assets/logo/edsteva_logo_small.svg" alt="EDS-TeVa"></a>
+  <a href="https://aphp.github.io/edsteva/latest/"><img src="https://aphp.github.io/edsteva/latest/assets/logo/edsteva_logo_small.svg" alt="EDS-TeVa"></a>
 </p>
 <p align="center" style="font-size:35px">
     EDS-TeVa
 </p>
 <p align="center">
-<a href="https://datasciencetools-pages.eds.aphp.fr/edsteva/" target="_blank">
-    <img src="https://img.shields.io/badge/docs-passed-brightgreen" alt="Documentation">
+<a href="https://aphp.github.io/edsteva/latest/" target="_blank">
+    <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Tests%20and%20Linting?label=tests&style=flat-square" alt="Tests">
 </a>
-<a href="https://gitlab.eds.aphp.fr/datasciencetools/edsteva/-/commits/master" target="_blank">
-    <img src="https://gitlab.eds.aphp.fr/datasciencetools/edsteva/badges/master/pipeline.svg" alt="Pipeline Status">
+<a href="https://aphp.github.io/edsteva/latest/" target="_blank">
+    <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Documentation?label=docs&style=flat-square" alt="Documentation">
 </a>
-<a>
-    <img src="https://gitlab.eds.aphp.fr/datasciencetools/edsteva/badges/master/coverage.svg" alt="Coverage">
+<a href="https://pypi.org/project/edsteva/" target="_blank">
+    <img src="https://img.shields.io/pypi/v/edsteva?color=blue&style=flat-square" alt="PyPI">
+</a>
+<a href="https://codecov.io/gh/aphp/edsteva" target="_blank">
+    <img src="https://img.shields.io/codecov/c/github/aphp/edsteva?logo=codecov&style=flat-square" alt="Codecov">
 </a>
 <a href="https://github.com/psf/black" target="_blank">
     <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Black">
@@ -27,9 +33,9 @@
 
 ---
 
-**Documentation**: <a href="https://datasciencetools-pages.eds.aphp.fr/edsteva" target="_blank">https://datasciencetools-pages.eds.aphp.fr/edsteva</a>
+**Documentation**: <a href="https://aphp.github.io/edsteva/latest/" target="_blank">https://aphp.github.io/edsteva/latest/</a>
 
-**Source Code**: <a href="https://gitlab.eds.aphp.fr/datasciencetools/edsteva" target="_blank">https://gitlab.eds.aphp.fr/datasciencetools/edsteva</a>
+**Source Code**: <a href="https://github.com/aphp/edsteva" target="_blank">https://github.com/aphp/edsteva</a>
 
 ---
 
@@ -74,18 +80,23 @@ Real world data is subject to important temporal drifts that may be caused by a 
 
             Follow this [installation guide](https://techoral.com/blog/java/openjdk-install-windows.html)
 
-You can install EDS-TeVa through Pip (it is not yet available on PyPI):
+You can install EDS-TeVa through `pip`:
 
 <div class="termy">
 
 ```console
-$ pip install git+https://gitlab.eds.aphp.fr/datasciencetools/edsteva.git
+$ pip install edsteva
 ---> 100%
 color:green Successfully installed edsteva
 ```
 
 </div>
 
+We recommend pinning the library version in your projects, or use a strict package manager like [Poetry](https://python-poetry.org/).
+
+```
+pip install edsteva==0.1.0
+```
 ## Working example: administrative records relative to visits
 
 Let's consider a basic category of data: administrative records relative to visits. Visits are characterized by a stay type (full hospitalisation, emergency, consultation, etc.). In this example, the objective is to estimate the availability of visits records with respect to time, care site and stay type.

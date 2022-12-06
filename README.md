@@ -1,16 +1,28 @@
 <p align="center">
-&#9888 <b>DISCLAIMER: </b>EDS-TeVa is intended to be a module of <a href="https://github.com/aphp/EDS-Scikit">EDS-Scikit</a>
+<b>DISCLAIMER: </b>EDS-TeVa is intended to be a module of <a href="https://github.com/aphp/EDS-Scikit">EDS-Scikit</a>
 </p>
 
 <div align="center">
 
 <p align="center">
-  <a href="https://datasciencetools-pages.eds.aphp.fr/edsteva"><img src="docs/assets/logo/edsteva_logo_small.svg" alt="EDS-TeVa"></a>
+  <a href="https://aphp.github.io/edsteva/latest/"><img src="https://aphp.github.io/edsteva/latest/assets/logo/edsteva_logo_small.svg" alt="EDS-TeVa"></a>
 </p>
 
 # EDS-TeVa
 
 <p align="center">
+<a href="https://aphp.github.io/edsteva/latest/" target="_blank">
+    <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Tests%20and%20Linting?label=tests&style=flat-square" alt="Tests">
+</a>
+<a href="https://aphp.github.io/edsteva/latest/" target="_blank">
+    <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Documentation?label=docs&style=flat-square" alt="Documentation">
+</a>
+<a href="https://pypi.org/project/edsteva/" target="_blank">
+    <img src="https://img.shields.io/pypi/v/edsteva?color=blue&style=flat-square" alt="PyPI">
+</a>
+<a href="https://codecov.io/gh/aphp/edsteva" target="_blank">
+    <img src="https://img.shields.io/codecov/c/github/aphp/edsteva?logo=codecov&style=flat-square" alt="Codecov">
+</a>
 <a href="https://github.com/psf/black" target="_blank">
     <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Black">
 </a>
@@ -22,6 +34,8 @@
 </a>
 </p>
 </div>
+
+**Documentation**: <a href="https://aphp.github.io/edsteva/latest/" target="_blank">https://aphp.github.io/edsteva/latest/</a>
 
 **Source Code**: <a href="https://github.com/aphp/edsteva" target="_blank">https://github.com/aphp/edsteva</a>
 
@@ -47,11 +61,9 @@ We recommend pinning the library version in your projects, or use a strict packa
 ```shell
 pip install edsteva==0.1.0
 ```
-
-
 ## Example
 
-A scientific paper is currently being written that describes extensively the use of the library on the computation of pulmonary embolism prevalence.
+A scientific paper is currently being written that describes extensively the use of the library on the study of pulmonary embolism of cancer patients.
 
 ## Contributing
 
