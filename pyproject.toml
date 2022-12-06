@@ -9,7 +9,7 @@ maintainers = ["Adam Remaki <adam.remaki@aphp.fr>", "Vicent Maladiere <vincent.m
 homepage = "https://github.com/aphp/edsteva"
 repository = "https://github.com/aphp/edsteva"
 documentation = "https://aphp.github.io/edsteva/latest/"
-licence = "BSD 3-Clause 'New' or 'Revised' License"
+license = "BSD 3-Clause 'New' or 'Revised' License"
 classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
