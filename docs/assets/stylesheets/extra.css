@@ -49,25 +49,25 @@
 }
 
 :root {
-  --md-admonition-icon--edsnlp: url('data:image/svg+xml;charset=utf-8,<svg width="55" height="58" xmlns="http://www.w3.org/2000/svg" xml:space="preserve"><text style="cursor:move" font-weight="bold" fill="%230060af" stroke="%23000" stroke-width="0" x=".2" y="25.8" font-size="24" font-family="\'Arial\'" xml:space="preserve">EDS</text><text style="cursor:move" font-weight="bold" xml:space="preserve" font-family="\'Arial\'" font-size="24" y="51.1" stroke-width="0" stroke="%23000" fill="%230060af">NLP</text></svg>')
+  --md-admonition-icon--edsteva: url('data:image/svg+xml;charset=utf-8,<svg width="55" height="58" xmlns="http://www.w3.org/2000/svg" xml:space="preserve"><text style="cursor:move" font-weight="bold" fill="%230060af" stroke="%23000" stroke-width="0" x=".2" y="25.8" font-size="24" font-family="\'Arial\'" xml:space="preserve">EDS</text><text style="cursor:move" font-weight="bold" xml:space="preserve" font-family="\'Arial\'" font-size="24" y="51.1" stroke-width="0" stroke="%23000" fill="%230060af">NLP</text></svg>')
 }
 
-.md-typeset .admonition.edsnlp,
-.md-typeset details.edsnlp {
+.md-typeset .admonition.edsteva,
+.md-typeset details.edsteva {
   border-color: rgb(0, 107, 182);
 }
 
-.md-typeset .edsnlp>.admonition-title,
-.md-typeset .edsnlp>summary {
+.md-typeset .edsteva>.admonition-title,
+.md-typeset .edsteva>summary {
   background-color: rgba(0, 107, 182, 0.1);
   border-color: rgb(0, 107, 182);
 }
 
-.md-typeset .edsnlp>.admonition-title::before,
-.md-typeset .edsnlp>summary::before {
+.md-typeset .edsteva>.admonition-title::before,
+.md-typeset .edsteva>summary::before {
   background-color: rgb(0, 107, 182);
-  -webkit-mask-image: var(--md-admonition-icon--edsnlp);
-  mask-image: var(--md-admonition-icon--edsnlp);
+  -webkit-mask-image: var(--md-admonition-icon--edsteva);
+  mask-image: var(--md-admonition-icon--edsteva);
 }
 
 :root {

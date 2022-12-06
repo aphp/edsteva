@@ -33,11 +33,14 @@ jobs:
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
           poetry config experimental.new-installer false
-          poetry install --without dev
+          poetry install
       - name: Build
         run: poetry build
       - name: Publish
-        run: poetry publish
+        run: |
+          poetry config repositories.testpypi https://test.pypi.org/legacy/
+          poetry config pypi-token.testpypi ${{ secrets.TEST_PYPI_TOKEN }}
+          poetry publish -r testpypi
       - name: Set up Git
         run: |
           git config user.name ${{ github.actor }}

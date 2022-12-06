@@ -104,7 +104,7 @@ $ pre-commit install
 
 </div>
 
-The pre-commit hooks defined in the [configuration](https://gitlab.eds.aphp.fr/datasciencetools/edsteva/-/blob/master/.pre-commit-config.yaml) will automatically run when you commit your changes, letting you know if something went wrong.
+The pre-commit hooks defined in the [configuration](https://github.com/aphp/edsteva/blob/main/.pre-commit-config.yaml) will automatically run when you commit your changes, letting you know if something went wrong.
 
 The hooks only run on staged changes. To force-run it on all files, run:
 
