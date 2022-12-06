@@ -1,14 +1,25 @@
 [tool.poetry]
 name = "edsteva"
-version = "1.0.0"
+version = "0.1.0"
 description = "EDS-TeVa provides a set of tools that aims at modeling the adoption over time and across space of the Electronic Health Records."
-authors = ["Adam Remaki <adam.remaki@aphp.fr>", "Vicent Maladiere <vincent.maladiere@aphp.fr>", "Benoit Playe <benoit.playe@aphp.fr>", "Romain Bey <romain.bey@aphp.fr>", "Paul Bernard <paul.bernard@aphp.fr>"]
+authors = ["Adam Remaki <adam.remaki@aphp.fr>", "Vicent Maladiere <vincent.maladiere-ext@aphp.fr>", "Benoit Playe <benoit.playe@aphp.fr>", "Romain Bey <romain.bey@aphp.fr>", "Paul Bernard <paul.bernard@aphp.fr>"]
 keywords = ["OMOP", "Data Analysis", "Electronic health record"]
 readme = "README.md"
-maintainers = ["Adam Remaki <adam.remaki@aphp.fr>", "Vicent Maladiere <vincent.maladiere@aphp.fr>"]
+maintainers = ["Adam Remaki <adam.remaki@aphp.fr>", "Vicent Maladiere <vincent.maladiere-ext@aphp.fr>", "Thomas Petit-Jean <thomas.petitjean@aphp.fr>", "Romain Bey <romain.bey@aphp.fr>"]
 homepage = "https://github.com/aphp/edsteva"
 repository = "https://github.com/aphp/edsteva"
 documentation = "https://aphp.github.io/edsteva/latest/"
+licence = "BSD 3-Clause 'New' or 'Revised' License"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3.7",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Scientific/Engineering",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: Unix",
+]
+include = ["LICENSE"]
 
 [tool.poetry.dependencies]
 python = "~3.7.1"
