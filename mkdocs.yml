@@ -42,6 +42,11 @@ nav:
   - contributing.md
   - changelog.md
 
+extra:
+  version:
+    provider: mike
+    default: latest
+
 watch:
   - "edsteva"
 
