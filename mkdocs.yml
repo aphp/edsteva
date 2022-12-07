@@ -1,5 +1,6 @@
 site_name: EDS-TeVa
 repo_url: https://github.com/aphp/edsteva
+edit_uri: edit/main/docs/
 repo_name: edsteva
 
 copyright: Copyright &copy; 2022 – Assistance Publique - Hôpitaux de Paris
