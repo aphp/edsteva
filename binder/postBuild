@@ -1,1 +1,2 @@
-pip install edsteva --no-cache-dir
+pip install git+https://github.com/aphp/edsteva.git@binder --no-cache-dir
+pip install nb-black==1.0.7
