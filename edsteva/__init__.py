@@ -18,15 +18,6 @@ from pyspark.sql import SparkSession
 logger.remove()
 logger.add(sys.stderr, level="INFO")
 
-logger.warning(
-    """
-    To improve performances when using Spark and Koalas, please call `edsteva.improve_performances()`
-    This function optimally configures Spark. Use it as:
-    `spark, sc, sql = edsteva.improve_performances()`
-    The functions respectively returns a SparkSession, a SparkContext and an sql method
-    """
-)
-
 
 def koalas_options() -> None:
     """
@@ -127,4 +118,3 @@ def improve_performances(
 
 
 CACHE_DIR = Path.home() / ".cache" / "edsteva"
-koalas_options()

@@ -97,12 +97,18 @@ class HiveData:  # pragma: no cover
             Union[Dict[str, Optional[List[str]]], List[str]]
         ] = None,
     ):
-
-        self.spark_session = (
-            spark_session
-            if spark_session is not None
-            else SparkSession.builder.enableHiveSupport().getOrCreate()
-        )
+        if spark_session is not None:
+            self.spark_session = spark_session
+        else:
+            logger.warning(
+                """
+                To improve performances when using Spark and Koalas, please call `edsteva.improve_performances()`
+                This function optimally configures Spark. Use it as:
+                `spark, sc, sql = edsteva.improve_performances()`
+                The functions respectively returns a SparkSession, a SparkContext and an sql method
+                """
+            )
+            self.spark_session = SparkSession.builder.enableHiveSupport().getOrCreate()
         self.database_name = database_name
         self.database_type = database_type
 
