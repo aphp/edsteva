@@ -30,7 +30,7 @@
     <img src="https://img.shields.io/badge/reproducibility-poetry-blue" alt="Poetry">
 </a>
 <a href="https://www.python.org/" target="_blank">
-    <img src="https://img.shields.io/badge/python-%3E%3D%203.7.1%20%7C%20%3C%203.8-brightgreen" alt="Supported Python versions">
+    <img src="https://img.shields.io/badge/python-~3.7.1-brightgreen" alt="Supported Python versions">
 </a>
 </p>
 </div>
