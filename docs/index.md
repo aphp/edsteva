@@ -5,7 +5,7 @@
   <a href="https://aphp.github.io/edsteva/latest/"><img src="https://aphp.github.io/edsteva/latest/assets/logo/edsteva_logo_small.svg" alt="EDS-TeVa"></a>
 </p>
 <p align="center" style="font-size:35px">
-    EDS-TeVa <a href="https://mybinder.org/v2/gh/aphp/edsteva/HEAD?labpath=notebooks%2Fsynthetic_data.ipynb" target="_blank">
+    EDS-TeVa <a href="https://mybinder.org/v2/gh/aphp/edsteva/HEAD?filepath=notebooks%2Fsynthetic_data.ipynb" target="_blank">
     <img src="https://mybinder.org/badge_logo.svg" alt="Documentation">
 </a>
 </p>
@@ -312,13 +312,13 @@ step_function_model.estimates.head()
 
 ``Saved to /my_path/fitted_visit.pkl``
 
-| care_site_level          | care_site_id | stay_type    | t_0        | c_0   | error |
-| :----------------------- | :----------- | :----------- | :--------- | :---- | :---- |
-| Unité Fonctionnelle (UF) | 8312056386   | 'Urg_Hospit' | 2019-05-01 | 0.397 | 0.040 |
-| Unité Fonctionnelle (UF) | 8312056386   | 'All'        | 2011-04-01 | 0.583 | 0.028 |
-| Pôle/DMU                 | 8312027648   | 'Urg_Hospit' | 2021-03-01 | 0.677 | 0.022 |
-| Pôle/DMU                 | 8312027648   | 'All'        | 2018-08-01 | 0.764 | 0.014 |
-| Hôpital                  | 8312022130   | 'Urg_Hospit' | 2022-02-01 | 0.652 | 0.027 |
+| care_site_level | care_site_id | stay_type    | t_0        | c_0   | error |
+| :-------------- | :----------- | :----------- | :--------- | :---- | :---- |
+| Pôle/DMU        | 8312056386   | 'Urg_Hospit' | 2019-05-01 | 0.397 | 0.040 |
+| Pôle/DMU        | 8312056386   | 'All'        | 2011-04-01 | 0.583 | 0.028 |
+| Pôle/DMU        | 8312027648   | 'Urg_Hospit' | 2021-03-01 | 0.677 | 0.022 |
+| Pôle/DMU        | 8312027648   | 'All'        | 2018-08-01 | 0.764 | 0.014 |
+| Pôle/DMU        | 8312022130   | 'Urg_Hospit' | 2022-02-01 | 0.652 | 0.027 |
 
 #### 3.2 Visualize your fitted Probe
 
@@ -370,7 +370,7 @@ Now, that we have estimated $t_0$, $c_0$ and $error$ for each care site and each
 Visualizing the density plots and the medians of the estimates can help you setting the thresholds' values.
 
 ```python
-from edsteva.viz import plot_estimates_densities
+from edsteva.viz.plots import plot_estimates_densities
 
 plot_estimates_densities(
     fitted_model=step_function_model,

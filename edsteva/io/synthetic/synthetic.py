@@ -42,6 +42,17 @@ CARE_SITE_STRUCTURE = {
             "Unité Fonctionnelle (UF)-222": None,
         },
     },
+    "Hôpital-3": {
+        "Pôle/DMU-31": {
+            "Unité Fonctionnelle (UF)-311": None,
+            "Unité Fonctionnelle (UF)-312": {
+                "Unité de consultation (UC)-3121": {
+                    "Unité de consultation (UC)-31211": None
+                },
+            },
+            "Unité Fonctionnelle (UF)-313": {"Unité de consultation (UC)-3131": None},
+        },
+    },
 }
 
 OTHER_VISIT_COLUMNS = dict(
