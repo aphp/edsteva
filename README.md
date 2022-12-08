@@ -59,7 +59,7 @@ pip install edsteva
 We recommend pinning the library version in your projects, or use a strict package manager like [Poetry](https://python-poetry.org/).
 
 ```
-pip install edsteva==0.1.0
+pip install edsteva==0.1.1
 ```
 ## Example
 
