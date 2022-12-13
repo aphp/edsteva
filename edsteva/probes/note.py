@@ -15,6 +15,7 @@ from edsteva.probes.utils import (
     prepare_visit_detail,
     prepare_visit_occurrence,
 )
+from edsteva.utils.checks import check_tables
 from edsteva.utils.framework import is_koalas, to
 from edsteva.utils.typing import Data
 
@@ -231,6 +232,8 @@ class NoteProbe(BaseProbe):
         care_site_ids : List[int], optional
             **EXAMPLE**: `[8312056386, 8312027648]`
         """
+        check_tables(data=data, required_tables=["note"])
+
         visit_occurrence = prepare_visit_occurrence(
             data,
             start_date,
