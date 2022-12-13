@@ -1,9 +1,10 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Union
 
 import _pickle as pickle
+import numpy as np
 import pandas as pd
 from IPython.display import display
 from loguru import logger
@@ -87,7 +88,7 @@ def prepare_care_site(
     return care_site
 
 
-def prepare_note(data, note_types):
+def prepare_note(data, note_types, visit_occurrence, time_delta_visit_note):
     note = data.note[
         [
             "note_id",
@@ -95,6 +96,7 @@ def prepare_note(data, note_types):
             "note_class_source_value",
             "row_status_source_value",
             "note_text",
+            "note_datetime",
         ]
     ]
     note = note.rename(columns={"note_class_source_value": "note_type"})
@@ -107,6 +109,12 @@ def prepare_note(data, note_types):
             table_name="note",
             type_groups=note_types,
             name="note_type",
+        )
+    if time_delta_visit_note:
+        note = filter_note_by_delta_time(
+            note=note,
+            visit_occurrence=visit_occurrence,
+            time_delta_visit_note=time_delta_visit_note,
         )
 
     return note
@@ -488,20 +496,23 @@ def get_valid_observations(
 def filter_table_by_date(
     table: DataFrame,
     table_name: str,
+    date_column: str = "date",
     start_date: Union[datetime, str] = None,
     end_date: Union[datetime, str] = None,
 ):
 
-    check_columns(df=table, required_columns=["date"])
+    check_columns(df=table, required_columns=[date_column])
 
-    table.dropna(subset=["date"], inplace=True)
+    table.dropna(subset=[date_column], inplace=True)
     logger.debug("Droping observations with missing date in table {}.", table_name)
-    table["date"] = table["date"].astype("datetime64")
+    table[date_column] = table[date_column].astype("datetime64")
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
 
     if end_date and start_date:
-        table = table[(table["date"] >= start_date) & (table["date"] < end_date)]
+        table = table[
+            (table[date_column] >= start_date) & (table[date_column] < end_date)
+        ]
         logger.debug(
             "Observations between {} and {} have been selected for table {}.",
             start_date,
@@ -509,21 +520,55 @@ def filter_table_by_date(
             table_name,
         )
     elif start_date:
-        table = table[table["date"] >= start_date]
+        table = table[table[date_column] >= start_date]
         logger.debug(
             "Observations after {} have been selected for table {}.",
             start_date,
             table_name,
         )
     elif end_date:
-        table = table[table["date"] < end_date]
+        table = table[table[date_column] < end_date]
         logger.debug(
             "Observations before {} have been selected for table {}.",
             end_date,
             table_name,
         )
-    # Truncate
-    table["date"] = table["date"].dt.strftime("%Y-%m").astype("datetime64")
+    return table
+
+
+def filter_note_by_delta_time(note, visit_occurrence, time_delta_visit_note):
+    check_columns(df=note, required_columns=["visit_occurrence_id", "note_datetime"])
+    check_columns(
+        df=visit_occurrence,
+        required_columns=["visit_occurrence_id", "date", "stay_type"],
+    )
+    note.dropna(subset=["note_datetime"], inplace=True)
+    logger.debug("Droping observations with missing date in table note.")
+    note["note_datetime"] = note["note_datetime"].astype("datetime64")
+
+    visit_per_type = visit_occurrence[
+        visit_occurrence.stay_type.isin(list(time_delta_visit_note.keys()))
+    ]
+    note_with_date = note.merge(
+        visit_per_type[["visit_occurrence_id", "date", "stay_type"]],
+        on="visit_occurrence_id",
+        how="left",
+    )
+    note_with_date["delta_visit_note"] = (
+        note_with_date["date"] - note_with_date["note_datetime"]
+    ) / np.timedelta64(timedelta(days=365.25))
+    for stay_type, time_delta in time_delta_visit_note.items():
+        note_with_date = note_with_date[
+            ~(
+                (note_with_date.delta_visit_note > time_delta)
+                & (note_with_date.stay_type == stay_type)
+            )
+        ]
+    return note_with_date
+
+
+def truncate_date(table: DataFrame, date_column: str = "date"):
+    table[date_column] = table[date_column].dt.strftime("%Y-%m").astype("datetime64")
     return table
 
 

@@ -14,6 +14,7 @@ from edsteva.probes.utils import (
     prepare_note,
     prepare_visit_detail,
     prepare_visit_occurrence,
+    truncate_date,
 )
 from edsteva.utils.framework import is_koalas, to
 from edsteva.utils.typing import Data
@@ -28,6 +29,9 @@ def compute_completeness(note_predictor):
         "note_type",
         "date",
     ]
+
+    note_predictor = truncate_date(note_predictor)
+
     n_visit_with_note = (
         note_predictor.groupby(
             partition_cols,
@@ -206,6 +210,7 @@ class NoteProbe(BaseProbe):
             "CRH": "crh",
         },
         care_site_ids: List[int] = None,
+        time_delta_visit_note: Dict[str, float] = {"consultation externe": 0.5},
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
@@ -230,6 +235,11 @@ class NoteProbe(BaseProbe):
         note_types : Union[str, Dict[str, str]], optional
         care_site_ids : List[int], optional
             **EXAMPLE**: `[8312056386, 8312027648]`
+        time_delta_visit_note: Dict[str, float], optional
+            A dictionary with `stay_type` as key and time duration $\delta t$ in month as value.
+            For instance if a note is validated at time $t_{note}$ and a visit with `stay_type = "consultation externe"` starts at time $t_{visit}$.
+            We consider that the visit is associated with the note only if $|t_{note} - t_{visit}| \leq \delta t$
+            **EXAMPLE**: `{"consultation externe": 0.5, "hospitalisés": 2, "hospitalisation incomplète": 0.5}`
         """
         visit_occurrence = prepare_visit_occurrence(
             data,
@@ -245,7 +255,7 @@ class NoteProbe(BaseProbe):
             care_site_relationship,
         )
 
-        note = prepare_note(data, note_types)
+        note = prepare_note(data, note_types, visit_occurrence, time_delta_visit_note)
 
         hospital_visit = get_hospital_visit(note, visit_occurrence, care_site)
         hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
