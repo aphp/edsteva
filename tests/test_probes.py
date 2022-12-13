@@ -5,7 +5,7 @@ import pytest
 
 from edsteva import improve_performances
 from edsteva.io import SyntheticData
-from edsteva.probes import NoteProbe, VisitProbe
+from edsteva.probes import ConditionProbe, NoteProbe, VisitProbe
 
 pytestmark = pytest.mark.filterwarnings("ignore")
 
@@ -22,6 +22,8 @@ params = [
         care_site_ids=None,
         note_types={"ALL": ".*"},
         stay_types=None,
+        diag_types=None,
+        condition_types={"ALL": ".*"},
         start_date=None,
         end_date=None,
         test_save=False,
@@ -35,6 +37,8 @@ params = [
         care_site_short_names="Hôpital-1",
         note_types="CRH",
         stay_types="hospitalisés",
+        diag_types="DP",
+        condition_types="C",
         start_date="2010-01-03",
         end_date=None,
         test_save=False,
@@ -48,6 +52,8 @@ params = [
         care_site_short_names=["Hôpital-1", "Hôpital-2"],
         stay_types={"ALL": ".*", "HC": "hospitalisés", "Urg": "urgences"},
         note_types={"ALL": ".*", "CRH": "CRH", "Urg": "urg"},
+        diag_types={"ALL": ".*", "DP/DR": "DP|DR"},
+        condition_types={"ALL": ".*", "Cancer": "C"},
         start_date=datetime(2010, 5, 10),
         end_date=datetime(2020, 1, 1),
         test_save=True,
@@ -110,6 +116,28 @@ def test_compute_note_probe(data, params):
         end_date=params["end_date"],
         stay_types=params["stay_types"],
         note_types=params["note_types"],
+        care_site_ids=params["care_site_ids"],
+        care_site_short_names=params["care_site_short_names"],
+    )
+
+
+@pytest.mark.parametrize("data", [data_step, data_rect])
+@pytest.mark.parametrize("params", params)
+def test_compute_condition_probe(data, params):
+    if params["module"] == "koalas":
+        data.convert_to_koalas()
+    elif params["module"] == "pandas":
+        data.reset_to_pandas()
+    condition = ConditionProbe()
+    condition.compute(
+        data=data,
+        only_impute_per_care_site=params["only_impute_per_care_site"],
+        impute_missing_dates=params["impute_missing_dates"],
+        start_date=params["start_date"],
+        end_date=params["end_date"],
+        stay_types=params["stay_types"],
+        diag_types=params["diag_types"],
+        condition_types=params["condition_types"],
         care_site_ids=params["care_site_ids"],
         care_site_short_names=params["care_site_short_names"],
     )

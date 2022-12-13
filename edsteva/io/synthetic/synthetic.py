@@ -67,6 +67,27 @@ OTHER_VISIT_COLUMNS = dict(
     ],
 )
 
+OTHER_CONDITION_COLUMNS = dict(
+    condition_source_value=[
+        ("A001", 0.6),
+        ("C001", 0.25),
+        ("D001", 0.15),
+    ],
+    condition_status_source_value=[
+        ("DP", 0.2),
+        ("DR", 0.3),
+        ("DAS", 0.4),
+        ("DAD", 0.1),
+    ],
+    row_status_source_value=[
+        ("Actif", 0.999),
+        ("supprimé", 0.001),
+    ],
+    cdm_source=[
+        ("ORBIS", 1.0),
+    ],
+)
+
 OTHER_DETAIL_COLUMNS = dict(
     visit_detail_type_source_value=[
         ("PASS", 0.8),
@@ -274,6 +295,8 @@ class SyntheticData:
     module: str = "pandas"
     mean_visit: int = 1000
     id_visit_col: str = "visit_occurrence_id"
+    id_visit_source_col: str = "visit_occurrence_source_value"
+    id_condition_col: str = "condition_occurrence_id"
     id_detail_col: str = "visit_detail_id"
     id_note_col: str = "note_id"
     note_type_col: str = "note_class_source_value"
@@ -283,6 +306,9 @@ class SyntheticData:
     t_max: datetime = datetime(2020, 1, 1)
     other_visit_columns: Dict = field(default_factory=lambda: OTHER_VISIT_COLUMNS)
     other_detail_columns: Dict = field(default_factory=lambda: OTHER_DETAIL_COLUMNS)
+    other_condition_columns: Dict = field(
+        default_factory=lambda: OTHER_CONDITION_COLUMNS
+    )
     other_note_columns: Dict = field(default_factory=lambda: OTHER_NOTE_COLUMNS)
     seed: int = None
     mode: str = "step"
@@ -293,18 +319,21 @@ class SyntheticData:
 
         care_site, fact_relationship, hospital_ids = self._generate_care_site_tables()
         visit_occurrence = self._generate_visit_occurrence(hospital_ids)
+        condition_occurrence = self._generate_condition_occurrence(visit_occurrence)
         visit_detail = self._generate_visit_detail(visit_occurrence)
         note = self._generate_note(hospital_ids, visit_occurrence)
 
         self.available_tables = [
             "care_site",
             "visit_occurrence",
+            "condition_occurrence",
             "fact_relationship",
             "visit_detail",
             "note",
         ]
         self.care_site = care_site
         self.visit_occurrence = visit_occurrence
+        self.condition_occurrence = condition_occurrence
         self.fact_relationship = fact_relationship
         self.visit_detail = visit_detail
         self.note = note
@@ -351,13 +380,37 @@ class SyntheticData:
                 )
             visit_occurrence.append(vo_stays)
 
-        visit_occurrence = pd.concat(visit_occurrence)
-        visit_occurrence = add_other_columns(
-            visit_occurrence, self.other_visit_columns
-        ).reset_index(drop=True)
+        visit_occurrence = pd.concat(visit_occurrence).reset_index(drop=True)
         visit_occurrence[self.id_visit_col] = range(visit_occurrence.shape[0])
+        visit_occurrence[self.id_visit_source_col] = range(visit_occurrence.shape[0])
+        visit_occurrence = add_other_columns(visit_occurrence, self.other_visit_columns)
 
         return visit_occurrence
+
+    def _generate_condition_occurrence(self, visit_occurrence):
+        condition_occurrence = []
+        cols = visit_occurrence.columns
+        col_to_idx = dict(zip(cols, range(len(cols))))
+
+        for visit in visit_occurrence.values:
+            n_condition = np.random.randint(1, 5)
+            visit_id = visit[col_to_idx["visit_occurrence_id"]]
+            condition = pd.DataFrame(
+                {
+                    self.id_visit_col: [visit_id] * n_condition,
+                }
+            )
+            condition_occurrence.append(condition)
+
+        condition_occurrence = pd.concat(condition_occurrence).reset_index(drop=True)
+        condition_occurrence[self.id_condition_col] = range(
+            condition_occurrence.shape[0]
+        )
+        condition_occurrence = add_other_columns(
+            condition_occurrence, self.other_condition_columns
+        )
+
+        return condition_occurrence
 
     def _generate_visit_detail(self, visit_occurrence):
         t_min = self.t_min.timestamp()
@@ -392,11 +445,13 @@ class SyntheticData:
                 }
             )
             visit_detail.append(detail)
-        visit_detail = add_other_columns(
-            pd.concat(visit_detail),
-            self.other_detail_columns,
-        ).reset_index(drop=True)
+
+        visit_detail = pd.concat(visit_detail).reset_index(drop=True)
         visit_detail[self.id_detail_col] = range(visit_detail.shape[0])
+        visit_detail = add_other_columns(
+            visit_detail,
+            self.other_detail_columns,
+        )
 
         return visit_detail
 
@@ -439,18 +494,19 @@ class SyntheticData:
                     )
                 notes.append(note)
 
-        notes = pd.concat(notes)
-        notes = add_other_columns(notes, self.other_note_columns).reset_index(drop=True)
+        notes = pd.concat(notes).reset_index(drop=True)
         notes[id_note_col] = range(notes.shape[0])
+        notes = add_other_columns(notes, self.other_note_columns)
 
         return notes
 
     def convert_to_koalas(self):
         if isinstance(self.care_site, ks.frame.DataFrame):
-            print("Module is already koalas!")
+            print("Module is already Koalas!")
             return
         self.care_site = ks.DataFrame(self.care_site)
         self.visit_occurrence = ks.DataFrame(self.visit_occurrence)
+        self.condition_occurrence = ks.DataFrame(self.condition_occurrence)
         self.fact_relationship = ks.DataFrame(self.fact_relationship)
         self.visit_detail = ks.DataFrame(self.visit_detail)
         self.note = ks.DataFrame(self.note)
@@ -458,10 +514,11 @@ class SyntheticData:
 
     def reset_to_pandas(self):
         if isinstance(self.care_site, pd.core.frame.DataFrame):
-            print("Module is already pandas!")
+            print("Module is already Pandas!")
             return
         self.care_site = self.care_site.to_pandas()
         self.visit_occurrence = self.visit_occurrence.to_pandas()
+        self.condition_occurrence = self.condition_occurrence.to_pandas()
         self.fact_relationship = self.fact_relationship.to_pandas()
         self.visit_detail = self.visit_detail.to_pandas()
         self.note = self.note.to_pandas()
