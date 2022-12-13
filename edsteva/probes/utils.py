@@ -31,6 +31,7 @@ def prepare_visit_occurrence(data, start_date, end_date, stay_types):
             "visit_start_datetime",
             "care_site_id",
             "row_status_source_value",
+            "visit_occurrence_source_value",
         ]
     ]
     visit_occurrence = visit_occurrence.rename(
@@ -57,6 +58,97 @@ def prepare_visit_occurrence(data, start_date, end_date, stay_types):
         )
 
     return visit_occurrence
+
+
+def prepare_condition_occurrence(
+    data: Data,
+    visit_occurrence: DataFrame,
+    extra_data: Data,
+    source: str,
+    diag_types: List[str],
+    condition_types: Dict,
+):
+    if source == "AREM":
+        # Fetch conditions from Data lake
+        I2B2_visit = extra_data.visit_occurrence[
+            ["visit_occurrence_id", "visit_occurrence_source_value"]
+        ]
+        I2B2_condition_occurrence = extra_data.condition_occurrence[
+            [
+                "visit_occurrence_id",
+                "condition_status_source_value",
+                "condition_source_value",
+                "cdm_source",
+            ]
+        ]
+        # Add visit_occurrence_source_value
+        condition_occurrence = I2B2_visit.merge(
+            I2B2_condition_occurrence,
+            on="visit_occurrence_id",
+            how="inner",
+        ).drop(columns="visit_occurrence_id")
+
+    else:
+        condition_occurrence = data.condition_occurrence[
+            [
+                "visit_occurrence_id",
+                "condition_source_value",
+                "condition_status_source_value",
+                "row_status_source_value",
+                "cdm_source",
+            ]
+        ]
+        condition_occurrence = get_valid_observations(
+            table=condition_occurrence,
+            table_name="condition_occurrence",
+            valid_naming="Actif",
+        )
+
+    # Keep source observations
+    condition_occurrence = condition_occurrence[
+        condition_occurrence.cdm_source == source
+    ].drop(columns="cdm_source")
+
+    # Filter diagnostics
+    condition_occurrence = condition_occurrence.rename(
+        columns={"condition_status_source_value": "diag_type"}
+    )
+    if diag_types:
+        condition_occurrence = filter_table_by_type(
+            table=condition_occurrence,
+            table_name="condition_occurrence",
+            type_groups=diag_types,
+            name="diag_type",
+        )
+
+    # Filter conditions
+    condition_occurrence = condition_occurrence.rename(
+        columns={"condition_source_value": "condition_type"}
+    )
+    if condition_types:
+        condition_occurrence = filter_table_by_type(
+            table=condition_occurrence,
+            table_name="condition_occurrence",
+            type_groups=condition_types,
+            name="condition_type",
+        )
+    condition_occurrence = condition_occurrence.drop_duplicates(
+        ["visit_occurrence_id", "diag_type", "condition_type"]
+    )
+    # visit/condition linkage
+    if source == "AREM":
+        # Link with visit_occurrence_source_value
+        condition_occurrence = condition_occurrence.merge(
+            visit_occurrence,
+            on="visit_occurrence_source_value",
+        ).drop(columns="visit_occurrence_source_value")
+    else:
+        condition_occurrence = condition_occurrence.merge(
+            visit_occurrence,
+            on="visit_occurrence_id",
+        )
+
+    return condition_occurrence
 
 
 def prepare_care_site(
