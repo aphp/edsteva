@@ -132,17 +132,21 @@ def prepare_condition_occurrence(
             type_groups=condition_types,
             name="condition_type",
         )
-    condition_occurrence = condition_occurrence.drop_duplicates(
-        ["visit_occurrence_id", "diag_type", "condition_type"]
-    )
+
     # visit/condition linkage
     if source == "AREM":
         # Link with visit_occurrence_source_value
+        condition_occurrence = condition_occurrence.drop_duplicates(
+            ["visit_occurrence_source_value", "diag_type", "condition_type"]
+        )
         condition_occurrence = condition_occurrence.merge(
             visit_occurrence,
             on="visit_occurrence_source_value",
         ).drop(columns="visit_occurrence_source_value")
     else:
+        condition_occurrence = condition_occurrence.drop_duplicates(
+            ["visit_occurrence_id", "diag_type", "condition_type"]
+        )
         condition_occurrence = condition_occurrence.merge(
             visit_occurrence,
             on="visit_occurrence_id",
