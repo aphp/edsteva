@@ -177,7 +177,11 @@ class ConditionProbe(BaseProbe):
         care_site_levels : List[str], optional
             **EXAMPLE**: `["Hospital", "Pole", "UF"]`
         stay_types : Union[str, Dict[str, str]], optional
-            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés`
+            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés"`
+        diag_types : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "DP\DR": "DP|DR"}` or `"DP"`
+        condition_types : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Pulmonary_embolism": "I26"}`
         care_site_ids : List[int], optional
             **EXAMPLE**: `[8312056386, 8312027648]`
         care_site_short_names : List[str], optional
