@@ -38,7 +38,6 @@ class MissingTableError(Exception):
     def __init__(
         self,
         required_tables: Union[List, dict],
-        data_name: str = "",
     ):
 
         if isinstance(required_tables, dict):
@@ -50,13 +49,7 @@ class MissingTableError(Exception):
             to_display_per_concept = [f"- {concept}" for concept in required_tables]
         str_to_display = "\n".join(to_display_per_concept)
 
-        if data_name:
-            data_name = f" {data_name} "
-        message = (
-            f"The{data_name}Data is missing some tables, "
-            "namely:\n"
-            f"{str_to_display}"
-        )
+        message = f"Data is missing some tables, namely:\n {str_to_display}"
 
         super().__init__(message)
 
@@ -68,8 +61,8 @@ def check_columns(df: DataFrame, required_columns: List[str], df_name: str = "")
         raise MissingColumnError(missing_columns, df_name=df_name)
 
 
-def check_tables(data: Data, required_tables: List[str], data_name: str = ""):
+def check_tables(data: Data, required_tables: List[str]):
     present_tables = set(data.available_tables)
     missing_tables = set(required_tables) - present_tables
     if missing_tables:
-        raise MissingTableError(missing_tables, data_name=data_name)
+        raise MissingTableError(missing_tables)

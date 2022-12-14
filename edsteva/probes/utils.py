@@ -24,6 +24,18 @@ UNSUPPORTED_CARE_SITE_LEVEL_NAMES = {
 
 
 def prepare_visit_occurrence(data, start_date, end_date, stay_types):
+    check_columns(
+        data.visit_occurrence,
+        required_columns=[
+            "visit_occurrence_id",
+            "visit_source_value",
+            "visit_start_datetime",
+            "care_site_id",
+            "row_status_source_value",
+            "visit_occurrence_source_value",
+        ],
+        df_name="visit_occurrence",
+    )
     visit_occurrence = data.visit_occurrence[
         [
             "visit_occurrence_id",

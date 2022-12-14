@@ -1,10 +1,11 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from databricks import koalas as ks
+from loguru import logger
 
 from edsteva.io.synthetic.care_site import generate_care_site_tables
 from edsteva.io.synthetic.utils import recursive_items
@@ -15,6 +16,8 @@ from edsteva.io.synthetic.visit import (
     generate_around_t1,
     generate_before_t0,
 )
+
+DataFrame = Union[ks.DataFrame, pd.DataFrame]
 
 CARE_SITE_STRUCTURE = {
     "Hôpital-1": {
@@ -323,20 +326,14 @@ class SyntheticData:
         visit_detail = self._generate_visit_detail(visit_occurrence)
         note = self._generate_note(hospital_ids, visit_occurrence)
 
-        self.available_tables = [
-            "care_site",
-            "visit_occurrence",
-            "condition_occurrence",
-            "fact_relationship",
-            "visit_detail",
-            "note",
-        ]
         self.care_site = care_site
         self.visit_occurrence = visit_occurrence
         self.condition_occurrence = condition_occurrence
         self.fact_relationship = fact_relationship
         self.visit_detail = visit_detail
         self.note = note
+
+        self.list_available_tables()
 
         if self.module == "koalas":
             self.convert_to_koalas()
@@ -523,3 +520,18 @@ class SyntheticData:
         self.visit_detail = self.visit_detail.to_pandas()
         self.note = self.note.to_pandas()
         self.module = "pandas"
+
+    def delete_table(self, table_name: str) -> None:
+        if hasattr(self, table_name):
+            delattr(self, table_name)
+            logger.info("Table {} has been deleted", table_name)
+        else:
+            logger.info("Table {} does not exist", table_name)
+        self.list_available_tables()
+
+    def list_available_tables(self) -> List[str]:
+        available_tables = []
+        for key, item in self.__dict__.items():
+            if isinstance(item, DataFrame.__args__):
+                available_tables.append(key)
+        self.available_tables = available_tables

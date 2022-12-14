@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import pytest
 
+from edsteva import CACHE_DIR
 from edsteva.io import SyntheticData
 from edsteva.metrics import error, error_after_t0
 from edsteva.models.rectangle_function import RectangleFunction
@@ -47,6 +48,16 @@ def test_step_function_visit_occurence():
         start_date=data.t_min,
         end_date=data.t_max,
     )
+
+    # Test Cache saving
+    visit_model.save()
+    assert os.path.isfile(CACHE_DIR / "edsteva" / "models" / "stepfunction.pickle")
+    visit_model = StepFunction()
+    visit_model.load()
+    visit_model.delete()
+    assert not os.path.isfile(CACHE_DIR / "edsteva" / "models" / "stepfunction.pickle")
+
+    # Test target saving
     visit_model.save(
         path="test.pickle",
     )

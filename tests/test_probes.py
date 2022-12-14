@@ -3,15 +3,43 @@ from datetime import datetime
 
 import pytest
 
-from edsteva import improve_performances
+from edsteva import CACHE_DIR, improve_performances
 from edsteva.io import SyntheticData
 from edsteva.probes import ConditionProbe, NoteProbe, VisitProbe
+from edsteva.utils.checks import MissingColumnError, MissingTableError
 
 pytestmark = pytest.mark.filterwarnings("ignore")
+
 
 improve_performances()
 data_step = SyntheticData(seed=41, mode="step").generate()
 data_rect = SyntheticData(seed=41, mode="rect").generate()
+data_missing = SyntheticData(seed=41, mode="step").generate()
+
+
+def test_missing_checks():
+    with pytest.raises(TypeError):
+        data_fake = [1, 2, 3]
+        visit = VisitProbe()
+        visit.compute(
+            data=data_fake,
+        )
+    with pytest.raises(MissingColumnError):
+        data_missing.visit_occurrence = data_missing.visit_occurrence.drop(
+            columns="visit_occurrence_id"
+        )
+        visit = VisitProbe()
+        visit.compute(
+            data=data_missing,
+        )
+    with pytest.raises(MissingTableError):
+        data_missing.delete_table("unknown_table")  # Test typo
+        data_missing.delete_table("fact_relationship")
+        visit = VisitProbe()
+        visit.compute(
+            data=data_missing,
+        )
+
 
 params = [
     dict(
@@ -80,7 +108,18 @@ def test_compute_visit_probe(data, params):
         care_site_ids=params["care_site_ids"],
         care_site_short_names=params["care_site_short_names"],
     )
+
     if params["test_save"]:
+        # Test Cache saving
+        visit.save()
+        assert os.path.isfile(CACHE_DIR / "edsteva" / "probes" / "visitprobe.pickle")
+        visit = VisitProbe()
+        visit.load()
+        visit.delete()
+        assert not os.path.isfile(
+            CACHE_DIR / "edsteva" / "probes" / "visitprobe.pickle"
+        )
+
         visit.save(
             path="test.pickle",
         )

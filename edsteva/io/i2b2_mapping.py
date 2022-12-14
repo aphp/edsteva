@@ -16,7 +16,7 @@ from .settings import (
 
 def get_i2b2_table(
     spark_session: SparkSession, db_name: str, db_source: str, table: str
-) -> SparkDataFrame:
+) -> SparkDataFrame:  # pragma: no cover
     """
     Retrieve a Spark table in i2b2 and transform it to fit with OMOP standard.
 
@@ -161,7 +161,9 @@ def get_i2b2_table(
     return df
 
 
-def mapping_dict(mapping: Dict[str, str], Non_renseigne: str) -> FunctionUDF:
+def mapping_dict(
+    mapping: Dict[str, str], Non_renseigne: str
+) -> FunctionUDF:  # pragma: no cover
     """
     Returns a function that maps data according to a mapping dictionnary in a Spark DataFrame.
 

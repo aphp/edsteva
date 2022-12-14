@@ -11,9 +11,6 @@
 </p>
 <p align="center">
 <a href="https://aphp.github.io/edsteva/latest/" target="_blank">
-    <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Tests%20and%20Linting?label=tests&style=flat" alt="Tests">
-</a>
-<a href="https://aphp.github.io/edsteva/latest/" target="_blank">
     <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Documentation?label=docs&style=flat" alt="Documentation">
 </a>
 <a href="https://pypi.org/project/edsteva/" target="_blank">
@@ -97,7 +94,7 @@ color:green Successfully installed edsteva
 We recommend pinning the library version in your projects, or use a strict package manager like [Poetry](https://python-poetry.org/).
 
 ```
-pip install edsteva==0.1.1
+pip install edsteva==0.1.2
 ```
 ## Working example: administrative records relative to visits
 

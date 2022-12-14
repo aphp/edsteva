@@ -85,7 +85,7 @@ def get_uf_visit(
     visit_detail,
     care_site,
     care_site_relationship,
-):
+):  # pragma: no cover
     # Load Orbis note and Uf for Note
     note_orbis = extra_data.orbis_document[
         [
@@ -151,7 +151,7 @@ def get_uf_visit(
     return uf_visit
 
 
-def get_pole_visit(uf_visit, care_site, care_site_relationship):
+def get_pole_visit(uf_visit, care_site, care_site_relationship):  # pragma: no cover
 
     pole_visit = convert_table_to_pole(
         table=uf_visit.drop(columns=["care_site_short_name", "care_site_level"]),
