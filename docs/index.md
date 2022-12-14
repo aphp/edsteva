@@ -1,3 +1,7 @@
+---
+ᴴₒᴴₒᴴₒ: true
+---
+
 !!! Warning "DISCLAIMER"
     EDS-TeVa is intended to be a module of [EDS-Scikit](https://github.com/aphp/EDS-Scikit)
 
