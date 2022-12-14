@@ -1,10 +1,10 @@
 from types import ModuleType
-from typing import Dict, Optional
+from typing import Optional
 
 import pandas as _pandas
 from databricks import koalas as _koalas
 
-from edsteva.utils.typing import DataFrame, DataObject
+from edsteva.utils.typing import DataObject
 
 VALID_FRAMEWORKS = {
     "pandas": _pandas,
@@ -37,16 +37,6 @@ def to(framework: str, obj: DataObject) -> DataObject:
         raise ValueError(f"Unknown framework: {framework}")
 
 
-def dict_to(framework: str, d: Dict[str, DataObject]) -> Dict[str, DataObject]:
-    d_converted = dict()
-    for k, v in d.items():
-        if is_pandas(v) or is_koalas(v):
-            d_converted[k] = to(framework, v)
-        else:
-            d_converted[k] = v
-    return d_converted
-
-
 def pandas(obj: DataObject) -> DataObject:
     if get_framework(obj) is _pandas:
         return obj
@@ -67,12 +57,3 @@ def koalas(obj: DataObject) -> DataObject:
 
     # will raise ValueError if impossible
     return _koalas.from_pandas(obj)
-
-
-def add_unique_id(obj: DataFrame, col_name: str = "id") -> DataFrame:
-    fw = get_framework(obj)
-    if fw == _pandas:
-        obj[col_name] = range(len(obj))
-        return obj
-    else:
-        return obj.koalas.attach_id_column(id_type="distributed", column=col_name)

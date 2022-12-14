@@ -1,4 +1,5 @@
 import os
+from functools import partial
 
 import pandas as pd
 import pytest
@@ -10,6 +11,7 @@ from edsteva.models.rectangle_function import RectangleFunction
 from edsteva.models.step_function import StepFunction
 from edsteva.models.step_function import algos as step_algos
 from edsteva.probes import NoteProbe, VisitProbe
+from edsteva.utils.loss_functions import l1_loss
 from edsteva.viz.dashboards import estimates_dashboard, predictor_dashboard
 from edsteva.viz.plots import (
     plot_estimates_densities,
@@ -43,6 +45,13 @@ def test_step_function_visit_occurence():
         start_date=data.t_min,
         end_date=data.t_max,
     )
+
+    loss_l1 = partial(step_algos.loss_minimization, loss_function=l1_loss)
+    visit_model.fit(
+        probe=visit,
+        algo=loss_l1,
+    )
+
     visit_model.fit(
         probe=visit,
         start_date=data.t_min,
