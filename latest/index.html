@@ -94,7 +94,8 @@
             
             
 <p><strong>New features: </strong>
-Check out the new <a class="autorefs autorefs-internal" href="components/model/#available-models"><strong>RectangleModel</strong></a> !</p>
+Check out the new <a class="autorefs autorefs-internal" href="components/model/#available-models"><strong>RectangleModel</strong></a> !
+Check out the new <a class="autorefs autorefs-internal" href="components/probe/#available-probes"><strong>ConditionProbe</strong></a> !</p>
 
           </div>
           
@@ -1378,6 +1379,8 @@ Check out the new <a class="autorefs autorefs-internal" href="components/model/#
         
           
         
+          
+        
       
       
         
@@ -1408,6 +1411,20 @@ Check out the new <a class="autorefs autorefs-internal" href="components/model/#
     <li class="md-nav__item">
       <a href="reference/probes/base/" class="md-nav__link">
         base
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/probes/condition/" class="md-nav__link">
+        condition
       </a>
     </li>
   
@@ -2263,14 +2280,11 @@ Check out the new <a class="autorefs autorefs-internal" href="components/model/#
   <a href="https://aphp.github.io/edsteva/latest/"><img src="https://aphp.github.io/edsteva/latest/assets/logo/edsteva_logo_small.svg" alt="EDS-TeVa"></a>
 </p>
 <p align="center" style="font-size:35px">
-    EDS-TeVa <a href="https://mybinder.org/v2/gh/aphp/edsteva/HEAD?filepath=notebooks%2Fsynthetic_data.ipynb" target="_blank">
+    EDS-TeVa <a href="https://mybinder.org/v2/gh/aphp/edsteva/HEAD?labpath=notebooks%2Fsynthetic_data.ipynb" target="_blank">
     <img src="https://mybinder.org/badge_logo.svg" alt="Documentation">
 </a>
 </p>
 <p align="center">
-<a href="https://aphp.github.io/edsteva/latest/" target="_blank">
-    <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Tests%20and%20Linting?label=tests&style=flat" alt="Tests">
-</a>
 <a href="https://aphp.github.io/edsteva/latest/" target="_blank">
     <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Documentation?label=docs&style=flat" alt="Documentation">
 </a>
@@ -2346,7 +2360,7 @@ Check out the new <a class="autorefs autorefs-internal" href="components/model/#
 </div>
 
 <p>We recommend pinning the library version in your projects, or use a strict package manager like <a href="https://python-poetry.org/">Poetry</a>.</p>
-<div class="highlight"><pre><span></span><code>pip install edsteva==0.1.1
+<div class="highlight"><pre><span></span><code>pip install edsteva==0.1.2
 </code></pre></div>
 <h2 id="working-example-administrative-records-relative-to-visits">Working example: administrative records relative to visits</h2>
 <p>Let's consider a basic category of data: administrative records relative to visits. Visits are characterized by a stay type (full hospitalisation, emergency, consultation, etc.). In this example, the objective is to estimate the availability of visits records with respect to time, care site and stay type.</p>
@@ -2728,7 +2742,7 @@ Interactive dashboard is available <a href="assets/charts/interactive_fitted_vis
 <div class="tabbed-set tabbed-alternate" data-tabs="3:3"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Probe</label><label for="__tabbed_3_2">Model</label><label for="__tabbed_3_3">Visualization</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">VisitProbe</label><label for="__tabbed_4_2">NoteProbe</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:3"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><input id="__tabbed_4_3" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">VisitProbe</label><label for="__tabbed_4_2">NoteProbe</label><label for="__tabbed_4_3">ConditionProbe</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>The <a class="autorefs autorefs-internal" href="reference/probes/visit/#edsteva.probes.visit.VisitProbe"><code>VisitProbe</code></a> computes <span class="arithmatex">\(c_{visit}(t)\)</span> the availability of administrative data related to visits for each care site and each stay type according to time:</p>
@@ -2903,6 +2917,108 @@ c_{note}(t) = \frac{n_{with\,doc}(t)}{n_{visit}(t)}
 <td align="left">Care site 3</td>
 <td align="left">'Urg_Hospit'</td>
 <td align="left">'CR Passage Urgences'</td>
+<td align="left">2022-02-01</td>
+<td align="left">9746.0</td>
+<td align="left">0.769</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<p>The <a class="autorefs autorefs-internal" href="reference/probes/condition/#edsteva.probes.condition.ConditionProbe"><code>ConditionProbe</code></a> computes <span class="arithmatex">\(c_{condition}(t)\)</span> the availability of administrative data related to visits with at least one ICD-10 code recorded for each care site according to time:</p>
+<div class="arithmatex">\[
+c_{condition}(t) = \frac{n_{condition}(t)}{n_{99}}
+\]</div>
+<p>Where <span class="arithmatex">\(n_{condition}(t)\)</span> is the number of stays with at least one ICD-10 code recorded, <span class="arithmatex">\(t\)</span> is the month and <span class="arithmatex">\(n_{99}\)</span> is the <span class="arithmatex">\(99^{th}\)</span> percentile of <span class="arithmatex">\(n_{condition}(t)\)</span>.</p>
+<div class="admonition info">
+<p>If the <span class="arithmatex">\(99^{th}\)</span> percentile <span class="arithmatex">\(n_{99}\)</span> is equal to 0, we consider that the completeness predictor <span class="arithmatex">\(c(t)\)</span> is also equal to 0.</p>
+</div>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">edsteva.probes</span> <span class="kn">import</span> <span class="n">VisitProbe</span>
+
+<span class="n">condition</span> <span class="o">=</span> <span class="n">ConditionProbe</span><span class="p">()</span>
+<span class="n">condition</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">,</span>
+    <span class="n">stay_types</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;All&quot;</span><span class="p">:</span> <span class="s2">&quot;.*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Hospit&quot;</span><span class="p">:</span> <span class="s2">&quot;hospitalisés&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">diag_types</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;All&quot;</span><span class="p">:</span> <span class="s2">&quot;.*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DP/DR&quot;</span><span class="p">:</span> <span class="s2">&quot;DP|DR&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">condition_types</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;All&quot;</span><span class="p">:</span> <span class="s2">&quot;.*&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Pulmonary_embolism&quot;</span><span class="p">:</span> <span class="s2">&quot;I26&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="n">condition</span><span class="o">.</span><span class="n">predictor</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th align="left">care_site_level</th>
+<th align="left">care_site_id</th>
+<th align="left">care_site_short_name</th>
+<th align="left">stay_type</th>
+<th align="left">diag_type</th>
+<th align="left">condition_type</th>
+<th align="left">date</th>
+<th align="left">n_visit</th>
+<th align="left">c</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Unité Fonctionnelle (UF)</td>
+<td align="left">8312056386</td>
+<td align="left">Care site 1</td>
+<td align="left">'All'</td>
+<td align="left">'All'</td>
+<td align="left">'Pulmonary_embolism'</td>
+<td align="left">2019-05-01</td>
+<td align="left">233.0</td>
+<td align="left">0.841</td>
+</tr>
+<tr>
+<td align="left">Unité Fonctionnelle (UF)</td>
+<td align="left">8312056386</td>
+<td align="left">Care site 1</td>
+<td align="left">'All'</td>
+<td align="left">'DP/DR'</td>
+<td align="left">'Pulmonary_embolism'</td>
+<td align="left">2021-04-01</td>
+<td align="left">393.0</td>
+<td align="left">0.640</td>
+</tr>
+<tr>
+<td align="left">Pôle/DMU</td>
+<td align="left">8312027648</td>
+<td align="left">Care site 2</td>
+<td align="left">'Hospit'</td>
+<td align="left">'All'</td>
+<td align="left">'Pulmonary_embolism'</td>
+<td align="left">2011-03-01</td>
+<td align="left">204.0</td>
+<td align="left">0.497</td>
+</tr>
+<tr>
+<td align="left">Pôle/DMU</td>
+<td align="left">8312027648</td>
+<td align="left">Care site 2</td>
+<td align="left">'All'</td>
+<td align="left">'All'</td>
+<td align="left">'All'</td>
+<td align="left">2018-08-01</td>
+<td align="left">22.0</td>
+<td align="left">0.274</td>
+</tr>
+<tr>
+<td align="left">Hôpital</td>
+<td align="left">8312022130</td>
+<td align="left">Care site 3</td>
+<td align="left">'Hospit'</td>
+<td align="left">'DP/DR'</td>
+<td align="left">'Pulmonary_embolism'</td>
 <td align="left">2022-02-01</td>
 <td align="left">9746.0</td>
 <td align="left">0.769</td>
@@ -3385,6 +3501,9 @@ An example is available <a href="assets/charts/interactive_fitted_visit.html">he
         <script src="assets/termynal/termynal.js"></script>
       
     
+    
+      <link rel="stylesheet" href="assets/stylesheets/extra.0d2c79a8.min.css">
+      <script src="assets/javascripts/extra/bundle.5f09fbc3.min.js" defer></script>
     
   
         <script>
