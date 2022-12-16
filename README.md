@@ -12,7 +12,7 @@
 
 <p align="center">
 <a href="https://aphp.github.io/edsteva/latest/" target="_blank">
-    <img src="https://img.shields.io/github/workflow/status/aphp/edsteva/Documentation?label=docs&style=flat" alt="Documentation">
+    <img src="https://img.shields.io/github/actions/workflow/status/aphp/edsteva/documentation.yaml?branch=main&label=docs&style=flat" alt="Documentation">
 </a>
 <a href="https://pypi.org/project/edsteva/" target="_blank">
     <img src="https://img.shields.io/pypi/v/edsteva?color=blue&style=flat" alt="PyPI">
