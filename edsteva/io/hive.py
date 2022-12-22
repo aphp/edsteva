@@ -8,6 +8,8 @@ from pyspark.sql import DataFrame as SparkDataFrame
 from pyspark.sql import SparkSession
 from pyspark.sql.types import LongType, StructField, StructType
 
+from edsteva import koalas_options
+
 from . import settings
 from .i2b2_mapping import get_i2b2_table
 
@@ -100,6 +102,7 @@ class HiveData:  # pragma: no cover
         if spark_session is not None:
             self.spark_session = spark_session
         else:
+            koalas_options()
             logger.warning(
                 """
                 To improve performances when using Spark and Koalas, please call `edsteva.improve_performances()`
