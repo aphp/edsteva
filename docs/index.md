@@ -478,7 +478,7 @@ The working example above describes the canonical usage workflow. However, you w
 
     === "NoteProbe"
 
-        The [``NoteProbe``][edsteva.probes.note.NoteProbe] computes $c_{note}(t)$ the availability of clinical documents linked to patients' visits for each care site, stay type and note type according to time:
+        The [``NoteProbe``][edsteva.probes.note.NoteProbe] computes $c_{note}(t)$ the availability of clinical documents linked to patients' administrative visit for each care site, stay type and note type according to time:
 
         $$
         c_{note}(t) = \frac{n_{with\,doc}(t)}{n_{visit}(t)}
@@ -521,13 +521,16 @@ The working example above describes the canonical usage workflow. However, you w
 
     === "ConditionProbe"
 
-        The [``ConditionProbe``][edsteva.probes.condition.ConditionProbe] computes $c_{condition}(t)$ the availability of claim data linked to patients' stays:
+        The [``ConditionProbe``][edsteva.probes.condition.ConditionProbe] computes $c_{condition}(t)$ the availability of claim data in patients' administrative visit for each care site, stay type, diag type and condition type according to time:
 
         $$
         c_{condition}(t) = \frac{n_{with\,condition}(t)}{n_{visit}(t)}
         $$
 
-        Where $n_{visit}(t)$ is the number of stays recorded, $n_{with\,condition}$ the number of stays having at least one claim code (e.g. ICD-10) recorded and $t$ is the month.
+        Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,condition}$ the number of stays having at least one claim code (e.g. ICD-10) recorded and $t$ is the month.
+
+        !!!info ""
+            If the number of visits $n_{visit}(t)$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
 
         !!!Warning "Care site level"
             This probe is only available at hospital level.
