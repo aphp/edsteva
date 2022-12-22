@@ -100,13 +100,13 @@ def get_hospital_visit(condition_occurrence, visit_occurrence, care_site, source
 
 class ConditionProbe(BaseProbe):
     r"""
-    The ``ConditionProbe`` computes $c(t)$ the availability of claim data linked to patients' stays:
+    The [``ConditionProbe``][edsteva.probes.condition.ConditionProbe] computes $c_{condition}(t)$ the availability of claim data in patients' administrative stay:
 
     $$
-    c(t) = \frac{n_{with\,condition}(t)}{n_{visit}(t)}
+    c_{condition}(t) = \frac{n_{with\,condition}(t)}{n_{visit}(t)}
     $$
 
-    Where $n_{visit}(t)$ is the number of stays recorded, $n_{with\,condition}$ the number of stays having at least one claim code recorded and $t$ is the month.
+    Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,condition}$ the number of stays having at least one claim code (e.g. ICD-10) recorded and $t$ is the month.
 
     Attributes
     ----------

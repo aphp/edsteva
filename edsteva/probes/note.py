@@ -174,7 +174,7 @@ def get_pole_visit(uf_visit, care_site, care_site_relationship):  # pragma: no c
 
 class NoteProbe(BaseProbe):
     r"""
-    The ``NoteProbe`` computes $c(t)$ the availability of clinical documents linked to patients' visits:
+    The ``NoteProbe`` computes $c(t)$ the availability of clinical documents linked to patients' administrative visit:
 
     $$
     c(t) = \frac{n_{with\,doc}(t)}{n_{visit}(t)}

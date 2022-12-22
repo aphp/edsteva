@@ -159,7 +159,7 @@ We list hereafter the Probes that have already been implemented in the library.
 
 === "NoteProbe"
 
-    The [``NoteProbe``][edsteva.probes.note.NoteProbe] computes $c_{note}(t)$ the availability of clinical documents linked to patients' visits:
+    The [``NoteProbe``][edsteva.probes.note.NoteProbe] computes $c_{note}(t)$ the availability of clinical documents linked to patients' administrative visit for each care site, stay type and note type according to time:
 
     $$
     c_{note}(t) = \frac{n_{with\,doc}(t)}{n_{visit}(t)}
@@ -194,21 +194,24 @@ We list hereafter the Probes that have already been implemented in the library.
 
     | care_site_level          | care_site_id | care_site_short_name | stay_type    | note_type             | date       | n_visit | c      |
     | :----------------------- | :----------- | :------------------- | :----------- | :-------------------- | :--------- | :------ | :----- |
-    | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg_Hospit' | 'All'                 | 2019-05-01 | 233.0   | '0.841 |
+    | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 'All'                 | 2019-05-01 | 233.0   | '0.841 |
     | Unité Fonctionnelle (UF) | 8653815660   | Care site 1          | 'All'        | 'CRH'                 | 2011-04-01 | 393.0   | 0.640  |
-    | Pôle/DMU                 | 8312027648   | Care site 2          | 'Urg'        | 'CRH'                 | 2021-03-01 | 204.0   | 0.497  |
+    | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 'CRH'                 | 2021-03-01 | 204.0   | 0.497  |
     | Pôle/DMU                 | 8312056379   | Care site 2          | 'All'        | 'Ordonnance'          | 2018-08-01 | 22.0    | 0.274  |
-    | Hôpital                  | 8312022130   | Care site 3          | 'Hospit'     | 'CR Passage Urgences' | 2022-02-01 | 9746.0  | 0.769  |
+    | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 'CR Passage Urgences' | 2022-02-01 | 9746.0  | 0.769  |
 
 === "ConditionProbe"
 
-    The [``ConditionProbe``][edsteva.probes.condition.ConditionProbe] computes $c_{condition}(t)$ the availability of claim data linked to patients' stays:
+    The [``ConditionProbe``][edsteva.probes.condition.ConditionProbe] computes $c_{condition}(t)$ the availability of claim data in patients' administrative visit for each care site, stay type, diag type and condition type according to time:
 
     $$
     c_{condition}(t) = \frac{n_{with\,condition}(t)}{n_{visit}(t)}
     $$
 
-    Where $n_{visit}(t)$ is the number of stays recorded, $n_{with\,condition}$ the number of stays having at least one claim code (e.g. ICD-10) recorded and $t$ is the month.
+    Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,condition}$ the number of stays having at least one claim code (e.g. ICD-10) recorded and $t$ is the month.
+
+    !!!info ""
+        If the number of visits $n_{visit}(t)$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
 
     !!!Warning "Care site level"
         This probe is only available at hospital level.
