@@ -2,17 +2,15 @@ from datetime import datetime
 from typing import Dict, List, Union
 
 import pandas as pd
+from loguru import logger
 
 from edsteva.probes.base import BaseProbe
 from edsteva.probes.utils import (
     CARE_SITE_LEVEL_NAMES,
     concatenate_predictor_by_level,
-    convert_table_to_pole,
-    convert_table_to_uf,
     hospital_only,
     prepare_care_site,
     prepare_condition_occurrence,
-    prepare_visit_detail,
     prepare_visit_occurrence,
 )
 from edsteva.utils.checks import check_tables
@@ -20,7 +18,7 @@ from edsteva.utils.framework import is_koalas, to
 from edsteva.utils.typing import Data
 
 
-def compute_completeness(visit_predictor):
+def compute_completeness(condition_predictor):
 
     partition_cols = [
         "care_site_level",
@@ -31,47 +29,67 @@ def compute_completeness(visit_predictor):
         "condition_type",
         "date",
     ]
-    n_visit = (
-        visit_predictor.groupby(
+    n_visit_with_condition = (
+        condition_predictor.groupby(
             partition_cols,
             as_index=False,
             dropna=False,
         )
-        .agg({"visit_id": "count"})
-        .rename(columns={"visit_id": "n_visit"})
+        .agg({"has_condition": "count"})
+        .rename(columns={"has_condition": "n_visit_with_condition"})
     )
+    partition_cols = list(set(partition_cols) - {"diag_type", "condition_type"})
 
-    n_visit = to("pandas", n_visit)
-
-    partition_cols = list(set(partition_cols) - {"date"})
-    q_99_visit = (
-        n_visit.groupby(
+    n_visit = (
+        condition_predictor.groupby(
             partition_cols,
             as_index=False,
             dropna=False,
-        )[["n_visit"]]
-        .quantile(q=0.99)
-        .rename(columns={"n_visit": "q_99_visit"})
+        )
+        .agg({"visit_id": "nunique"})
+        .rename(columns={"visit_id": "n_visit"})
     )
 
-    visit_predictor = n_visit.merge(
-        q_99_visit,
+    condition_predictor = n_visit_with_condition.merge(
+        n_visit,
         on=partition_cols,
     )
 
-    visit_predictor["c"] = visit_predictor["q_99_visit"].where(
-        visit_predictor["q_99_visit"] == 0,
-        visit_predictor["n_visit"] / visit_predictor["q_99_visit"],
+    condition_predictor = to("pandas", condition_predictor)
+
+    condition_predictor["c"] = condition_predictor["n_visit"].where(
+        condition_predictor["n_visit"] == 0,
+        condition_predictor["n_visit_with_condition"] / condition_predictor["n_visit"],
     )
-    visit_predictor = visit_predictor.drop(columns="q_99_visit")
+    condition_predictor = condition_predictor.drop(columns=["n_visit_with_condition"])
 
-    return visit_predictor
+    return condition_predictor
 
 
-def get_hospital_visit(condition_occurrence, care_site):
-    hospital_visit = condition_occurrence.rename(
-        columns={"visit_occurrence_id": "visit_id"}
-    )
+def get_hospital_visit(condition_occurrence, visit_occurrence, care_site, source):
+    # visit/condition linkage
+    if source == "AREM":
+        # Link with visit_occurrence_source_value
+        condition_hospital = condition_occurrence.drop_duplicates(
+            ["visit_occurrence_source_value", "diag_type", "condition_type"]
+        )
+        condition_hospital["has_condition"] = True
+        hospital_visit = condition_hospital.merge(
+            visit_occurrence,
+            on="visit_occurrence_source_value",
+            how="left",
+        ).drop(columns="visit_occurrence_source_value")
+    else:
+        condition_hospital = condition_occurrence.drop_duplicates(
+            ["visit_occurrence_id", "diag_type", "condition_type"]
+        )
+        condition_hospital["has_condition"] = True
+        hospital_visit = condition_hospital.merge(
+            visit_occurrence,
+            on="visit_occurrence_id",
+            how="left",
+        )
+    hospital_visit = hospital_visit.rename(columns={"visit_occurrence_id": "visit_id"})
     hospital_visit = hospital_visit.merge(care_site, on="care_site_id")
 
     if is_koalas(hospital_visit):
@@ -80,53 +98,15 @@ def get_hospital_visit(condition_occurrence, care_site):
     return hospital_visit
 
 
-def get_uf_visit(condition_occurrence, visit_detail, care_site, care_site_relationship):
-    visit_detail = visit_detail.merge(
-        condition_occurrence[
-            ["visit_occurrence_id", "stay_type", "diag_type", "condition_type"]
-        ],
-        on="visit_occurrence_id",
-    ).drop(columns="visit_occurrence_id")
-
-    uf_visit = convert_table_to_uf(
-        table=visit_detail,
-        table_name="visit_detail",
-        care_site_relationship=care_site_relationship,
-    )
-    uf_visit = uf_visit.merge(care_site, on="care_site_id")
-    uf_visit = uf_visit[uf_visit["care_site_level"] == CARE_SITE_LEVEL_NAMES["UF"]]
-    if is_koalas(uf_visit):
-        uf_visit.spark.cache()
-
-    return uf_visit
-
-
-def get_pole_visit(uf_visit, care_site, care_site_relationship):
-    pole_visit = convert_table_to_pole(
-        table=uf_visit.drop(columns=["care_site_short_name", "care_site_level"]),
-        table_name="uf_visit",
-        care_site_relationship=care_site_relationship,
-    )
-
-    pole_visit = pole_visit.merge(care_site, on="care_site_id")
-    pole_visit = pole_visit[
-        pole_visit["care_site_level"] == CARE_SITE_LEVEL_NAMES["Pole"]
-    ]
-    if is_koalas(pole_visit):
-        pole_visit.spark.cache()
-
-    return pole_visit
-
-
 class ConditionProbe(BaseProbe):
     r"""
-    The ``ConditionProbe`` computes $c_(t)$ the availability of administrative data related to visits with at least one ICD-10 code recorded for each care site according to time:
+    The ``ConditionProbe`` computes $c(t)$ the availability of claim data linked to patients' stays:
 
     $$
-    c(t) = \frac{n_{condition}(t)}{n_{99}}
+    c(t) = \frac{n_{with\,condition}(t)}{n_{visit}(t)}
     $$
 
-    Where $n_{condition}(t)$ is the number of stays with at least one ICD-10 code recorded, $t$ is the month and $n_{99}$ is the $99^{th}$ percentile of $n_{condition}(t)$.
+    Where $n_{visit}(t)$ is the number of stays recorded, $n_{with\,condition}$ the number of stays having at least one claim code recorded and $t$ is the month.
 
     Attributes
     ----------
@@ -190,16 +170,19 @@ class ConditionProbe(BaseProbe):
 
         check_tables(data=data, required_tables=["condition_occurrence"])
 
+        if not hospital_only(care_site_levels=care_site_levels):
+            logger.warning("Claim data is only available at hospital level")
+            care_site_levels = None
+
         visit_occurrence = prepare_visit_occurrence(
-            data,
-            start_date,
-            end_date,
-            stay_types,
+            data=data,
+            start_date=start_date,
+            end_date=end_date,
+            stay_types=stay_types,
         )
 
         condition_occurrence = prepare_condition_occurrence(
             data=data,
-            visit_occurrence=visit_occurrence,
             extra_data=extra_data,
             source=source,
             diag_types=diag_types,
@@ -207,42 +190,24 @@ class ConditionProbe(BaseProbe):
         )
 
         care_site = prepare_care_site(
-            data,
-            care_site_ids,
-            care_site_short_names,
-            care_site_relationship,
+            data=data,
+            care_site_ids=care_site_ids,
+            care_site_short_names=care_site_short_names,
+            care_site_relationship=care_site_relationship,
         )
 
         hospital_visit = get_hospital_visit(
             condition_occurrence,
+            visit_occurrence,
             care_site,
+            source,
         )
         hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
-        visit_predictor_by_level = {hospital_name: hospital_visit}
+        condition_predictor_by_level = {hospital_name: hospital_visit}
 
-        if not hospital_only(care_site_levels=care_site_levels):
-            visit_detail = prepare_visit_detail(data, start_date, end_date)
-
-            uf_name = CARE_SITE_LEVEL_NAMES["UF"]
-            uf_visit = get_uf_visit(
-                condition_occurrence,
-                visit_detail,
-                care_site,
-                care_site_relationship,
-            )
-            visit_predictor_by_level[uf_name] = uf_visit
-
-            pole_name = CARE_SITE_LEVEL_NAMES["Pole"]
-            pole_visit = get_pole_visit(
-                uf_visit,
-                care_site,
-                care_site_relationship,
-            )
-            visit_predictor_by_level[pole_name] = pole_visit
-
-        visit_predictor = concatenate_predictor_by_level(
-            predictor_by_level=visit_predictor_by_level,
+        condition_predictor = concatenate_predictor_by_level(
+            predictor_by_level=condition_predictor_by_level,
             care_site_levels=care_site_levels,
         )
 
-        return compute_completeness(visit_predictor)
+        return compute_completeness(condition_predictor)

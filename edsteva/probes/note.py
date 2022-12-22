@@ -33,6 +33,7 @@ def compute_completeness(note_predictor):
         note_predictor.groupby(
             partition_cols,
             as_index=False,
+            dropna=False,
         )
         .agg({"has_note": "count"})
         .rename(columns={"has_note": "n_visit_with_note"})
@@ -43,6 +44,7 @@ def compute_completeness(note_predictor):
         note_predictor.groupby(
             partition_cols,
             as_index=False,
+            dropna=False,
         )
         .agg({"visit_id": "nunique"})
         .rename(columns={"visit_id": "n_visit"})
