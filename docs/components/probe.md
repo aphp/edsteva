@@ -202,19 +202,19 @@ We list hereafter the Probes that have already been implemented in the library.
 
 === "ConditionProbe"
 
-    The [``ConditionProbe``][edsteva.probes.condition.ConditionProbe] computes $c_{condition}(t)$ the availability of administrative data related to visits with at least one ICD-10 code recorded for each care site according to time:
+    The [``ConditionProbe``][edsteva.probes.condition.ConditionProbe] computes $c_{condition}(t)$ the availability of claim data linked to patients' stays:
 
     $$
-    c_{condition}(t) = \frac{n_{condition}(t)}{n_{99}}
+    c_{condition}(t) = \frac{n_{with\,condition}(t)}{n_{visit}(t)}
     $$
 
-    Where $n_{condition}(t)$ is the number of stays with at least one ICD-10 code recorded, $t$ is the month and $n_{99}$ is the $99^{th}$ percentile of $n_{condition}(t)$.
+    Where $n_{visit}(t)$ is the number of stays recorded, $n_{with\,condition}$ the number of stays having at least one claim code (e.g. ICD-10) recorded and $t$ is the month.
 
-    !!!info ""
-        If the $99^{th}$ percentile $n_{99}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+    !!!Warning "Care site level"
+        This probe is only available at hospital level.
 
     ```python
-    from edsteva.probes import VisitProbe
+    from edsteva.probes import ConditionProbe
 
     condition = ConditionProbe()
     condition.compute(
@@ -235,10 +235,10 @@ We list hereafter the Probes that have already been implemented in the library.
     condition.predictor.head()
     ```
 
-    | care_site_level          | care_site_id | care_site_short_name | stay_type | diag_type | condition_type       | date       | n_visit | c     |
-    | :----------------------- | :----------- | :------------------- | :-------- | :-------- | :------------------- | :--------- | :------ | :---- |
-    | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'All'     | 'All'     | 'Pulmonary_embolism' | 2019-05-01 | 233.0   | 0.841 |
-    | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'All'     | 'DP/DR'   | 'Pulmonary_embolism' | 2021-04-01 | 393.0   | 0.640 |
-    | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | 2011-03-01 | 204.0   | 0.497 |
-    | Pôle/DMU                 | 8312027648   | Care site 2          | 'All'     | 'All'     | 'All'                | 2018-08-01 | 22.0    | 0.274 |
-    | Hôpital                  | 8312022130   | Care site 3          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | 2022-02-01 | 9746.0  | 0.769 |
+    | care_site_level | care_site_id | care_site_short_name | stay_type | diag_type | condition_type       | date       | n_visit | c     |
+    | :-------------- | :----------- | :------------------- | :-------- | :-------- | :------------------- | :--------- | :------ | :---- |
+    | Hôpital         | 8312057527   | Care site 1          | 'All'     | 'All'     | 'Pulmonary_embolism' | 2019-05-01 | 233.0   | 0.841 |
+    | Hôpital         | 8312057527   | Care site 1          | 'All'     | 'DP/DR'   | 'Pulmonary_embolism' | 2021-04-01 | 393.0   | 0.640 |
+    | Hôpital         | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | 2011-03-01 | 204.0   | 0.497 |
+    | Hôpital         | 8312027648   | Care site 2          | 'All'     | 'All'     | 'All'                | 2018-08-01 | 22.0    | 0.274 |
+    | Hôpital         | 8312022130   | Care site 3          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | 2022-02-01 | 9746.0  | 0.769 |

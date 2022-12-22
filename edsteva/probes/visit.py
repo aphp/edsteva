@@ -33,7 +33,7 @@ def compute_completeness(visit_predictor):
             as_index=False,
             dropna=False,
         )
-        .agg({"visit_id": "count"})
+        .agg({"visit_id": "nunique"})
         .rename(columns={"visit_id": "n_visit"})
     )
 
