@@ -1,4 +1,8 @@
 # Changelog
+
+## v0.1.3 - 22-12-2022
+
+- ConditionProbe: Update, computed as a proportion of number of visit.
 ## v0.1.2 - 14-12-2022
 
 - ConditionProbe computes the availability of administrative data related to visits with at least one ICD-10 code recorded.
