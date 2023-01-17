@@ -15,6 +15,8 @@ def estimates_dashboard(
     fitted_model: BaseModel,
     care_site_level: str = CARE_SITE_LEVEL_NAMES["Hospital"],
     save_path: str = None,
+    labelFontSize: float = 12,
+    titleFontSize: float = 13,
 ):
     r"""Displays an interactive chart with:
 
@@ -35,6 +37,10 @@ def estimates_dashboard(
         Folder path where to save the chart in HTML format.
 
         **EXAMPLE**: `"my_folder/my_file.html"`
+    labelFontSize: float, optional
+        The font size of the labels (axis and legend).
+    titleFontSize: float, optional
+        The font size of the titles.
     """
     alt.data_transformers.disable_max_rows()
 
@@ -388,8 +394,8 @@ def estimates_dashboard(
             .add_selection(c_0_min_selection)
             .add_selection(t_0_selection)
         )
-        .configure_axis(labelFontSize=11, titleFontSize=12)
-        .configure_legend(labelFontSize=11)
+        .configure_axis(labelFontSize=labelFontSize, titleFontSize=titleFontSize)
+        .configure_legend(labelFontSize=labelFontSize)
     )
     if fitted_model.name == "RectangleFunction":
         chart = chart.add_selection(t_1_selection)

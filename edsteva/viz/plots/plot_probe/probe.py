@@ -12,6 +12,7 @@ def probe_line(
     x_grid: bool = True,
     y_grid: bool = True,
     show_n_visit: bool = False,
+    labelAngle: float = -90,
 ):
     """Script to be used by [``plot_probe()``][edsteva.viz.plots.plot_probe.wrapper]
 
@@ -31,6 +32,8 @@ def probe_line(
         If False, remove the grid for the y axis.
     show_n_visit: bool, optional
         show the number of visit instead of the completeness predictor $c(t)$
+    labelAngle: float, optional
+        The rotation angle of the label on the x_axis.
     """
 
     chart = (
@@ -40,7 +43,7 @@ def probe_line(
             x=alt.X(
                 f'yearmonth({"date"}):T',
                 title=x_axis_title,
-                axis=alt.Axis(tickCount="month", labelAngle=-90, grid=x_grid),
+                axis=alt.Axis(tickCount="month", labelAngle=labelAngle, grid=x_grid),
             ),
             y=alt.Y(
                 "sum(n_visit):Q" if show_n_visit else "mean(c):Q",

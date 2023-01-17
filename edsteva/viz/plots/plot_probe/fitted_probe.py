@@ -11,6 +11,8 @@ def fitted_probe_line(
     y_axis_title: str = "Completeness predictor c(t)",
     x_grid: bool = True,
     y_grid: bool = True,
+    labelAngle: float = -90,
+    labelFontSize: float = 12,
 ):
     r"""Script to be used by [``plot_probe()``][edsteva.viz.plots.plot_probe.wrapper]
 
@@ -28,6 +30,10 @@ def fitted_probe_line(
         Label name for the y axis.
     y_grid: bool, optional,
         If False, remove the grid for the y axis.
+    labelAngle: float, optional
+        The rotation angle of the label on the x_axis.
+    labelFontSize: float, optional
+        The font size of the labels (axis and legend).
     """
     predictor["legend_predictor"] = "Predictor c(t)"
     predictor["legend_model"] = "Model f(t)"
@@ -37,7 +43,7 @@ def fitted_probe_line(
             x=alt.X(
                 f'yearmonth({"date"}):T',
                 title=x_axis_title,
-                axis=alt.Axis(tickCount="month", labelAngle=-90, grid=x_grid),
+                axis=alt.Axis(tickCount="month", labelAngle=labelAngle, grid=x_grid),
             ),
         )
     ).properties(width=800, height=300)
@@ -54,7 +60,7 @@ def fitted_probe_line(
             legend=alt.Legend(
                 symbolType="stroke",
                 symbolStrokeColor="steelblue",
-                labelFontSize=11,
+                labelFontSize=labelFontSize,
                 labelFontStyle="bold",
                 orient="left",
             ),
@@ -72,7 +78,7 @@ def fitted_probe_line(
             legend=alt.Legend(
                 symbolType="stroke",
                 symbolStrokeColor="steelblue",
-                labelFontSize=11,
+                labelFontSize=labelFontSize,
                 labelFontStyle="bold",
                 symbolDash=[2, 2],
                 orient="left",

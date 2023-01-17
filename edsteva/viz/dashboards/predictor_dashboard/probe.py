@@ -13,6 +13,7 @@ def probe_dashboard(
     x_grid: bool = True,
     y_grid: bool = True,
     show_n_visit: bool = False,
+    labelAngle: float = -90,
 ):
     """Script to be used by [``predictor_dashboard()``][edsteva.viz.dashboards.predictor_dashboard.wrapper]
 
@@ -32,6 +33,8 @@ def probe_dashboard(
         If False, remove the grid for the y axis.
     show_n_visit: bool, optional
         show the number of visit instead of the completeness predictor $c(t)$
+    labelAngle: float, optional
+        The rotation angle of the label on the x_axis.
     """
 
     time = "date"
@@ -47,7 +50,7 @@ def probe_dashboard(
             x=alt.X(
                 f'yearmonth({"date"}):T',
                 title=x_axis_title,
-                axis=alt.Axis(tickCount="month", labelAngle=-90),
+                axis=alt.Axis(tickCount="month", labelAngle=labelAngle),
             ),
             y=alt.Y(
                 "mean(c):Q",

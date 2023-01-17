@@ -9,6 +9,8 @@ from edsteva.viz.utils import save_html
 def plot_estimates_densities(
     fitted_model: BaseModel,
     save_path: str = None,
+    labelFontSize: float = 12,
+    titleFontSize: float = 13,
     **kwargs,
 ):
     r"""Displays the density plot with the associated box plot of each estimate and metric computed in the input model. It can help you to set the thresholds.
@@ -23,6 +25,10 @@ def plot_estimates_densities(
         Folder path where to save the chart in HTML format.
 
         **EXAMPLE**: `"my_folder/my_file.html"`
+    labelFontSize: float, optional
+        The font size of the labels (axis and legend).
+    titleFontSize: float, optional
+        The font size of the titles.
     """
     alt.data_transformers.disable_max_rows()
 
@@ -135,8 +141,8 @@ def plot_estimates_densities(
     if save_path:
         save_html(
             obj=estimates_densities.configure_axis(
-                labelFontSize=11, titleFontSize=12
-            ).configure_legend(labelFontSize=11),
+                labelFontSize=labelFontSize, titleFontSize=titleFontSize
+            ).configure_legend(labelFontSize=labelFontSize),
             filename=save_path,
         )
 

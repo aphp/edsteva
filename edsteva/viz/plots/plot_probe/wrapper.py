@@ -26,6 +26,9 @@ def plot_probe(
     y_grid: bool = True,
     show_n_visit: bool = False,
     show_per_care_site: bool = True,
+    labelAngle: float = -90,
+    labelFontSize: float = 12,
+    titleFontSize: float = 13,
     **kwargs,
 ):
     r"""
@@ -66,6 +69,12 @@ def plot_probe(
         If True, compute the sum of the number of visit instead of the mean of the completeness predictor $c(t)$.
     show_per_care_site: bool, optional
         If True, the average completeness predictor $c(t)$ is computed for each care site independently. If False, it is computed over all care sites.
+    labelAngle: float, optional
+        The rotation angle of the label on the x_axis.
+    labelFontSize: float, optional
+        The font size of the labels (axis and legend).
+    titleFontSize: float, optional
+        The font size of the titles.
     """
 
     index = list(set(probe._index).difference(["care_site_level", "care_site_id"]))
@@ -100,6 +109,8 @@ def plot_probe(
             y_axis_title=y_axis_title,
             x_grid=x_grid,
             y_grid=y_grid,
+            labelAngle=labelAngle,
+            labelFontSize=labelFontSize,
         )
     else:
         chart = probe_line(
@@ -110,13 +121,14 @@ def plot_probe(
             x_grid=x_grid,
             y_grid=y_grid,
             show_n_visit=show_n_visit,
+            labelAngle=labelAngle,
         )
 
     if save_path:
         save_html(
             obj=chart.configure_axis(
-                labelFontSize=11, titleFontSize=12
-            ).configure_legend(labelFontSize=11),
+                labelFontSize=labelFontSize, titleFontSize=titleFontSize
+            ).configure_legend(labelFontSize=labelFontSize),
             filename=save_path,
         )
 

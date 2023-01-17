@@ -22,6 +22,9 @@ def predictor_dashboard(
     y_axis_title: str = "Completeness predictor c(t)",
     y_grid: bool = True,
     show_n_visit: bool = False,
+    labelAngle: float = -90,
+    labelFontSize: float = 12,
+    titleFontSize: float = 13,
 ):
     r"""Displays an interactive chart with:
 
@@ -33,9 +36,9 @@ def predictor_dashboard(
     Parameters
     ----------
     probe : BaseProbe
-        Class describing the completeness predictor $c(t)$
+        Class describing the completeness predictor $c(t)$.
     fitted_model : BaseModel, optional
-        Model fitted to the probe
+        Model fitted to the probe.
     care_site_level : str, optional
         **EXAMPLE**: `"Hospital"`, `"Hôpital"` or `"UF"`
     save_path : str, optional
@@ -51,7 +54,13 @@ def predictor_dashboard(
     y_grid: bool, optional,
         If False, remove the grid for the y axis.
     show_n_visit: bool, optional
-        show the number of visit instead of the completeness predictor $c(t)$
+        show the number of visit instead of the completeness predictor $c(t)$.
+    labelAngle: float, optional
+        The rotation angle of the label on the x_axis.
+    labelFontSize: float, optional
+        The font size of the labels (axis and legend).
+    titleFontSize: float, optional
+        The font size of the titles.
     """
 
     index = list(set(probe._index).difference(["care_site_level", "care_site_id"]))
@@ -74,6 +83,8 @@ def predictor_dashboard(
             y_axis_title=y_axis_title,
             x_grid=x_grid,
             y_grid=y_grid,
+            labelAngle=labelAngle,
+            labelFontSize=labelFontSize,
         )
     else:
         chart = probe_dashboard(
@@ -84,11 +95,12 @@ def predictor_dashboard(
             x_grid=x_grid,
             y_grid=y_grid,
             show_n_visit=show_n_visit,
+            labelAngle=labelAngle,
         )
 
-    chart = chart.configure_axis(labelFontSize=11, titleFontSize=12).configure_legend(
-        labelFontSize=11
-    )
+    chart = chart.configure_axis(
+        labelFontSize=labelFontSize, titleFontSize=titleFontSize
+    ).configure_legend(labelFontSize=labelFontSize)
     vis_probe = "id" + uuid.uuid4().hex
     new_index_probe_id = "id" + uuid.uuid4().hex
     old_index_probe_id = "id" + uuid.uuid4().hex

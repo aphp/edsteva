@@ -28,6 +28,8 @@ def plot_normalized_probe(
     x_axis_title: str = "Δt = (t - t₀) months",
     y_axis_title: str = "c(Δt) / c₀",
     show_per_care_site: bool = False,
+    labelFontSize: float = 12,
+    titleFontSize: float = 13,
     **kwargs,
 ):
     r"""Displays a chart with the aggregated normalized completeness predictor $\frac{c(\Delta t)}{c_0}$ over normalized time $\Delta t = t - t_0$. It represents the overall deviation from the Model.
@@ -78,6 +80,10 @@ def plot_normalized_probe(
         Label name for the y axis
     show_per_care_site: bool, optional
         If True, the average completeness predictor $c(t)$ is computed for each care site independently. If False, it is computed over all care sites.
+    labelFontSize: float, optional
+        The font size of the labels (axis and legend).
+    titleFontSize: float, optional
+        The font size of the titles.
     """
 
     predictor = probe.predictor.copy()
@@ -303,8 +309,8 @@ def plot_normalized_probe(
     if save_path:
         save_html(
             obj=chart.configure_axis(
-                labelFontSize=11, titleFontSize=12
-            ).configure_legend(labelFontSize=11),
+                labelFontSize=labelFontSize, titleFontSize=titleFontSize
+            ).configure_legend(labelFontSize=labelFontSize),
             filename=save_path,
         )
 

@@ -12,6 +12,8 @@ def fitted_probe_dashboard(
     y_axis_title: str = "Completeness predictor c(t)",
     x_grid: bool = True,
     y_grid: bool = True,
+    labelAngle: float = -90,
+    labelFontSize: float = 12,
 ):
     r"""Script to be used by [``predictor_dashboard()``][edsteva.viz.dashboards.predictor_dashboard.wrapper]
 
@@ -29,6 +31,10 @@ def fitted_probe_dashboard(
         Label name for the y axis.
     y_grid: bool, optional,
         If False, remove the grid for the y axis.
+    labelAngle: float, optional
+        The rotation angle of the label on the x_axis.
+    labelFontSize: float, optional
+        The font size of the labels (axis and legend).
     """
     alt.data_transformers.disable_max_rows()
 
@@ -43,7 +49,7 @@ def fitted_probe_dashboard(
             x=alt.X(
                 f'yearmonth({"date"}):T',
                 title=x_axis_title,
-                axis=alt.Axis(tickCount="month", labelAngle=-90),
+                axis=alt.Axis(tickCount="month", labelAngle=labelAngle),
             ),
             y=alt.Y(
                 "mean(c):Q",
@@ -187,7 +193,7 @@ def fitted_probe_dashboard(
             legend=alt.Legend(
                 symbolType="stroke",
                 symbolStrokeColor="steelblue",
-                labelFontSize=11,
+                labelFontSize=labelFontSize,
                 labelFontStyle="bold",
                 orient="left",
             ),
@@ -206,7 +212,7 @@ def fitted_probe_dashboard(
             legend=alt.Legend(
                 symbolType="stroke",
                 symbolStrokeColor="steelblue",
-                labelFontSize=11,
+                labelFontSize=labelFontSize,
                 labelFontStyle="bold",
                 symbolDash=[2, 2],
                 orient="left",
