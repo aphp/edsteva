@@ -8,7 +8,7 @@ import pandas as pd
 from IPython.display import display
 from loguru import logger
 
-from edsteva.utils.checks import check_columns
+from edsteva.utils.checks import check_columns, check_tables
 from edsteva.utils.framework import get_framework, to
 from edsteva.utils.typing import Data, DataFrame
 
@@ -23,7 +23,12 @@ UNSUPPORTED_CARE_SITE_LEVEL_NAMES = {
 }
 
 
-def prepare_visit_occurrence(data, start_date, end_date, stay_types):
+def prepare_visit_occurrence(
+    data: Data,
+    start_date: datetime,
+    end_date: datetime,
+    stay_types: Union[str, Dict[str, str]],
+):
     check_columns(
         data.visit_occurrence,
         required_columns=[
@@ -75,11 +80,17 @@ def prepare_visit_occurrence(data, start_date, end_date, stay_types):
 def prepare_condition_occurrence(
     data: Data,
     extra_data: Data,
-    source: str,
-    diag_types: List[str],
-    condition_types: Dict,
+    visit_occurrence: DataFrame,
+    source_systems: List[str],
+    diag_types: Union[str, Dict[str, str]],
+    condition_types: Union[str, Dict[str, str]],
 ):
-    if source == "AREM":
+    condition_occurrence_tables = []
+    if "AREM" in source_systems:
+        check_tables(
+            data=extra_data,
+            required_tables=["visit_occurrence", "condition_occurrence"],
+        )
         # Fetch conditions from Data lake
         I2B2_visit = extra_data.visit_occurrence[
             ["visit_occurrence_id", "visit_occurrence_source_value"]
@@ -89,36 +100,58 @@ def prepare_condition_occurrence(
                 "visit_occurrence_id",
                 "condition_status_source_value",
                 "condition_source_value",
+                "care_site_source_value",
                 "cdm_source",
             ]
         ]
         # Add visit_occurrence_source_value
-        condition_occurrence = I2B2_visit.merge(
+        arem_condition_occurrence = I2B2_visit.merge(
             I2B2_condition_occurrence,
             on="visit_occurrence_id",
             how="inner",
         ).drop(columns="visit_occurrence_id")
 
-    else:
-        condition_occurrence = data.condition_occurrence[
+        # Link with visit_occurrence_source_value
+        arem_condition_occurrence = arem_condition_occurrence.merge(
+            visit_occurrence[["visit_occurrence_source_value", "visit_occurrence_id"]],
+            on="visit_occurrence_source_value",
+        ).drop(columns="visit_occurrence_source_value")
+        arem_condition_occurrence = arem_condition_occurrence[
+            arem_condition_occurrence.cdm_source == "AREM"
+        ]
+        arem_condition_occurrence["visit_detail_id"] = None
+        condition_occurrence_tables.append(arem_condition_occurrence)
+
+    if "ORBIS" in source_systems:
+        orbis_condition_occurrence = data.condition_occurrence[
             [
                 "visit_occurrence_id",
+                "visit_detail_id",
                 "condition_source_value",
                 "condition_status_source_value",
                 "row_status_source_value",
                 "cdm_source",
             ]
         ]
-        condition_occurrence = get_valid_observations(
-            table=condition_occurrence,
-            table_name="condition_occurrence",
+        orbis_condition_occurrence = get_valid_observations(
+            table=orbis_condition_occurrence,
+            table_name="orbis_condition_occurrence",
             valid_naming="Actif",
         )
+        orbis_condition_occurrence = orbis_condition_occurrence[
+            orbis_condition_occurrence.cdm_source == "ORBIS"
+        ]
+        condition_occurrence_tables.append(orbis_condition_occurrence)
 
-    # Keep source observations
-    condition_occurrence = condition_occurrence[
-        condition_occurrence.cdm_source == source
-    ].drop(columns="cdm_source")
+    framework = get_framework(condition_occurrence_tables[0])
+    condition_occurrence = framework.concat(
+        condition_occurrence_tables, ignore_index=True
+    )
+
+    # Filter source system
+    condition_occurrence = condition_occurrence.rename(
+        columns={"cdm_source": "source_system"}
+    )
 
     # Filter diagnostics
     condition_occurrence = condition_occurrence.rename(
@@ -148,10 +181,10 @@ def prepare_condition_occurrence(
 
 
 def prepare_care_site(
-    data,
-    care_site_ids,
-    care_site_short_names,
-    care_site_relationship,
+    data: Data,
+    care_site_ids: List[int],
+    care_site_short_names: List[str],
+    care_site_relationship: pd.DataFrame,
 ):
     care_site = data.care_site[
         [
@@ -175,7 +208,10 @@ def prepare_care_site(
     return care_site
 
 
-def prepare_note(data, note_types):
+def prepare_note(
+    data: Data,
+    note_types: Union[str, Dict[str, str]],
+):
     note = data.note[
         [
             "note_id",
@@ -189,6 +225,8 @@ def prepare_note(data, note_types):
     note = note[~(note["note_text"].isna())]
     note = note.drop(columns=["note_text"])
     note = get_valid_observations(table=note, table_name="note", valid_naming="Actif")
+
+    # Add note type
     if note_types:
         note = filter_table_by_type(
             table=note,
@@ -200,7 +238,38 @@ def prepare_note(data, note_types):
     return note
 
 
-def prepare_visit_detail(data, start_date, end_date):
+def add_note_care_site(extra_data: Data, note: DataFrame):
+    check_tables(
+        data=extra_data,
+        required_tables=["note_ref", "care_site_ref"],
+    )
+
+    note_ref = extra_data.note_ref[
+        [
+            "note_id",
+            "care_site_source_value",
+        ]
+    ]
+
+    care_site_ref = extra_data.care_site_ref[
+        [
+            "care_site_source_value",
+            "care_site_id",
+        ]
+    ]
+
+    note = note.merge(note_ref, on="note_id")
+    note = note.merge(care_site_ref, on="care_site_source_value")
+
+    return note
+
+
+def prepare_visit_detail(
+    data: Data,
+    start_date: datetime,
+    end_date: datetime,
+    visit_detail_type: str = "PASS",
+):
     visit_detail = data.visit_detail[
         [
             "visit_detail_id",
@@ -221,7 +290,7 @@ def prepare_visit_detail(data, start_date, end_date):
         table=visit_detail, table_name="visit_detail", valid_naming="Actif"
     )
     visit_detail = visit_detail[
-        visit_detail["visit_detail_type_source_value"] == "PASS"
+        visit_detail["visit_detail_type_source_value"] == visit_detail_type
     ]  # Important to filter only "PASS" to remove duplicate visits
     visit_detail = visit_detail.drop(columns=["visit_detail_type_source_value"])
     visit_detail = filter_table_by_date(

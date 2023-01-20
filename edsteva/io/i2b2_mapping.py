@@ -47,14 +47,20 @@ def get_i2b2_table(
     if table == "condition_occurrence":
         df = df.withColumn(
             "condition_source_value",
-            F.substring(F.col("condition_source_value"), 7, 20),
+            F.split(F.col("condition_source_value"), ":").getItem(1),
+        )
+
+        # Retrieve UF
+        df = df.withColumn(
+            "care_site_source_value",
+            F.split(F.col("care_site_source_value"), ":").getItem(1),
         )
 
     # CCAM
     elif table == "procedure_occurrence":
         df = df.withColumn(
             "procedure_source_value",
-            F.substring(F.col("procedure_source_value"), 6, 20),
+            F.split(F.col("procedure_source_value"), ":").getItem(1),
         )
 
     # Visits
@@ -110,6 +116,13 @@ def get_i2b2_table(
                 "row_status_source_value",
                 F.when(F.col("row_status_source_value") < 0, "SUPP").otherwise("Actif"),
             )
+
+    # Document with UFR (only in prod)
+    elif table == "note_ref":
+        df = df.melt(
+            id_vars="note_id",
+            value_name="care_site_source_value",
+        )
 
     # Hospital trigrams
     elif table == "care_site":

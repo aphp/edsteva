@@ -61,6 +61,7 @@ Ready to contribute? Here's how to set up `edsteva` for local development.
     <div class="termy">
 
     ```console
+    $ poetry install --only docs
     $ poetry config experimental.new-installer false
     $ poetry install
 

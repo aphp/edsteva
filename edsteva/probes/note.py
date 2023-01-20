@@ -6,6 +6,7 @@ import pandas as pd
 from edsteva.probes.base import BaseProbe
 from edsteva.probes.utils import (
     CARE_SITE_LEVEL_NAMES,
+    add_note_care_site,
     concatenate_predictor_by_level,
     convert_table_to_pole,
     convert_table_to_uf,
@@ -88,39 +89,8 @@ def get_uf_visit(
     care_site,
     care_site_relationship,
 ):  # pragma: no cover
-    # Load Orbis note and Uf for Note
-    note_orbis = extra_data.orbis_document[
-        [
-            "ids_eds",
-            "id_dm_doc_ufr",
-            "id_dm_doc_us",
-        ]
-    ]
-    note_orbis = note_orbis.rename(columns={"ids_eds": "note_id"})
 
-    orbis_care_site = extra_data.orbis_ref_struct_list[
-        [
-            "id_ref_stuct",
-            "ids_eds",
-        ]
-    ]
-    orbis_care_site = orbis_care_site.rename(
-        columns={
-            "id_ref_stuct": "id_orbis",
-            "ids_eds": "care_site_id",
-        }
-    )
-
-    note = note.merge(note_orbis, on="note_id")
-    note = note.melt(
-        id_vars=["note_id", "note_type", "visit_occurrence_id"],
-        value_name="id_orbis",
-    )
-    note = note.merge(
-        orbis_care_site,
-        on="id_orbis",
-    )
-
+    note = add_note_care_site(extra_date=extra_data, note=note)
     note_uf = note[
         ["visit_occurrence_id", "note_type", "care_site_id"]
     ].drop_duplicates()
