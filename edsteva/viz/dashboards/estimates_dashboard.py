@@ -284,7 +284,7 @@ def estimates_dashboard(
     index.append("care_site_short_name")
     index_selection = alt.selection_single(
         fields=["index"],
-        bind=alt.binding_radio(name="Plot average completeness per: ", options=index),
+        bind=alt.binding_radio(name="Group by: ", options=index),
         init={"index": "stay_type"},
     )
 
@@ -450,7 +450,7 @@ def estimates_dashboard(
                 }}
             newestimate.replaceChild(estimate_slider, oldestimate);
             for (var i = 0; i < index_slider.length; i++) {{
-                if (index_slider[i].firstChild.innerHTML == "Plot average completeness per: ") {{
+                if (index_slider[i].firstChild.innerHTML == "Group by: ") {{
                     var index_color = index_slider[i]}}
                 }}
             newparent.replaceChild(index_color, oldchild);

@@ -271,9 +271,7 @@ def plot_normalized_probe(
     if len(index) >= 2:
         index_selection = alt.selection_single(
             fields=["index"],
-            bind=alt.binding_radio(
-                name="Plot average completeness per: ", options=index
-            ),
+            bind=alt.binding_radio(name="Group by: ", options=index),
             init={"index": index[0]},
         )
         chart = (

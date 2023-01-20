@@ -62,7 +62,33 @@ def check_columns(df: DataFrame, required_columns: List[str], df_name: str = "")
 
 
 def check_tables(data: Data, required_tables: List[str]):
-    present_tables = set(data.available_tables)
-    missing_tables = set(required_tables) - present_tables
-    if missing_tables:
-        raise MissingTableError(missing_tables)
+    if isinstance(data, Data.__args__):
+        present_tables = set(data.available_tables)
+        missing_tables = set(required_tables) - present_tables
+        if missing_tables:
+            raise MissingTableError(missing_tables)
+    else:
+        raise AttributeError(
+            "data should be a Data type please refer to this [page](https://aphp.github.io/edsteva/latest/components/loading_data/)"
+        )
+
+
+def check_conditon_source_systems(
+    source_systems: List[str], valid_source_systems: List[str] = ["AREM", "ORBIS"]
+):
+    if source_systems and isinstance(source_systems, list):
+        valid = False
+        for valid_source_system in valid_source_systems:
+            if valid_source_system in source_systems:
+                valid = True
+
+        if not valid:
+            raise AttributeError(
+                "Source systems only accept {}".format(valid_source_systems)
+            )
+    else:
+        raise AttributeError(
+            "Source systems must be a non empty list and not {}".format(
+                type(source_systems)
+            )
+        )

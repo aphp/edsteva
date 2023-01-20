@@ -209,9 +209,11 @@ i2b2_tables = {
     "edsprod": {
         "visit_occurrence": "i2b2_orbis_visit_dim",
         "note": "i2b2_observation_fact_document",
+        "note_ref": "orbis_document",
         "person": "i2b2_patient_dim",
         "condition_occurrence": "i2b2_arem_observation_fact_cim10",
         "procedure_occurrence": "i2b2_arem_observation_fact_ccam",
+        "care_site_ref": "orbis_ref_struct_list",
         "care_site": "i2b2_observation_fact_ufr",
         "visit_detail": "i2b2_observation_fact_ufr",
         "biology": "i2b2_observation_fact_lab",
@@ -244,6 +246,11 @@ i2b2_renaming = {
         "sourcesystem_cd": "cdm_source",
         "i2b2_action": "row_status_source_value",
     },
+    "note_ref": {
+        "ids_eds": "note_id",
+        "id_dm_doc_ufr": "ufr_source_value",
+        "id_dm_doc_us": "us_source_value",
+    },
     "person": {
         "patient_num": "person_id",
         "birth_date": "birth_datetime",
@@ -270,6 +277,7 @@ i2b2_renaming = {
         "start_date": "condition_start_datetime",
         "concept_cd": "condition_source_value",
         "tval_char": "condition_status_source_value",
+        "location_cd": "care_site_source_value",
         "sourcesystem_cd": "cdm_source",
     },
     "procedure_occurrence": {
@@ -281,6 +289,10 @@ i2b2_renaming = {
         "sourcesystem_cd": "cdm_source",
     },
     "care_site": {"location_cd": "care_site_source_value"},
+    "care_site_ref": {
+        "ids_eds": "care_site_id",
+        "id_ref_stuct": "care_site_source_value",
+    },
     "visit_detail": {
         "instance_num": "visit_detail_id",
         "encounter_num": "visit_occurrence_id",
@@ -358,4 +370,13 @@ visit_type_mapping = {
     "II": "hospitalisation incomplète",
     "U": "urgence",
     "O": "consultation externe",
+}
+
+care_site_level_mapping = {
+    30: "Hôpital",
+    35: "Unité de consultation (UC)",
+    45: "Pôle/DMU",
+    50: "Unité Fonctionnelle (UF)",
+    70: "Unité d'hébergement (UH)",
+    100: "Unité de consultation (UC)",
 }

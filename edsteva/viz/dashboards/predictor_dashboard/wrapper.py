@@ -144,6 +144,12 @@ def predictor_dashboard(
             }}).catch(console.error);
         </script>
         </body>
+        <style>
+        .vega-bind {{
+        position: relative;
+        top: 10px;
+        }}
+        </style>
         </html>
         """
     display(HTML(html_chart))
