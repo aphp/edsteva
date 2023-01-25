@@ -102,7 +102,6 @@ class HiveData:  # pragma: no cover
         if spark_session is not None:
             self.spark_session = spark_session
         else:
-            koalas_options()
             logger.warning(
                 """
                 To improve performances when using Spark and Koalas, please call `edsteva.improve_performances()`
@@ -112,6 +111,9 @@ class HiveData:  # pragma: no cover
                 """
             )
             self.spark_session = SparkSession.builder.enableHiveSupport().getOrCreate()
+
+        koalas_options()
+
         self.database_name = database_name
         self.database_type = database_type
 
