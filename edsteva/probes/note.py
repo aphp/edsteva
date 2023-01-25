@@ -90,7 +90,7 @@ def get_uf_visit(
     care_site_relationship,
 ):  # pragma: no cover
 
-    note = add_note_care_site(extra_date=extra_data, note=note)
+    note = add_note_care_site(extra_data=extra_data, note=note)
     note_uf = note[
         ["visit_occurrence_id", "note_type", "care_site_id"]
     ].drop_duplicates()
