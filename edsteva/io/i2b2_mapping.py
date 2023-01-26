@@ -117,13 +117,6 @@ def get_i2b2_table(
                 F.when(F.col("row_status_source_value") < 0, "SUPP").otherwise("Actif"),
             )
 
-    # Document with UFR (only in prod)
-    elif table == "note_ref":
-        df = df.melt(
-            id_vars="note_id",
-            value_name="care_site_source_value",
-        )
-
     # Hospital trigrams
     elif table == "care_site":
         df = df.withColumn("care_site_type_source_value", F.lit("Hôpital"))
