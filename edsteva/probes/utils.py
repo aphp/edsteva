@@ -247,10 +247,10 @@ def add_note_care_site(extra_data: Data, note: DataFrame):
     note_ref = extra_data.note_ref[
         [
             "note_id",
-            "care_site_source_value",
+            "ufr_source_value",
+            "us_source_value",
         ]
     ]
-
     care_site_ref = extra_data.care_site_ref[
         [
             "care_site_source_value",
@@ -258,6 +258,10 @@ def add_note_care_site(extra_data: Data, note: DataFrame):
         ]
     ]
 
+    note_ref = note_ref.melt(
+        id_vars="note_id",
+        value_name="care_site_source_value",
+    )
     note = note.merge(note_ref, on="note_id")
     note = note.merge(care_site_ref, on="care_site_source_value")
 
