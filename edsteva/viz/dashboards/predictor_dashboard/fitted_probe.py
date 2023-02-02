@@ -144,7 +144,6 @@ def fitted_probe_dashboard(
     extra_predictors_hists = []
 
     for extra_predictor in extra_predictors:
-
         extra_predictor_hist = predictor_hist.encode(
             x=alt.X(
                 "sum({}):Q".format(extra_predictor),

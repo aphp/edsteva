@@ -22,7 +22,6 @@ from edsteva.utils.typing import Data
 
 
 def compute_completeness(condition_predictor):
-
     partition_cols = [
         "care_site_level",
         "care_site_id",
@@ -98,7 +97,6 @@ def get_uf_visit(
     care_site,
     care_site_relationship,
 ):  # pragma: no cover
-
     condition_uf = (
         condition_occurrence[
             [
@@ -141,7 +139,6 @@ def get_uf_visit(
 
 
 def get_pole_visit(uf_visit, care_site, care_site_relationship):  # pragma: no cover
-
     pole_visit = convert_table_to_pole(
         table=uf_visit.drop(columns=["care_site_short_name", "care_site_level"]),
         table_name="uf_visit",

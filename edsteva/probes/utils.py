@@ -652,7 +652,6 @@ def filter_table_by_date(
     start_date: Union[datetime, str] = None,
     end_date: Union[datetime, str] = None,
 ):
-
     check_columns(df=table, required_columns=["date"])
 
     table.dropna(subset=["date"], inplace=True)

@@ -17,7 +17,6 @@ def error_after_t0(
     x: str = "date",
     name: str = "error",
 ):
-
     r"""Compute the error between the predictor $c(t)$ and the prediction $\hat{c}(t)$ after $t_0$ as follow:
 
     $$

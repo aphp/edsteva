@@ -16,7 +16,6 @@ def generate_care_site_tables(structure, parent=None, final=True):
     cs = []
     fr = []
     for key, value in structure.items():
-
         this_cs = split_name_id(key)
         cs.append(this_cs)
 

@@ -58,7 +58,6 @@ def filter_predictor(
     end_date: Union[datetime, str] = None,
     **kwargs
 ):
-
     # Time
     predictor = filter_table_by_date(
         table=predictor,

@@ -11,7 +11,6 @@ class MissingColumnError(Exception):
         required_columns: Union[List, dict],
         df_name: str = "",
     ):
-
         if isinstance(required_columns, dict):
             to_display_per_column = [
                 f"- {column} ({msg})" if msg is not None else f"{column}"
@@ -39,7 +38,6 @@ class MissingTableError(Exception):
         self,
         required_tables: Union[List, dict],
     ):
-
         if isinstance(required_tables, dict):
             to_display_per_concept = [
                 f"- {concept} ({msg})" if msg is not None else f"{concept}"
