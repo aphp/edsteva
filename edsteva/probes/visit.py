@@ -19,7 +19,6 @@ from edsteva.utils.typing import Data
 
 
 def compute_completeness(visit_predictor):
-
     partition_cols = [
         "care_site_level",
         "care_site_id",

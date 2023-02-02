@@ -93,9 +93,9 @@ OTHER_CONDITION_COLUMNS = dict(
 
 OTHER_DETAIL_COLUMNS = dict(
     visit_detail_type_source_value=[
-        ("PASS", 0.8),
+        ("PASS", 0.4),
         ("SSR", 0.1),
-        ("RUM", 0.1),
+        ("RUM", 0.5),
     ],
     row_status_source_value=[
         ("Actif", 0.999),
@@ -322,8 +322,8 @@ class SyntheticData:
 
         care_site, fact_relationship, hospital_ids = self._generate_care_site_tables()
         visit_occurrence = self._generate_visit_occurrence(hospital_ids)
-        condition_occurrence = self._generate_condition_occurrence(visit_occurrence)
         visit_detail = self._generate_visit_detail(visit_occurrence)
+        condition_occurrence = self._generate_condition_occurrence(visit_detail)
         note = self._generate_note(hospital_ids, visit_occurrence)
 
         self.care_site = care_site
@@ -384,31 +384,6 @@ class SyntheticData:
 
         return visit_occurrence
 
-    def _generate_condition_occurrence(self, visit_occurrence):
-        condition_occurrence = []
-        cols = visit_occurrence.columns
-        col_to_idx = dict(zip(cols, range(len(cols))))
-
-        for visit in visit_occurrence.values:
-            n_condition = np.random.randint(1, 5)
-            visit_id = visit[col_to_idx["visit_occurrence_id"]]
-            condition = pd.DataFrame(
-                {
-                    self.id_visit_col: [visit_id] * n_condition,
-                }
-            )
-            condition_occurrence.append(condition)
-
-        condition_occurrence = pd.concat(condition_occurrence).reset_index(drop=True)
-        condition_occurrence[self.id_condition_col] = range(
-            condition_occurrence.shape[0]
-        )
-        condition_occurrence = add_other_columns(
-            condition_occurrence, self.other_condition_columns
-        )
-
-        return condition_occurrence
-
     def _generate_visit_detail(self, visit_occurrence):
         t_min = self.t_min.timestamp()
         t_max = self.t_max.timestamp()
@@ -451,6 +426,36 @@ class SyntheticData:
         )
 
         return visit_detail
+
+    def _generate_condition_occurrence(self, visit_detail):
+        visit_detail = visit_detail[
+            visit_detail.visit_detail_type_source_value == "RUM"
+        ]
+        condition_occurrence = []
+        cols = visit_detail.columns
+        col_to_idx = dict(zip(cols, range(len(cols))))
+
+        for visit in visit_detail.values:
+            n_condition = np.random.randint(1, 5)
+            detail_id = visit[col_to_idx[self.id_detail_col]]
+            visit_id = visit[col_to_idx[self.id_visit_col]]
+            condition = pd.DataFrame(
+                {
+                    self.id_detail_col: [detail_id] * n_condition,
+                    self.id_visit_col: [visit_id] * n_condition,
+                }
+            )
+            condition_occurrence.append(condition)
+
+        condition_occurrence = pd.concat(condition_occurrence).reset_index(drop=True)
+        condition_occurrence[self.id_condition_col] = range(
+            condition_occurrence.shape[0]
+        )
+        condition_occurrence = add_other_columns(
+            condition_occurrence, self.other_condition_columns
+        )
+
+        return condition_occurrence
 
     def _generate_note(
         self, hospital_ids, visit_occurrence, note_types: Tuple[str] = ("CRH", "URG")

@@ -89,7 +89,6 @@ def get_uf_visit(
     care_site,
     care_site_relationship,
 ):  # pragma: no cover
-
     note = add_note_care_site(extra_data=extra_data, note=note)
     note_uf = note[
         ["visit_occurrence_id", "note_type", "care_site_id"]
@@ -124,7 +123,6 @@ def get_uf_visit(
 
 
 def get_pole_visit(uf_visit, care_site, care_site_relationship):  # pragma: no cover
-
     pole_visit = convert_table_to_pole(
         table=uf_visit.drop(columns=["care_site_short_name", "care_site_level"]),
         table_name="uf_visit",

@@ -197,7 +197,6 @@ class HiveData:  # pragma: no cover
         logger.info("Table {} has been deleted", table_name)
 
     def _prepare_person_ids(self, list_of_person_ids) -> Optional[SparkDataFrame]:
-
         if list_of_person_ids is None:
             return None
         elif hasattr(list_of_person_ids, "to_list"):
@@ -299,7 +298,6 @@ class HiveData:  # pragma: no cover
         df.to_parquet(spark_filepath, mode="overwrite")
 
     def __getattr__(self, table_name: str) -> DataFrame:
-
         if table_name in self.available_tables:
             # the first time it is called, we actually set the attribute
             table = self._read_table(table_name)

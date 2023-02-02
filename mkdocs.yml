@@ -29,6 +29,10 @@ theme:
     - navigation.instant
     - navigation.indexes
     - navigation.top
+    - navigation.footer
+    - content.action.edit
+    - content.action.view
+    - content.code.copy
     - content.code.annotate
     - announce.dismiss
 
