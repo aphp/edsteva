@@ -237,7 +237,7 @@ class ConditionProbe(BaseProbe):
         if "AREM" in source_systems and not hospital_only(
             care_site_levels=care_site_levels
         ):
-            logger.info("AREM claim data is only available at hospital level")
+            logger.info("AREM claim data are only available at hospital level")
 
         visit_occurrence = prepare_visit_occurrence(
             data=data,

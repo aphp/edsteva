@@ -533,7 +533,7 @@ The working example above describes the canonical usage workflow. However, you w
             If the number of visits $n_{visit}(t)$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
 
         !!!Warning "Care site level"
-            This probe is only available at hospital level.
+            AREM claim data are only available at hospital level.
 
         ```python
         from edsteva.probes import ConditionProbe
@@ -553,17 +553,18 @@ The working example above describes the canonical usage workflow. However, you w
                 "All": ".*",
                 "Pulmonary_embolism": "I26",
             },
+            source_systems=["AREM", "ORBIS"],
         )
         condition.predictor.head()
         ```
 
-        | care_site_level | care_site_id | care_site_short_name | stay_type | diag_type | condition_type       | date       | n_visit | c     |
-        | :-------------- | :----------- | :------------------- | :-------- | :-------- | :------------------- | :--------- | :------ | :---- |
-        | Hôpital         | 8312057527   | Care site 1          | 'All'     | 'All'     | 'Pulmonary_embolism' | 2019-05-01 | 233.0   | 0.841 |
-        | Hôpital         | 8312057527   | Care site 1          | 'All'     | 'DP/DR'   | 'Pulmonary_embolism' | 2021-04-01 | 393.0   | 0.640 |
-        | Hôpital         | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | 2011-03-01 | 204.0   | 0.497 |
-        | Hôpital         | 8312027648   | Care site 2          | 'All'     | 'All'     | 'All'                | 2018-08-01 | 22.0    | 0.274 |
-        | Hôpital         | 8312022130   | Care site 3          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | 2022-02-01 | 9746.0  | 0.769 |
+        | care_site_level          | care_site_id | care_site_short_name | stay_type | diag_type | condition_type       | source_systems | date       | n_visit | c     |
+        | :----------------------- | :----------- | :------------------- | :-------- | :-------- | :------------------- | :------------- | :--------- | :------ | :---- |
+        | Hôpital                  | 8312057527   | Care site 1          | 'All'     | 'All'     | 'Pulmonary_embolism' | AREM           | 2019-05-01 | 233.0   | 0.841 |
+        | Hôpital                  | 8312057527   | Care site 1          | 'All'     | 'DP/DR'   | 'Pulmonary_embolism' | AREM           | 2021-04-01 | 393.0   | 0.640 |
+        | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2011-03-01 | 204.0   | 0.497 |
+        | Unité Fonctionnelle (UF) | 8312027648   | Care site 2          | 'All'     | 'All'     | 'All'                | ORBIS          | 2018-08-01 | 22.0    | 0.274 |
+        | Pôle/DMU                 | 8312022130   | Care site 3          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | ORBIS          | 2022-02-01 | 9746.0  | 0.769 |
 
 === "Model"
 
