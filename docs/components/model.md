@@ -98,9 +98,9 @@ If none of the available Models meets your requirements, you may want to create 
 from edsteva.models import BaseModel
 from edsteva.probes import BaseProbe
 
+
 # Definition of a new Model class
 class CustomProbe(BaseModel):
-
     _coefs = ["my_model_coefficient_1", "my_model_coefficient_2"]
 
     def fit_process(self, probe: BaseProbe):
