@@ -101,9 +101,9 @@ If none of the available Probes meets your requirements, you may want to create 
 ```python
 from edsteva.probes import BaseProbe
 
+
 # Definition of a new Probe class
 class CustomProbe(BaseProbe):
-
     _index = ["my_custom_column_1", "my_custom_column_2"]
 
     def compute_process(self, data: Data):
