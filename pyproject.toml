@@ -75,6 +75,7 @@ pylic = "^3.4.0"
 safe_licenses = [
   "BSD License",
   "BSD 3-Clause",
+  "BSD 3-Clause License",
   "BSD-3-Clause-LBNL",
   "BSD",
   "The Unlicense (Unlicense)",
@@ -91,6 +92,7 @@ safe_licenses = [
   "Eclipse Public License 2.0 (EPL-2.0)",
   "GNU Library or Lesser General Public License (LGPL)",
 ]
+unsafe_packages  = ["ypy-websocket", "y-py"]
 ignore_packages = ["pgpasslib"]
 
 [build-system]

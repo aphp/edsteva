@@ -78,7 +78,7 @@ jobs:
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
           poetry config experimental.new-installer false
-          poetry install --without dev
+          poetry install
       - name: Set up Java
         uses: actions/setup-java@v1
         with:
