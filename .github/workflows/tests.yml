@@ -43,8 +43,8 @@ jobs:
         run: |
           pip install pre-commit
           pre-commit install
-      - name: Run Ruff
-        run: ruff --format=github .
+      - name: Run pre-commit
+        run: SKIP=no-commit-to-branch pre-commit run --all-files
 
   testing:
     name: Testing with PyTest
