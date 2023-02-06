@@ -32,10 +32,10 @@ repos:
     rev: "v1.12.1"
     hooks:
       - id: blacken-docs
-  - repo: https://github.com/pycqa/flake8
-    rev: '5.0.4'
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: 'v0.0.241'
     hooks:
-      - id: flake8
+      - id: ruff
   - repo: https://github.com/python-poetry/poetry
     rev: '1.3.0'
     hooks:

@@ -64,11 +64,30 @@ mknotebooks = "0.7.1"
 mike = "^1.1.2"
 
 [tool.poetry.group.test.dependencies]
-flake8 = "^3.0.1"
+ruff = "0.0.241"
 pytest = "^7.1.3"
 pytest-cov = "^3.0.0"
 pytest-html = "^3.1.1"
 pylic = "^3.4.0"
+
+[tool.ruff]
+ignore = ["E501"]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".eggs",
+    ".git",
+    ".gitignore",
+    ".ruff_cache",
+    ".tox",
+    ".venv",
+    ".pytest_cache",
+    ".ipynb_checkpoints",
+    "__pycache__",
+    "__init__.py",
+    "dist",
+    "node_modules",
+    "venv",
+]
 
 [tool.pylic]
 safe_licenses = [
