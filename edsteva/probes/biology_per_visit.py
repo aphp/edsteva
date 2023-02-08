@@ -112,13 +112,22 @@ class BiologyPerVisitProbe(BaseProbe):
         self,
         data: Data,
         care_site_relationship: pd.DataFrame,
-        start_date: datetime = None,
-        end_date: datetime = None,
-        care_site_levels: List[str] = "Hospital",
-        stay_types: Union[str, Dict[str, str]] = None,
-        concepts_sets: Union[str, Dict[str, str]] = None,
-        care_site_ids: List[int] = None,
+        start_date: datetime,
+        end_date: datetime,
+        care_site_levels: List[str],
+        stay_types: Union[str, Dict[str, str]],
+        care_site_ids: List[int],
         care_site_short_names: List[str] = None,
+        concepts_sets: Union[str, Dict[str, str]] = {
+            "Leucocytes": "A0174|K3232|H6740|E4358|C9784|C8824|E6953",
+            "Plaquettes": "E4812|C0326|A1636|A0230|H6751|A1598|G7728|G7727|G7833|A2538|A2539|J4463",
+            "Créatinine": "E3180|G1974|J1002|A7813|A0094|G1975|J1172|G7834|F9409|F9410|C0697|H4038|F2621",
+            "Potassium": "A1656|C8757|C8758|A2380|E2073|L5014|F2618|E2337|J1178|A3819|J1181",
+            "Sodium": "A1772|C8759|C8760|A0262|J1177|F8162|L5013|F2617|K9086|J1180 ",
+            "Chlorure": "B5597|F2359|A0079|J1179|F2619|J1182|F2358|A0079|J1179|F2619|J1182",
+            "Glucose": "A1245|E7961|C8796|H7753|A8029|H7749|A0141|H7323|J7401|F2622|B9553|C7236|E7312|G9557|A7338|H7324|C0565|E9889|A8424|F6235|F5659|F2406",
+            "Bicarbonate": "A0422|H9622|C6408|F4161",
+        },
         stay_durations: List[float] = [1],
         standard_terminologies: List[str] = ["ANABIO", "LOINC"],
         source_terminologies: Dict[str, str] = {
@@ -204,7 +213,7 @@ class BiologyPerVisitProbe(BaseProbe):
         hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
         biology_predictor_by_level = {hospital_name: hospital_visit}
 
-        if not hospital_only(care_site_levels=care_site_levels):
+        if care_site_levels and not hospital_only(care_site_levels=care_site_levels):
             logger.info(
                 "Biological measurements are only available at hospital level for now"
             )

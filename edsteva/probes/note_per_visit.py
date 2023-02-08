@@ -171,20 +171,20 @@ class NotePerVisitProbe(BaseProbe):
         self,
         data: Data,
         care_site_relationship: pd.DataFrame,
-        extra_data: Data = None,
-        start_date: datetime = None,
-        end_date: datetime = None,
-        care_site_levels: List[str] = None,
+        start_date: datetime,
+        end_date: datetime,
+        care_site_levels: List[str],
+        stay_types: Union[str, Dict[str, str]],
+        care_site_ids: List[int],
         care_site_short_names: List[str] = None,
-        stay_types: Union[str, Dict[str, str]] = None,
+        extra_data: Data = None,
+        stay_durations: List[float] = None,
         note_types: Union[str, Dict[str, str]] = {
             "All": ".*",
             "Urgence": "urge",
             "Ordonnance": "ordo",
             "CRH": "crh",
         },
-        stay_durations: List[float] = None,
-        care_site_ids: List[int] = None,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 

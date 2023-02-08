@@ -164,11 +164,11 @@ class BaseProbe(metaclass=ABCMeta):
         self,
         data: Data,
         care_site_relationship: pd.DataFrame,
-        start_date: datetime = None,
-        end_date: datetime = None,
-        care_site_levels: List[str] = None,
-        stay_types: Union[str, Dict[str, str]] = None,
-        care_site_ids: List[int] = None,
+        start_date: datetime,
+        end_date: datetime,
+        care_site_levels: List[str],
+        stay_types: Union[str, Dict[str, str]],
+        care_site_ids: List[int],
         **kwargs,
     ) -> pd.DataFrame:
         """Process the data in order to obtain a predictor table"""
