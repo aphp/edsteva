@@ -71,7 +71,7 @@ def compute_completeness(biology_predictor, standard_terminologies, root_termino
         on=partition_cols,
     )
 
-    biology_predictor["c"] = biology_predictor["q_99_visit"].where(
+    biology_predictor["c"] = biology_predictor["q_99_measurement"].where(
         biology_predictor["q_99_measurement"] == 0,
         biology_predictor["n_measurement"] / biology_predictor["q_99_measurement"],
     )
