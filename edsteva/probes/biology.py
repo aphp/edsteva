@@ -225,4 +225,4 @@ class BiologyProbe(BaseProbe):
             care_site_levels=care_site_levels,
         )
 
-        return compute_completeness(biology_predictor)
+        return compute_completeness(biology_predictor, standard_terminologies)
