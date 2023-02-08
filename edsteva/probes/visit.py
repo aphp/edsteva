@@ -24,6 +24,7 @@ def compute_completeness(visit_predictor):
         "care_site_id",
         "care_site_short_name",
         "stay_type",
+        "length_of_stay",
         "date",
     ]
     n_visit = (
@@ -139,6 +140,7 @@ class VisitProbe(BaseProbe):
         end_date: datetime = None,
         care_site_levels: List[str] = None,
         stay_types: Union[str, Dict[str, str]] = None,
+        stay_durations: List[float] = None,
         care_site_ids: List[int] = None,
         care_site_short_names: List[str] = None,
     ):
@@ -165,10 +167,11 @@ class VisitProbe(BaseProbe):
         """
 
         visit_occurrence = prepare_visit_occurrence(
-            data,
-            start_date,
-            end_date,
-            stay_types,
+            data=data,
+            start_date=start_date,
+            end_date=end_date,
+            stay_types=stay_types,
+            stay_durations=stay_durations,
         )
 
         care_site = prepare_care_site(

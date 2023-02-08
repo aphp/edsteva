@@ -30,6 +30,7 @@ def compute_completeness(condition_predictor):
         "diag_type",
         "condition_type",
         "source_system",
+        "length_of_stay",
         "date",
     ]
     n_visit_with_condition = (
@@ -156,7 +157,7 @@ def get_pole_visit(uf_visit, care_site, care_site_relationship):  # pragma: no c
     return pole_visit
 
 
-class ConditionProbe(BaseProbe):
+class ConditionPerVisitProbe(BaseProbe):
     r"""
     The [``ConditionProbe``][edsteva.probes.condition.ConditionProbe] computes $c_{condition}(t)$ the availability of claim data in patients' administrative stay:
 
@@ -198,6 +199,7 @@ class ConditionProbe(BaseProbe):
             "Cancer": "C",
         },
         source_systems: List[str] = ["ORBIS"],
+        stay_durations: List[float] = None,
         care_site_ids: List[int] = None,
         care_site_short_names: List[str] = None,
     ):
@@ -241,6 +243,7 @@ class ConditionProbe(BaseProbe):
             start_date=start_date,
             end_date=end_date,
             stay_types=stay_types,
+            stay_durations=stay_durations,
         )
 
         condition_occurrence = prepare_condition_occurrence(

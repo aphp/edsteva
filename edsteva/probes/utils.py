@@ -1,9 +1,10 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List, Tuple, Union
 
 import _pickle as pickle
+import numpy as np
 import pandas as pd
 from IPython.display import display
 from loguru import logger
@@ -28,37 +29,38 @@ def prepare_visit_occurrence(
     start_date: datetime,
     end_date: datetime,
     stay_types: Union[str, Dict[str, str]],
+    stay_durations: List[float],
 ):
+    required_columns = [
+        "visit_occurrence_id",
+        "visit_source_value",
+        "visit_start_datetime",
+        "visit_end_datetime",
+        "care_site_id",
+        "row_status_source_value",
+        "visit_occurrence_source_value",
+    ]
     check_columns(
         data.visit_occurrence,
-        required_columns=[
-            "visit_occurrence_id",
-            "visit_source_value",
-            "visit_start_datetime",
-            "care_site_id",
-            "row_status_source_value",
-            "visit_occurrence_source_value",
-        ],
+        required_columns=required_columns,
         df_name="visit_occurrence",
     )
-    visit_occurrence = data.visit_occurrence[
-        [
-            "visit_occurrence_id",
-            "visit_source_value",
-            "visit_start_datetime",
-            "care_site_id",
-            "row_status_source_value",
-            "visit_occurrence_source_value",
-        ]
-    ]
+    visit_occurrence = data.visit_occurrence[required_columns]
+
+    visit_occurrence = add_length_of_stay(
+        visit_occurrence=visit_occurrence, stay_durations=stay_durations
+    )
+
     visit_occurrence = visit_occurrence.rename(
         columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
     )
+
     visit_occurrence = get_valid_observations(
         table=visit_occurrence,
         table_name="visit_occurrence",
         invalid_naming="supprimé",
     )
+
     visit_occurrence = filter_table_by_date(
         table=visit_occurrence,
         table_name="visit_occurrence",
@@ -71,10 +73,86 @@ def prepare_visit_occurrence(
             table=visit_occurrence,
             table_name="visit_occurrence",
             type_groups=stay_types,
-            name="stay_type",
+            source_col="stay_type",
+            target_col="stay_type",
         )
 
     return visit_occurrence
+
+
+def prepare_measurement(
+    data: Data,
+    biology_relationship: pd.DataFrame,
+    concepts_sets: Union[str, Dict[str, str]],
+    start_date: datetime,
+    end_date: datetime,
+    mapping: List[Tuple[str]],
+    standard_terminologies: List[str],
+    per_visit: bool,
+):
+    measurement_columns = [
+        "measurement_id",
+        "row_status_source_value",
+        "measurement_source_concept_id",
+    ]
+
+    if per_visit:
+        measurement_columns = measurement_columns + ["visit_occurrence_id"]
+    else:
+        measurement_columns = measurement_columns + ["measurement_datetime"]
+
+    check_columns(
+        data.measurement,
+        required_columns=measurement_columns,
+        df_name="measurement",
+    )
+    source_terminology = mapping[0][0]
+    measurement = data.measurement[measurement_columns].rename(
+        columns={
+            "measurement_source_concept_id": "{}_concept_id".format(source_terminology)
+        }
+    )
+    measurement = get_valid_observations(
+        table=measurement, table_name="measurement", valid_naming="Validé"
+    )
+
+    biology_relationship = biology_relationship[
+        ["{}_concept_id".format(source_terminology)]
+        + [
+            "{}_{}".format(terminology, concept_col)
+            for terminology in standard_terminologies + [source_terminology]
+            for concept_col in ["concept_code", "concept_name"]
+        ]
+    ]
+
+    measurement = measurement.merge(
+        biology_relationship, on="{}_concept_id".format(source_terminology)
+    )
+
+    if per_visit:
+        measurement = measurement.rename(columns={"measurement_datetime": "date"})
+        measurement = filter_table_by_date(
+            table=measurement,
+            table_name="measurement",
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+    if concepts_sets:
+        measurement_by_terminology = []
+        for standard_terminology in standard_terminologies:
+            measurement_by_terminology.append(
+                filter_table_by_type(
+                    table=measurement,
+                    table_name="measurement",
+                    type_groups=concepts_sets,
+                    source_col="{}_concept_code".format(standard_terminology),
+                    target_col="concepts_set",
+                )
+            )
+        measurement = get_framework(measurement).concat(measurement_by_terminology)
+
+    return measurement
 
 
 def prepare_condition_occurrence(
@@ -162,7 +240,8 @@ def prepare_condition_occurrence(
             table=condition_occurrence,
             table_name="condition_occurrence",
             type_groups=diag_types,
-            name="diag_type",
+            source_col="diag_type",
+            target_col="diag_type",
         )
 
     # Filter conditions
@@ -174,7 +253,8 @@ def prepare_condition_occurrence(
             table=condition_occurrence,
             table_name="condition_occurrence",
             type_groups=condition_types,
-            name="condition_type",
+            source_col="condition_type",
+            target_col="condition_type",
         )
 
     return condition_occurrence
@@ -232,7 +312,8 @@ def prepare_note(
             table=note,
             table_name="note",
             type_groups=note_types,
-            name="note_type",
+            source_col="note_type",
+            target_col="note_type",
         )
 
     return note
@@ -545,7 +626,8 @@ def filter_table_by_type(
     table: DataFrame,
     table_name: str,
     type_groups: Union[str, Dict],
-    name: str,
+    source_col: str,
+    target_col: str,
 ):
     if isinstance(type_groups, str):
         type_groups = {type_groups: type_groups}
@@ -553,21 +635,23 @@ def filter_table_by_type(
         table_per_types = []
         for type_name, type_value in type_groups.items():
             table_per_type_element = table[
-                table[name].str.contains(
+                table[source_col].str.contains(
                     type_value,
                     case=False,
                     regex=True,
                     na=False,
                 )
             ].copy()
-            table_per_type_element[name] = type_name
+            table_per_type_element[target_col] = type_name
             table_per_types.append(table_per_type_element)
     else:
-        raise TypeError("{} must be str or dict not {}".format(name, type(type_groups)))
+        raise TypeError(
+            "{} must be str or dict not {}".format(target_col, type(type_groups))
+        )
 
     logger.debug(
         "The following {} : {} have been selected on table {}",
-        name,
+        target_col,
         type_groups,
         table_name,
     )
@@ -723,6 +807,173 @@ def delete_object(obj, filename: str):
             "There is no file found in {}",
             filename,
         )
+
+
+def add_length_of_stay(visit_occurrence: DataFrame, stay_durations: List[float]):
+    if stay_durations:
+        visit_occurrence["length_of_stay"] = (
+            visit_occurrence["visit_end_datetime"]
+            - visit_occurrence["visit_start_datetime"]
+        ) / np.timedelta64(timedelta(days=1))
+
+        # All stays
+        all_stays = visit_occurrence.copy()
+        all_stays["length_of_stay"] = "All lengths"
+
+        # Incomplete stays
+        visit_occurrence["length_of_stay"] = visit_occurrence["length_of_stay"].mask(
+            visit_occurrence["visit_end_datetime"].isna(),
+            "Incomplete stay",
+        )
+
+        # Complete stays
+        min_duration = stay_durations[0]
+        max_duration = stay_durations[-1]
+        visit_occurrence["length_of_stay"] = visit_occurrence["length_of_stay"].mask(
+            (visit_occurrence["length_of_stay"] <= min_duration),
+            "<= {} days".format(min_duration),
+        )
+        visit_occurrence["length_of_stay"] = visit_occurrence["length_of_stay"].mask(
+            (visit_occurrence["length_of_stay"] >= max_duration),
+            ">= {} days".format(max_duration),
+        )
+        n_duration = len(stay_durations)
+        for i in range(0, n_duration - 1):
+            min = stay_durations[i]
+            max = stay_durations[i + 1]
+            visit_occurrence["length_of_stay"] = visit_occurrence[
+                "length_of_stay"
+            ].mask(
+                (visit_occurrence["length_of_stay"] >= min)
+                & (visit_occurrence["length_of_stay"] < max),
+                "{} days - {} days".format(min, max),
+            )
+        visit_occurrence = get_framework(visit_occurrence).concat(
+            [all_stays, visit_occurrence]
+        )
+
+    else:
+        visit_occurrence["length_of_stay"] = "All lengths"
+
+    return visit_occurrence.drop(columns="visit_end_datetime")
+
+
+def get_biology_relationship(
+    data: Data,
+    standard_terminologies: List[str],
+    source_terminologies: Dict[str, str],
+    mapping: List[Tuple[str, str, str]],
+) -> pd.DataFrame:
+    """Computes biology relationship
+
+    Parameters
+    ----------
+    data : Data
+        Instantiated [``HiveData``][edsteva.io.hive.HiveData], [``PostgresData``][edsteva.io.postgres.PostgresData] or [``LocalData``][edsteva.io.files.LocalData]
+
+    Example
+    -------
+
+    | care_site_id | care_site_level            | care_site_short_name | parent_care_site_id | parent_care_site_level     | parent_care_site_short_name |
+    | :----------- | :------------------------- | :------------------- | :------------------ | :------------------------- | :-------------------------- |
+    | 8312056386   | Unité Fonctionnelle (UF)   | UF A                 | 8312027648          | Pôle/DMU                   | Pole A                      |
+    | 8312022130   | Pôle/DMU                   | Pole B               | 8312033550          | Hôpital                    | Hospital A                  |
+    | 8312016782   | Service/Département        | Service A            | 8312033550          | Hôpital                    | Hospital A                  |
+    | 8312010155   | Unité Fonctionnelle (UF)   | UF B                 | 8312022130          | Pôle/DMU                   | Pole B                      |
+    | 8312067829   | Unité de consultation (UC) | UC A                 | 8312051097          | Unité de consultation (UC) | UC B                        |
+
+    """
+
+    check_tables(data=data, required_tables=["concept", "concept_relationship"])
+    concept_columns = [
+        "concept_id",
+        "concept_name",
+        "concept_code",
+        "vocabulary_id",
+    ]
+
+    concept_relationship_columns = [
+        "concept_id_1",
+        "concept_id_2",
+        "relationship_id",
+    ]
+    check_columns(
+        data.concept,
+        required_columns=concept_columns,
+        df_name="concept",
+    )
+
+    check_columns(
+        data.concept_relationship,
+        required_columns=concept_relationship_columns,
+        df_name="concept_relationship",
+    )
+    concept = data.concept[concept_columns].to_pandas()
+    concept_relationship = data.concept_relationship[
+        concept_relationship_columns
+    ].to_pandas()
+    concept_by_terminology = {}
+    for terminology, regex in source_terminologies.items():
+        concept_by_terminology[terminology] = (
+            concept[concept.vocabulary_id.str.contains(regex)]
+            .rename(
+                columns={
+                    "concept_id": "{}_concept_id".format(terminology),
+                    "concept_name": "{}_concept_name".format(terminology),
+                    "concept_code": "{}_concept_code".format(terminology),
+                }
+            )
+            .drop(columns="vocabulary_id")
+        )
+    biology_relationship = concept_by_terminology[mapping[0][0]]
+    for source, target, relationship_id in mapping:
+        relationship = concept_relationship.rename(
+            columns={
+                "concept_id_1": "{}_concept_id".format(source),
+                "concept_id_2": "{}_concept_id".format(target),
+            }
+        )[concept_relationship.relationship_id == relationship_id].drop(
+            columns="relationship_id"
+        )
+        relationship = relationship.merge(
+            concept_by_terminology[target], on="{}_concept_id".format(target)
+        )
+        biology_relationship = biology_relationship.merge(
+            relationship, on="{}_concept_id".format(source), how="left"
+        )
+
+    # Get ITM code in priority and if not get GLIMS code
+    for standard_terminology in standard_terminologies:
+        biology_relationship[
+            "{}_concept_code".format(standard_terminology)
+        ] = biology_relationship[
+            "{}_ITM_concept_code".format(standard_terminology)
+        ].mask(
+            biology_relationship[
+                "{}_ITM_concept_code".format(standard_terminology)
+            ].isna(),
+            biology_relationship["GLIMS_{}_concept_code".format(standard_terminology)],
+        )
+        biology_relationship[
+            "{}_concept_name".format(standard_terminology)
+        ] = biology_relationship[
+            "{}_ITM_concept_name".format(standard_terminology)
+        ].mask(
+            biology_relationship[
+                "{}_ITM_concept_name".format(standard_terminology)
+            ].isna(),
+            biology_relationship["GLIMS_{}_concept_name".format(standard_terminology)],
+        )
+        biology_relationship["{}_vocabulary".format(standard_terminology)] = "ITM"
+        biology_relationship[
+            "{}_vocabulary".format(standard_terminology)
+        ] = biology_relationship["{}_vocabulary".format(standard_terminology)].mask(
+            biology_relationship[
+                "{}_ITM_concept_code".format(standard_terminology)
+            ].isna(),
+            "GLIMS",
+        )
+    return biology_relationship
 
 
 def _get_relationship_table_uc_to_uf(

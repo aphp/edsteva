@@ -28,6 +28,7 @@ def compute_completeness(note_predictor):
         "care_site_short_name",
         "stay_type",
         "note_type",
+        "length_of_stay",
         "date",
     ]
     n_visit_with_note = (
@@ -140,7 +141,7 @@ def get_pole_visit(uf_visit, care_site, care_site_relationship):  # pragma: no c
     return pole_visit
 
 
-class NoteProbe(BaseProbe):
+class NotePerVisitProbe(BaseProbe):
     r"""
     The ``NoteProbe`` computes $c(t)$ the availability of clinical documents linked to patients' administrative visit:
 
@@ -176,6 +177,7 @@ class NoteProbe(BaseProbe):
             "Ordonnance": "ordo",
             "CRH": "crh",
         },
+        stay_durations: List[float] = None,
         care_site_ids: List[int] = None,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -205,10 +207,11 @@ class NoteProbe(BaseProbe):
         check_tables(data=data, required_tables=["note"])
 
         visit_occurrence = prepare_visit_occurrence(
-            data,
-            start_date,
-            end_date,
-            stay_types,
+            data=data,
+            start_date=start_date,
+            end_date=end_date,
+            stay_types=stay_types,
+            stay_durations=stay_durations,
         )
 
         care_site = prepare_care_site(
