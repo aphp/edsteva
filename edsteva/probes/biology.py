@@ -189,15 +189,21 @@ class BiologyProbe(BaseProbe):
 
         self.biology_relationship = biology_relationship
         root_terminology = mapping[0][0]
-        self._index = self._index + [
-            "{}_concept_code".format(terminology)
-            for terminology in standard_terminologies + [root_terminology]
-        ]
-        +[
-            "{}_concept_name".format(terminology)
-            for terminology in standard_terminologies + [root_terminology]
-        ]
-        +["{}_vocabulary".format(terminology) for terminology in standard_terminologies]
+        print(self._index)
+        self._index.extend(
+            [
+                "{}_concept_code".format(terminology)
+                for terminology in standard_terminologies + [root_terminology]
+            ]
+            + [
+                "{}_concept_name".format(terminology)
+                for terminology in standard_terminologies + [root_terminology]
+            ]
+            + [
+                "{}_vocabulary".format(terminology)
+                for terminology in standard_terminologies
+            ]
+        )
         print(self._index)
         print(self.biology_relationship.head())
         measurement = prepare_measurement(
