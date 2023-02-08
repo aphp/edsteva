@@ -124,7 +124,7 @@ def prepare_measurement(
             for concept_col in ["concept_code", "concept_name"]
         ]
     ]
-
+    biology_relationship = to(get_framework(measurement), biology_relationship)
     measurement = measurement.merge(
         biology_relationship, on="{}_concept_id".format(source_terminology)
     )

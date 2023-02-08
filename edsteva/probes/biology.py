@@ -116,7 +116,7 @@ class BiologyProbe(BaseProbe):
         care_site_relationship: pd.DataFrame,
         start_date: datetime = None,
         end_date: datetime = None,
-        care_site_levels: List[str] = None,
+        care_site_levels: List[str] = "Hospital",
         stay_types: Union[str, Dict[str, str]] = None,
         concepts_sets: Union[str, Dict[str, str]] = {
             "Leucocytes": "A0174|K3232|H6740|E4358|C9784|C8824|E6953",
@@ -178,6 +178,7 @@ class BiologyProbe(BaseProbe):
             source_terminologies=source_terminologies,
             mapping=mapping,
         )
+        self.biology_relationship = biology_relationship
 
         measurement = prepare_measurement(
             data=data,

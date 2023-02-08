@@ -118,7 +118,7 @@ class BiologyPerVisitProbe(BaseProbe):
         care_site_relationship: pd.DataFrame,
         start_date: datetime = None,
         end_date: datetime = None,
-        care_site_levels: List[str] = None,
+        care_site_levels: List[str] = "Hospital",
         stay_types: Union[str, Dict[str, str]] = None,
         concepts_sets: Union[str, Dict[str, str]] = None,
         care_site_ids: List[int] = None,
@@ -171,6 +171,7 @@ class BiologyPerVisitProbe(BaseProbe):
             source_terminologies=source_terminologies,
             mapping=mapping,
         )
+        self.biology_relationship = biology_relationship
 
         measurement = prepare_measurement(
             data=data,
