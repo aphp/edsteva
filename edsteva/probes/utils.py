@@ -129,7 +129,7 @@ def prepare_measurement(
         biology_relationship, on="{}_concept_id".format(root_terminology)
     )
 
-    if per_visit:
+    if not per_visit:
         measurement = filter_table_by_date(
             table=measurement,
             table_name="measurement",
@@ -882,6 +882,10 @@ def get_biology_relationship(
     | 8312067829   | Unité de consultation (UC) | UC A                 | 8312051097          | Unité de consultation (UC) | UC B                        |
 
     """
+
+    logger.debug(
+        "Create biology relationship to link ANALYSES LABORATOIRE to ANABIO to LOINC"
+    )
 
     check_tables(data=data, required_tables=["concept", "concept_relationship"])
     concept_columns = [
