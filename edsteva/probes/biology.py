@@ -32,11 +32,11 @@ def compute_completeness(biology_predictor, standard_terminologies, root_termino
         ]
         + [
             "{}_concept_code".format(terminology)
-            for terminology in standard_terminologies + [root_terminology]
+            for terminology in standard_terminologies
         ]
         + [
             "{}_concept_name".format(terminology)
-            for terminology in standard_terminologies + [root_terminology]
+            for terminology in standard_terminologies
         ]
         + [
             "{}_vocabulary".format(terminology)
@@ -192,11 +192,11 @@ class BiologyProbe(BaseProbe):
         self._index.extend(
             [
                 "{}_concept_code".format(terminology)
-                for terminology in standard_terminologies + [root_terminology]
+                for terminology in standard_terminologies
             ]
             + [
                 "{}_concept_name".format(terminology)
-                for terminology in standard_terminologies + [root_terminology]
+                for terminology in standard_terminologies
             ]
             + [
                 "{}_vocabulary".format(terminology)
