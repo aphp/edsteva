@@ -97,10 +97,16 @@ class BiologyPerVisitProbe(BaseProbe):
     _index: List[str]
         Variable from which data is grouped
 
-        **VALUE**: ``["care_site_level", "concept_code", "stay_type", "care_site_id"]``
+        **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id"]``
     """
 
-    _index = ["care_site_level", "concept_code", "stay_type", "care_site_id"]
+    _index = [
+        "care_site_level",
+        "concepts_set",
+        "stay_type",
+        "length_of_stay",
+        "care_site_id",
+    ]
 
     def compute_process(
         self,
@@ -162,6 +168,7 @@ class BiologyPerVisitProbe(BaseProbe):
             mapping=mapping,
         )
         self.biology_relationship = biology_relationship
+        root_terminology = mapping[0][0]
 
         measurement = prepare_measurement(
             data=data,
@@ -169,7 +176,7 @@ class BiologyPerVisitProbe(BaseProbe):
             concepts_sets=concepts_sets,
             start_date=start_date,
             end_date=end_date,
-            mapping=mapping,
+            root_terminology=root_terminology,
             standard_terminologies=standard_terminologies,
             per_visit=True,
         )

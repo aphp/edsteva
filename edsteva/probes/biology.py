@@ -19,7 +19,7 @@ from edsteva.utils.framework import is_koalas, to
 from edsteva.utils.typing import Data
 
 
-def compute_completeness(biology_predictor, standard_terminologies):
+def compute_completeness(biology_predictor, standard_terminologies, root_terminology):
     partition_cols = (
         [
             "care_site_level",
@@ -32,11 +32,11 @@ def compute_completeness(biology_predictor, standard_terminologies):
         ]
         + [
             "{}_concept_code".format(terminology)
-            for terminology in standard_terminologies
+            for terminology in standard_terminologies + [root_terminology]
         ]
         + [
             "{}_concept_name".format(terminology)
-            for terminology in standard_terminologies
+            for terminology in standard_terminologies + [root_terminology]
         ]
         + [
             "{}_vocabulary".format(terminology)
@@ -107,10 +107,16 @@ class BiologyProbe(BaseProbe):
     _index: List[str]
         Variable from which data is grouped
 
-        **VALUE**: ``["care_site_level", "concept_code", "stay_type", "care_site_id"]``
+        **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id"]``
     """
 
-    _index = ["care_site_level", "concept_code", "stay_type", "care_site_id"]
+    _index = [
+        "care_site_level",
+        "concepts_set",
+        "stay_type",
+        "length_of_stay",
+        "care_site_id",
+    ]
 
     def compute_process(
         self,
@@ -180,15 +186,27 @@ class BiologyProbe(BaseProbe):
             source_terminologies=source_terminologies,
             mapping=mapping,
         )
-        self.biology_relationship = biology_relationship
 
+        self.biology_relationship = biology_relationship
+        root_terminology = mapping[0][0]
+        self._index = self._index + [
+            "{}_concept_code".format(terminology)
+            for terminology in standard_terminologies + [root_terminology]
+        ]
+        +[
+            "{}_concept_name".format(terminology)
+            for terminology in standard_terminologies + [root_terminology]
+        ]
+        +["{}_vocabulary".format(terminology) for terminology in standard_terminologies]
+        print(self._index)
+        print(self.biology_relationship.head())
         measurement = prepare_measurement(
             data=data,
             biology_relationship=biology_relationship,
             concepts_sets=concepts_sets,
             start_date=start_date,
             end_date=end_date,
-            mapping=mapping,
+            root_terminology=root_terminology,
             standard_terminologies=standard_terminologies,
             per_visit=False,
         )
@@ -227,4 +245,6 @@ class BiologyProbe(BaseProbe):
             care_site_levels=care_site_levels,
         )
 
-        return compute_completeness(biology_predictor, standard_terminologies)
+        return compute_completeness(
+            biology_predictor, standard_terminologies, root_terminology
+        )

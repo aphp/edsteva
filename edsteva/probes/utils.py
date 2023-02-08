@@ -86,7 +86,7 @@ def prepare_measurement(
     concepts_sets: Union[str, Dict[str, str]],
     start_date: datetime,
     end_date: datetime,
-    mapping: List[Tuple[str]],
+    root_terminology: str,
     standard_terminologies: List[str],
     per_visit: bool,
 ):
@@ -103,10 +103,9 @@ def prepare_measurement(
         required_columns=measurement_columns,
         df_name="measurement",
     )
-    source_terminology = mapping[0][0]
     measurement = data.measurement[measurement_columns].rename(
         columns={
-            "measurement_source_concept_id": "{}_concept_id".format(source_terminology),
+            "measurement_source_concept_id": "{}_concept_id".format(root_terminology),
             "measurement_datetime": "date",
         }
     )
@@ -115,16 +114,19 @@ def prepare_measurement(
     )
 
     biology_relationship = biology_relationship[
-        ["{}_concept_id".format(source_terminology)]
+        [
+            "{}_{}".format(root_terminology, concept_col)
+            for concept_col in ["concept_id", "concept_code", "concept_name"]
+        ]
         + [
             "{}_{}".format(terminology, concept_col)
-            for terminology in standard_terminologies + [source_terminology]
-            for concept_col in ["concept_code", "concept_name"]
+            for terminology in standard_terminologies
+            for concept_col in ["concept_code", "concept_name", "vocabulary"]
         ]
     ]
     biology_relationship = to(get_framework(measurement), biology_relationship)
     measurement = measurement.merge(
-        biology_relationship, on="{}_concept_id".format(source_terminology)
+        biology_relationship, on="{}_concept_id".format(root_terminology)
     )
 
     if per_visit:
@@ -922,7 +924,8 @@ def get_biology_relationship(
             )
             .drop(columns="vocabulary_id")
         )
-    biology_relationship = concept_by_terminology[mapping[0][0]]
+    root_terminology = mapping[0][0]
+    biology_relationship = concept_by_terminology[root_terminology]
     for source, target, relationship_id in mapping:
         relationship = concept_relationship.rename(
             columns={

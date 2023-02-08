@@ -172,12 +172,13 @@ class ConditionPerVisitProbe(BaseProbe):
     _index: List[str]
         Variable from which data is grouped
 
-        **VALUE**: ``["care_site_level", "stay_type", "diag_type", "condition_type", "source_system", "care_site_id"]``
+        **VALUE**: ``["care_site_level", "stay_type", "length_of_stay", "diag_type", "condition_type", "source_system", "care_site_id"]``
     """
 
     _index = [
         "care_site_level",
         "stay_type",
+        "length_of_stay",
         "diag_type",
         "condition_type",
         "source_system",

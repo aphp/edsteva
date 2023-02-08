@@ -156,10 +156,16 @@ class NotePerVisitProbe(BaseProbe):
     _index: List[str]
         Variable from which data is grouped
 
-        **VALUE**: ``["care_site_level", "stay_type", "note_type", "care_site_id"]``
+        **VALUE**: ``["care_site_level", "stay_type", "length_of_stay", "note_type", "care_site_id"]``
     """
 
-    _index = ["care_site_level", "stay_type", "note_type", "care_site_id"]
+    _index = [
+        "care_site_level",
+        "stay_type",
+        "length_of_stay",
+        "note_type",
+        "care_site_id",
+    ]
 
     def compute_process(
         self,
