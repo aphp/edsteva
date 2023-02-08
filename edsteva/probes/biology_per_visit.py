@@ -82,16 +82,6 @@ def get_hospital_visit(measurement, visit_occurrence, care_site):
     return hospital_visit
 
 
-def get_hospital_measurements(measurement, visit_occurrence, care_site):
-    hospital_measurement = measurement.merge(visit_occurrence, on="visit_occurrence_id")
-    hospital_measurement = hospital_measurement.merge(care_site, on="care_site_id")
-
-    if is_koalas(hospital_measurement):
-        hospital_measurement.spark.cache()
-
-    return hospital_measurement
-
-
 class BiologyPerVisitProbe(BaseProbe):
     r"""
     The ``BiologyProbe`` computes $c_(t)$ the availability of laboratory data related to biological measurements for each biological code and each care site according to time:

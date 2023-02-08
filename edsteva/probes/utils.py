@@ -92,14 +92,11 @@ def prepare_measurement(
 ):
     measurement_columns = [
         "measurement_id",
+        "visit_occurrence_id",
+        "measurement_datetime",
         "row_status_source_value",
         "measurement_source_concept_id",
     ]
-
-    if per_visit:
-        measurement_columns = measurement_columns + ["visit_occurrence_id"]
-    else:
-        measurement_columns = measurement_columns + ["measurement_datetime"]
 
     check_columns(
         data.measurement,
@@ -109,7 +106,8 @@ def prepare_measurement(
     source_terminology = mapping[0][0]
     measurement = data.measurement[measurement_columns].rename(
         columns={
-            "measurement_source_concept_id": "{}_concept_id".format(source_terminology)
+            "measurement_source_concept_id": "{}_concept_id".format(source_terminology),
+            "measurement_datetime": "date",
         }
     )
     measurement = get_valid_observations(
@@ -130,7 +128,6 @@ def prepare_measurement(
     )
 
     if per_visit:
-        measurement = measurement.rename(columns={"measurement_datetime": "date"})
         measurement = filter_table_by_date(
             table=measurement,
             table_name="measurement",
