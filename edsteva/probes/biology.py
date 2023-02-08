@@ -81,7 +81,9 @@ def compute_completeness(biology_predictor, standard_terminologies):
 
 
 def get_hospital_measurements(measurement, visit_occurrence, care_site):
-    hospital_measurement = measurement.merge(visit_occurrence, on="visit_occurrence_id")
+    hospital_measurement = measurement.merge(
+        visit_occurrence.drop(columns="date"), on="visit_occurrence_id"
+    )
     hospital_measurement = hospital_measurement.merge(care_site, on="care_site_id")
 
     if is_koalas(hospital_measurement):
