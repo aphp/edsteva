@@ -272,7 +272,7 @@ def prepare_visit_detail(
     data: Data,
     start_date: datetime,
     end_date: datetime,
-    visit_detail_type: str = "PASS",
+    visit_detail_type: str = "PASS UF",
 ):
     visit_detail = data.visit_detail[
         [
