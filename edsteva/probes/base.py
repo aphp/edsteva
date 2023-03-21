@@ -14,7 +14,7 @@ from edsteva.probes.utils import (
     save_object,
 )
 from edsteva.utils.checks import check_columns, check_tables
-from edsteva.utils.typing import Data
+from edsteva.utils.typing import Data, DataFrame
 
 
 class BaseProbe(metaclass=ABCMeta):
@@ -42,7 +42,7 @@ class BaseProbe(metaclass=ABCMeta):
         self.is_valid_probe()
         self.name = self._get_name()
 
-    _schema = ["care_site_id", "care_site_level", "stay_type", "date", "c"]
+    _schema = ["care_site_level", "care_site_id", "date", "c"]
 
     def validate_input_data(self, data: Data) -> None:
         """Raises an error if the input data is not valid
@@ -138,14 +138,14 @@ class BaseProbe(metaclass=ABCMeta):
                 .to_dict("index")
             )
 
-        partition_cols = self._index + ["care_site_short_name"]
+        partition_cols = self._index.copy()
         groups = []
         for partition, group in self.predictor.groupby(partition_cols):
             group = date_index.merge(group, on="date", how="left")
 
             # Filter on each care site timeframe.
             if only_impute_per_care_site:
-                care_site_short_name = partition[-1]
+                care_site_short_name = partition[-1]  # TO DO
                 ds_min = site_to_min_max_ds[care_site_short_name]["min"]
                 ds_max = site_to_min_max_ds[care_site_short_name]["max"]
                 group = group.loc[(group["date"] >= ds_min) & (group["date"] <= ds_max)]
@@ -312,6 +312,31 @@ class BaseProbe(metaclass=ABCMeta):
         )
         logger.info("Use probe.reset_predictor() to get back the initial predictor")
 
+    def add_names_columns(self, df: DataFrame):
+        if hasattr(self, "care_site_relationship"):
+            df = df.merge(
+                self.care_site_relationship[
+                    ["care_site_id", "care_site_short_name"]
+                ].drop_duplicates(),
+                on="care_site_id",
+            )
+        if hasattr(self, "biology_relationship"):
+            concept_codes = [
+                "{}_concept_code".format(terminology)
+                for terminology in self._standard_terminologies
+            ]
+            concept_names = [
+                "{}_concept_name".format(terminology)
+                for terminology in self._standard_terminologies
+            ]
+            df = df.merge(
+                self.biology_relationship[
+                    concept_codes + concept_names
+                ].drop_duplicates(),
+                on=concept_codes,
+            )
+        return df.reset_index(drop=True)
+
     def load(self, path=None) -> None:
         """Loads a Probe from local
 
@@ -368,6 +393,8 @@ class BaseProbe(metaclass=ABCMeta):
         if not path:
             if name:
                 self.name = name
+            else:
+                self.name = type(self).__name__
             path = self._get_path()
 
         self.path = path

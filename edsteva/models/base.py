@@ -178,13 +178,13 @@ class BaseModel(metaclass=ABCMeta):
         step_function_model.predict(visit).head()
         ```
 
-        | care_site_level          | care_site_id | care_site_short_name | stay_type    | date       | n_visit | c     | c_fit |
-        | :----------------------- | :----------- | :------------------- | :----------- | :--------- | :------ | :---- | :---- |
-        | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg_Hospit' | 2019-05-01 | 233.0   | 0.841 | 0.758 |
-        | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'All'        | 2021-04-01 | 393.0   | 0.640 | 0.758 |
-        | Pôle/DMU                 | 8312027648   | Care site 2          | 'Urg_Hospit' | 2011-03-01 | 204.0   | 0.497 | 0     |
-        | Pôle/DMU                 | 8312027648   | Care site 2          | 'All'        | 2018-08-01 | 22.0    | 0.784 | 0.874 |
-        | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 2022-02-01 | 9746.0  | 0.974 | 0.912 |
+        | care_site_level          | care_site_id | stay_type    | date       | n_visit | c     | c_fit |
+        | :----------------------- | :----------- | :----------- | :--------- | :------ | :---- | :---- |
+        | Unité Fonctionnelle (UF) | 8312056386   | 'Urg_Hospit' | 2019-05-01 | 233.0   | 0.841 | 0.758 |
+        | Unité Fonctionnelle (UF) | 8312056386   | 'All'        | 2021-04-01 | 393.0   | 0.640 | 0.758 |
+        | Pôle/DMU                 | 8312027648   | 'Urg_Hospit' | 2011-03-01 | 204.0   | 0.497 | 0     |
+        | Pôle/DMU                 | 8312027648   | 'All'        | 2018-08-01 | 22.0    | 0.784 | 0.874 |
+        | Hôpital                  | 8312022130   | 'Urg_Hospit' | 2022-02-01 | 9746.0  | 0.974 | 0.912 |
 
         """
 
@@ -251,6 +251,8 @@ class BaseModel(metaclass=ABCMeta):
         if not path:
             if name:
                 self.name = name
+            else:
+                self.name = type(self).__name__
             path = CACHE_DIR / "edsteva" / "models" / f"{self.name.lower()}.pickle"
 
         self.path = path

@@ -6,6 +6,8 @@ from edsteva.metrics import error_between_t0_t1
 from edsteva.models import BaseModel
 from edsteva.models.rectangle_function import algos
 
+from .viz_config import get_estimates_dashboard_config, get_predictor_dashboard_config
+
 
 class RectangleFunction(BaseModel):
     r"""It models the completeness predictor $c(t)$ as a rectangle function $f_{t_0, c_0, t_1}(t)$ as follow:
@@ -48,6 +50,8 @@ class RectangleFunction(BaseModel):
     """
 
     _coefs = ["t_0", "c_0", "t_1"]
+    get_predictor_dashboard_config = get_predictor_dashboard_config
+    get_estimates_dashboard_config = get_estimates_dashboard_config
 
     def fit_process(
         self,
@@ -112,7 +116,7 @@ class RectangleFunction(BaseModel):
         )
         prediction["c_hat"] = prediction["c_0"].where(rect_mask, 0)
 
-        return prediction.drop(columns=self._coefs + self._metrics)
+        return prediction.drop(columns=self._metrics)
 
     def default_metrics(
         self,

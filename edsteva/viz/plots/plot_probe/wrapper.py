@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime
 from typing import List
 
@@ -7,7 +8,7 @@ from edsteva.models.base import BaseModel
 from edsteva.probes.base import BaseProbe
 from edsteva.viz.plots.plot_probe.fitted_probe import fitted_probe_line
 from edsteva.viz.plots.plot_probe.probe import probe_line
-from edsteva.viz.utils import filter_predictor, save_html
+from edsteva.viz.utils import configure_style, filter_predictor, json_dir, save_html
 
 
 def plot_probe(
@@ -20,15 +21,8 @@ def plot_probe(
     end_date: datetime = None,
     care_site_short_name: List[int] = None,
     save_path: str = None,
-    x_axis_title: str = "Time (Month Year)",
-    x_grid: bool = True,
-    y_axis_title: str = "Completeness predictor c(t)",
-    y_grid: bool = True,
-    show_n_visit: bool = False,
-    show_per_care_site: bool = True,
-    labelAngle: float = -90,
-    labelFontSize: float = 12,
-    titleFontSize: float = 13,
+    legend_predictor: str = "Predictor c(t)",
+    legend_model: str = "Model f(t)",
     **kwargs,
 ):
     r"""
@@ -65,7 +59,7 @@ def plot_probe(
         Label name for the y axis.
     y_grid: bool, optional,
         If False, remove the grid for the y axis.
-    show_n_visit: bool, optional
+    show_n_events: bool, optional
         If True, compute the sum of the number of visit instead of the mean of the completeness predictor $c(t)$.
     show_per_care_site: bool, optional
         If True, the average completeness predictor $c(t)$ is computed for each care site independently. If False, it is computed over all care sites.
@@ -76,15 +70,26 @@ def plot_probe(
     titleFontSize: float, optional
         The font size of the titles.
     """
+    if save_path:
+        alt.data_transformers.enable("default")
+        alt.data_transformers.disable_max_rows()
 
-    index = list(set(probe._index).difference(["care_site_level", "care_site_id"]))
-    if show_per_care_site:
-        index = index + ["care_site_short_name"]
+    else:
+        alt.data_transformers.register("json_dir", json_dir)
+        alt.data_transformers.enable("json_dir")
+
+    probe_config = deepcopy(probe.get_predictor_dashboard_config())
+    chart_style = probe_config["chart_style"]
+    predictor = probe.predictor.copy()
+    predictor = probe.add_names_columns(predictor)
+    indexes = list(set(predictor.columns).difference(["date"] + probe._metrics))
 
     if fitted_model:
-        predictor = fitted_model.predict(probe)
+        predictor = fitted_model.predict(probe).copy()
     else:
-        predictor = probe.predictor
+        predictor = probe.predictor.copy()
+
+    predictor = probe.add_names_columns(predictor)
 
     predictor = filter_predictor(
         predictor=predictor,
@@ -97,38 +102,32 @@ def plot_probe(
         **kwargs,
     )
 
-    index = [variable for variable in index if len(predictor[variable].unique()) >= 2]
-
-    alt.data_transformers.disable_max_rows()
+    indexes = [
+        {"field": variable, "title": variable.replace("_", " ").capitalize()}
+        for variable in indexes
+        if len(predictor[variable].unique()) >= 2
+    ]
 
     if fitted_model:
+        model_config = deepcopy(fitted_model.get_predictor_dashboard_config())
         chart = fitted_probe_line(
             predictor=predictor,
-            index=index,
-            x_axis_title=x_axis_title,
-            y_axis_title=y_axis_title,
-            x_grid=x_grid,
-            y_grid=y_grid,
-            labelAngle=labelAngle,
-            labelFontSize=labelFontSize,
+            probe_config=probe_config,
+            model_config=model_config,
+            indexes=indexes,
+            legend_predictor=legend_predictor,
+            legend_model=legend_model,
         )
     else:
         chart = probe_line(
             predictor=predictor,
-            index=index,
-            x_axis_title=x_axis_title,
-            y_axis_title=y_axis_title,
-            x_grid=x_grid,
-            y_grid=y_grid,
-            show_n_visit=show_n_visit,
-            labelAngle=labelAngle,
+            probe_config=probe_config,
+            indexes=indexes,
         )
 
     if save_path:
         save_html(
-            obj=chart.configure_axis(
-                labelFontSize=labelFontSize, titleFontSize=titleFontSize
-            ).configure_legend(labelFontSize=labelFontSize),
+            obj=configure_style(chart=chart, chart_style=chart_style),
             filename=save_path,
         )
 

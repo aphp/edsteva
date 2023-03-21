@@ -10,7 +10,7 @@ from IPython.display import display
 from loguru import logger
 
 from edsteva.utils.checks import check_columns, check_tables
-from edsteva.utils.framework import get_framework, to
+from edsteva.utils.framework import get_framework, is_koalas, to
 from edsteva.utils.typing import Data, DataFrame
 
 CARE_SITE_LEVEL_NAMES = {
@@ -125,6 +125,8 @@ def prepare_measurement(
         ]
     ]
     biology_relationship = to(get_framework(measurement), biology_relationship)
+    if is_koalas(biology_relationship):
+        biology_relationship = biology_relationship.spark.hint("broadcast")
     measurement = measurement.merge(
         biology_relationship, on="{}_concept_id".format(root_terminology)
     )
@@ -352,7 +354,7 @@ def prepare_visit_detail(
     data: Data,
     start_date: datetime,
     end_date: datetime,
-    visit_detail_type: str = "PASS",
+    visit_detail_type: str = "PASS UF",
 ):
     visit_detail = data.visit_detail[
         [
@@ -810,16 +812,13 @@ def delete_object(obj, filename: str):
 
 def add_length_of_stay(visit_occurrence: DataFrame, stay_durations: List[float]):
     if stay_durations:
-        visit_occurrence["length_of_stay"] = (
+        visit_occurrence["length"] = (
             visit_occurrence["visit_end_datetime"]
             - visit_occurrence["visit_start_datetime"]
         ) / np.timedelta64(timedelta(days=1))
 
-        # All stays
-        all_stays = visit_occurrence.copy()
-        all_stays["length_of_stay"] = "All lengths"
-
         # Incomplete stays
+        visit_occurrence["length_of_stay"] = "Unknown"
         visit_occurrence["length_of_stay"] = visit_occurrence["length_of_stay"].mask(
             visit_occurrence["visit_end_datetime"].isna(),
             "Incomplete stay",
@@ -829,11 +828,11 @@ def add_length_of_stay(visit_occurrence: DataFrame, stay_durations: List[float])
         min_duration = stay_durations[0]
         max_duration = stay_durations[-1]
         visit_occurrence["length_of_stay"] = visit_occurrence["length_of_stay"].mask(
-            (visit_occurrence["length_of_stay"] <= min_duration),
+            (visit_occurrence["length"] <= min_duration),
             "<= {} days".format(min_duration),
         )
         visit_occurrence["length_of_stay"] = visit_occurrence["length_of_stay"].mask(
-            (visit_occurrence["length_of_stay"] >= max_duration),
+            (visit_occurrence["length"] >= max_duration),
             ">= {} days".format(max_duration),
         )
         n_duration = len(stay_durations)
@@ -843,13 +842,11 @@ def add_length_of_stay(visit_occurrence: DataFrame, stay_durations: List[float])
             visit_occurrence["length_of_stay"] = visit_occurrence[
                 "length_of_stay"
             ].mask(
-                (visit_occurrence["length_of_stay"] >= min)
-                & (visit_occurrence["length_of_stay"] < max),
+                (visit_occurrence["length"] >= min)
+                & (visit_occurrence["length"] < max),
                 "{} days - {} days".format(min, max),
             )
-        visit_occurrence = get_framework(visit_occurrence).concat(
-            [all_stays, visit_occurrence]
-        )
+        visit_occurrence = visit_occurrence.drop(columns="length")
 
     else:
         visit_occurrence["length_of_stay"] = "All lengths"
@@ -911,10 +908,10 @@ def get_biology_relationship(
         required_columns=concept_relationship_columns,
         df_name="concept_relationship",
     )
-    concept = data.concept[concept_columns].to_pandas()
-    concept_relationship = data.concept_relationship[
-        concept_relationship_columns
-    ].to_pandas()
+    concept = to("pandas", data.concept[concept_columns])
+    concept_relationship = to(
+        "pandas", data.concept_relationship[concept_relationship_columns]
+    )
     concept_by_terminology = {}
     for terminology, regex in source_terminologies.items():
         concept_by_terminology[terminology] = (
@@ -1216,7 +1213,7 @@ def concatenate_predictor_by_level(
             if level in predictor_by_level:
                 predictors_to_concat.append(predictor_by_level[level])
                 selected_levels.append(level)
-            elif level in CARE_SITE_LEVEL_NAMES:
+            elif level in CARE_SITE_LEVEL_NAMES.keys():
                 predictors_to_concat.append(
                     predictor_by_level[CARE_SITE_LEVEL_NAMES[level]]
                 )

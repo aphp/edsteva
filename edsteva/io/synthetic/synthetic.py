@@ -7,14 +7,14 @@ import pandas as pd
 from databricks import koalas as ks
 from loguru import logger
 
-from edsteva.io.synthetic.care_site import generate_care_site_tables
-from edsteva.io.synthetic.utils import recursive_items
-from edsteva.io.synthetic.visit import (
-    generate_after_t0,
-    generate_after_t1,
-    generate_around_t0,
-    generate_around_t1,
-    generate_before_t0,
+from edsteva.io.synthetic.utils import (
+    generate_care_site_tables,
+    generate_events_after_t0,
+    generate_events_after_t1,
+    generate_events_around_t0,
+    generate_events_around_t1,
+    generate_events_before_t0,
+    recursive_items,
 )
 
 DataFrame = Union[ks.DataFrame, pd.DataFrame]
@@ -93,7 +93,7 @@ OTHER_CONDITION_COLUMNS = dict(
 
 OTHER_DETAIL_COLUMNS = dict(
     visit_detail_type_source_value=[
-        ("PASS", 0.4),
+        ("PASS UF", 0.4),
         ("SSR", 0.1),
         ("RUM", 0.5),
     ],
@@ -114,6 +114,17 @@ OTHER_NOTE_COLUMNS = dict(
     ],
 )
 
+OTHER_MEASUREMENT_COLUMNS = dict(
+    row_status_source_value=[
+        ("Validé", 0.9),
+        ("Discontinué", 0.02),
+        ("Disponible", 0.02),
+        ("Attendu", 0.02),
+        ("Confirmé", 0.02),
+        ("Initial", 0.02),
+    ],
+)
+
 
 def add_other_columns(table: pd.DataFrame, other_columns: Dict):
     for name, params in other_columns.items():
@@ -125,7 +136,7 @@ def add_other_columns(table: pd.DataFrame, other_columns: Dict):
 def generate_stays_step(
     t_start: int,
     t_end: int,
-    n_visit: int,
+    n_events: int,
     increase_time: int,
     increase_ratio: float,
     care_site_id: int,
@@ -135,16 +146,16 @@ def generate_stays_step(
     params = dict(
         t_start=t_start,
         t_end=t_end,
-        n_visit=n_visit,
+        n_events=n_events,
         t0=t0,
         increase_ratio=increase_ratio,
         increase_time=increase_time,
     )
     df = pd.concat(
         [
-            generate_before_t0(**params),
-            generate_after_t0(**params),
-            generate_around_t0(**params),
+            generate_events_before_t0(**params),
+            generate_events_after_t0(**params),
+            generate_events_around_t0(**params),
         ]
     ).to_frame()
     df.columns = [date_col]
@@ -158,7 +169,7 @@ def generate_stays_step(
 def generate_stays_rect(
     t_start: int,
     t_end: int,
-    n_visit: int,
+    n_events: int,
     increase_time: int,
     increase_ratio: float,
     care_site_id: int,
@@ -171,26 +182,25 @@ def generate_stays_rect(
     t0_params = dict(
         t_start=t_start,
         t_end=t1 - increase_time / 2,
-        n_visit=n_visit,
+        n_events=n_events,
         t0=t0,
         increase_ratio=increase_ratio,
         increase_time=increase_time,
     )
-    before_t0 = generate_before_t0(**t0_params)
-    around_t0 = generate_around_t0(**t0_params)
+    before_t0 = generate_events_before_t0(**t0_params)
+    around_t0 = generate_events_around_t0(**t0_params)
     # Raise n_visit to enforce a rectangle shape
-    t0_params["n_visit"] *= 5
-    between_t0_t1 = generate_after_t0(**t0_params)
+    between_t0_t1 = generate_events_after_t0(**t0_params)
     t1_params = dict(
         t_start=t_start,
         t_end=t_end,
-        n_visit=n_visit,
+        n_events=n_events,
         t1=t1,
         increase_time=increase_time,
         increase_ratio=increase_ratio,
     )
-    around_t1 = generate_around_t1(**t1_params)
-    after_t1 = generate_after_t1(**t1_params)
+    around_t1 = generate_events_around_t1(**t1_params)
+    after_t1 = generate_events_after_t1(**t1_params)
 
     df = pd.concat(
         [
@@ -251,7 +261,7 @@ def generate_note_step(
 
 
 def generate_note_rect(
-    visit_care_site,
+    visit_care_site: pd.DataFrame,
     note_type,
     care_site_id,
     date_col,
@@ -293,6 +303,99 @@ def generate_note_rect(
     return note
 
 
+def generate_bio_step(
+    t_start: int,
+    t_end: int,
+    n_events: int,
+    increase_time: int,
+    increase_ratio: float,
+    bio_date_col: str,
+    unit: str,
+    concept_code: str,
+):
+    t0 = np.random.randint(t_start + increase_time, t_end - increase_time)
+    params = dict(
+        t_start=t_start,
+        t_end=t_end,
+        n_events=n_events,
+        t0=t0,
+        increase_ratio=increase_ratio,
+        increase_time=increase_time,
+    )
+    df = pd.concat(
+        [
+            generate_events_before_t0(**params),
+            generate_events_after_t0(**params),
+            generate_events_around_t0(**params),
+        ]
+    ).to_frame()
+    df.columns = [bio_date_col]
+    df["unit_source_value"] = unit
+    df["measurement_source_concept_id"] = concept_code
+    df["t_0_min"] = t0 - increase_time / 2
+    df["t_0_max"] = t0 + increase_time / 2
+
+    return df
+
+
+def generate_bio_rect(
+    t_start: int,
+    t_end: int,
+    n_events: int,
+    increase_time: int,
+    increase_ratio: float,
+    bio_date_col: str,
+    unit: str,
+    concept_code: str,
+):
+    t0 = np.random.randint(
+        t_start + increase_time, (t_end + t_start) / 2 - increase_time
+    )
+    t1 = np.random.randint((t_end + t_start) / 2 + increase_time, t_end - increase_time)
+    t0_params = dict(
+        t_start=t_start,
+        t_end=t1 - increase_time / 2,
+        n_events=n_events,
+        t0=t0,
+        increase_ratio=increase_ratio,
+        increase_time=increase_time,
+    )
+    before_t0 = generate_events_before_t0(**t0_params)
+    around_t0 = generate_events_around_t0(**t0_params)
+    # Raise n_visit to enforce a rectangle shape
+    between_t0_t1 = generate_events_after_t0(**t0_params)
+    t1_params = dict(
+        t_start=t_start,
+        t_end=t_end,
+        n_events=n_events,
+        t1=t1,
+        increase_time=increase_time,
+        increase_ratio=increase_ratio,
+    )
+    around_t1 = generate_events_around_t1(**t1_params)
+    after_t1 = generate_events_after_t1(**t1_params)
+
+    df = pd.concat(
+        [
+            before_t0,
+            around_t0,
+            between_t0_t1,
+            around_t1,
+            after_t1,
+        ]
+    ).to_frame()
+
+    df.columns = [bio_date_col]
+    df["unit_source_value"] = unit
+    df["measurement_source_concept_id"] = concept_code
+    df["t_0_min"] = t0 - increase_time / 2
+    df["t_0_max"] = t0 + increase_time / 2
+    df["t_1_min"] = t1 - increase_time / 2
+    df["t_1_max"] = t1 + increase_time / 2
+
+    return df
+
+
 @dataclass
 class SyntheticData:
     module: str = "pandas"
@@ -302,9 +405,12 @@ class SyntheticData:
     id_condition_col: str = "condition_occurrence_id"
     id_detail_col: str = "visit_detail_id"
     id_note_col: str = "note_id"
+    id_bio_col: str = "measurement_id"
     note_type_col: str = "note_class_source_value"
     date_col: str = "visit_start_datetime"
+    end_date_col: str = "visit_end_datetime"
     detail_date_col: str = "visit_detail_start_datetime"
+    bio_date_col: str = "measurement_datetime"
     t_min: datetime = datetime(2010, 1, 1)
     t_max: datetime = datetime(2020, 1, 1)
     other_visit_columns: Dict = field(default_factory=lambda: OTHER_VISIT_COLUMNS)
@@ -313,6 +419,9 @@ class SyntheticData:
         default_factory=lambda: OTHER_CONDITION_COLUMNS
     )
     other_note_columns: Dict = field(default_factory=lambda: OTHER_NOTE_COLUMNS)
+    other_measurement_columns: Dict = field(
+        default_factory=lambda: OTHER_MEASUREMENT_COLUMNS
+    )
     seed: int = None
     mode: str = "step"
 
@@ -325,6 +434,12 @@ class SyntheticData:
         visit_detail = self._generate_visit_detail(visit_occurrence)
         condition_occurrence = self._generate_condition_occurrence(visit_detail)
         note = self._generate_note(hospital_ids, visit_occurrence)
+        concept, concept_relationship, src_concept_name = self._generate_concept()
+        measurement = self._generate_measurement(
+            visit_occurrence=visit_occurrence,
+            hospital_ids=hospital_ids,
+            src_concept_name=src_concept_name,
+        )
 
         self.care_site = care_site
         self.visit_occurrence = visit_occurrence
@@ -332,6 +447,9 @@ class SyntheticData:
         self.fact_relationship = fact_relationship
         self.visit_detail = visit_detail
         self.note = note
+        self.concept = concept
+        self.concept_relationship = concept_relationship
+        self.measurement = measurement
 
         self.list_available_tables()
 
@@ -353,7 +471,7 @@ class SyntheticData:
         for care_site_id in hospital_ids:
             t_start = t_min + np.random.randint(0, (t_max - t_min) / 20)
             t_end = t_max - np.random.randint(0, (t_max - t_min) / 20)
-            n_visit = np.random.normal(self.mean_visit, self.mean_visit / 5)
+            n_visits = np.random.normal(self.mean_visit, self.mean_visit / 5)
             increase_time = np.random.randint(
                 (t_end - t_start) / 100, (t_end - t_start) / 10
             )
@@ -361,7 +479,7 @@ class SyntheticData:
             params = dict(
                 t_start=t_start,
                 t_end=t_end,
-                n_visit=n_visit,
+                n_events=n_visits,
                 increase_ratio=increase_ratio,
                 increase_time=increase_time,
                 care_site_id=care_site_id,
@@ -378,6 +496,14 @@ class SyntheticData:
             visit_occurrence.append(vo_stays)
 
         visit_occurrence = pd.concat(visit_occurrence).reset_index(drop=True)
+        visit_occurrence[self.end_date_col] = visit_occurrence[
+            self.date_col
+        ] + pd.to_timedelta(
+            pd.Series(
+                np.random.choice([None] * 50 + list(range(100)), len(visit_occurrence))
+            ),
+            unit="days",
+        )
         visit_occurrence[self.id_visit_col] = range(visit_occurrence.shape[0])
         visit_occurrence[self.id_visit_source_col] = range(visit_occurrence.shape[0])
         visit_occurrence = add_other_columns(visit_occurrence, self.other_visit_columns)
@@ -458,7 +584,10 @@ class SyntheticData:
         return condition_occurrence
 
     def _generate_note(
-        self, hospital_ids, visit_occurrence, note_types: Tuple[str] = ("CRH", "URG")
+        self,
+        hospital_ids,
+        visit_occurrence,
+        note_types: Tuple[str] = ("CRH", "URGENCE", "ORDONNANCE"),
     ):
         date_col = self.date_col
         id_visit_col = self.id_visit_col
@@ -501,6 +630,220 @@ class SyntheticData:
         notes = add_other_columns(notes, self.other_note_columns)
 
         return notes
+
+    def _generate_concept(
+        self, n_entity: int = 5, units: List[str] = ["g", "g/l", "mol", "s"]
+    ):
+        loinc_concept_id = []
+        loinc_itm_concept_id = []
+        loinc_concept_code = []
+        loinc_itm_concept_code = []
+        anabio_concept_id = []
+        anabio_itm_concept_id = []
+        anabio_concept_code = []
+        anabio_itm_concept_code = []
+        src_concept_code = []
+        loinc_concept_name = []
+        loinc_itm_concept_name = []
+        anabio_concept_name = []
+        anabio_itm_concept_name = []
+        src_concept_name = []
+        concept_id_1 = []
+        concept_id_2 = []
+        relationship_id = []
+        for i in range(n_entity):
+            n_loinc = np.random.randint(1, 4)
+            loinc_codes = [str(i) + str(j) + "-0" for j in range(n_loinc)]
+            loinc_concept_code.extend(loinc_codes)
+            loinc_concept_id.extend(loinc_codes)
+            unit_values = np.random.choice(units, n_loinc)
+            for loinc_code in loinc_codes:
+                unit_value = np.random.choice(unit_values)
+                loinc_concept_name.append("LOINC_" + loinc_code + "_" + unit_value)
+                has_loinc_itm = np.random.random() >= 0.5
+                if has_loinc_itm:
+                    loinc_id_itm = loinc_code + "_ITM"
+                    loinc_itm_concept_code.append(loinc_code)
+                    loinc_itm_concept_id.append(loinc_id_itm)
+                    loinc_itm_concept_name.append(
+                        "LOINC_" + loinc_id_itm + "_" + unit_value
+                    )
+                n_anabio = np.random.randint(1, 3)
+                supp_code = "9" if len(str(i)) == 1 else ""
+                anabio_codes = [
+                    "A" + loinc_code.split("-")[0] + str(j) + supp_code
+                    for j in range(n_anabio)
+                ]
+                anabio_concept_code.extend(anabio_codes)
+                anabio_concept_id.extend(anabio_codes)
+                for anabio_code in anabio_codes:
+                    anabio_concept_name.append(
+                        "ANABIO_" + anabio_code + "_" + unit_value
+                    )
+                    has_anabio_itm = np.random.random() >= 0.5
+                    if has_anabio_itm:
+                        anabio_id_itm = anabio_code + "_ITM"
+                        anabio_itm_concept_code.append(anabio_code)
+                        anabio_itm_concept_id.append(anabio_id_itm)
+                        anabio_itm_concept_name.append(
+                            "ANABIO_" + anabio_id_itm + "_" + unit_value
+                        )
+                        concept_id_1.extend([anabio_id_itm, anabio_code])
+                        concept_id_2.extend([anabio_code, anabio_id_itm])
+                        relationship_id.extend(["Maps to", "Mapped from"])
+                        if has_loinc_itm:
+                            concept_id_1.extend([anabio_id_itm, loinc_id_itm])
+                            concept_id_2.extend([loinc_id_itm, anabio_id_itm])
+                            relationship_id.extend(["Maps to", "Mapped from"])
+                    n_src = np.random.randint(1, 3)
+                    src_codes = [
+                        loinc_code + "-" + anabio_code + "-" + str(j)
+                        for j in range(n_src)
+                    ]
+                    src_concept_code.extend(src_codes)
+                    src_concept_name.extend(
+                        ["SRC_" + src_code + "_" + unit_value for src_code in src_codes]
+                    )
+                    for src_code in src_codes:
+                        concept_id_1.extend(
+                            [src_code, src_code, anabio_code, loinc_code]
+                        )
+                        concept_id_2.extend(
+                            [anabio_code, loinc_code, src_code, src_code]
+                        )
+                        relationship_id.extend(
+                            ["Maps to", "Maps to", "Mapped from", "Mapped from"]
+                        )
+
+        src_vocabulary_id = ["Analyses Laboratoire"] * len(src_concept_code)
+        glims_anabio_vocabulary_id = ["GLIMS XXX Anabio"] * len(anabio_concept_id)
+        itm_anabio_vocabulary_id = ["ITM - ANABIO"] * len(anabio_itm_concept_id)
+        glims_loinc_vocabulary_id = ["GLIMS XXX LOINC"] * len(loinc_concept_id)
+        itm_loinc_vocabulary_id = ["ITM - LOINC"] * len(loinc_itm_concept_id)
+
+        concept_id = (
+            src_concept_code
+            + anabio_concept_id
+            + anabio_itm_concept_id
+            + loinc_concept_id
+            + loinc_itm_concept_id
+        )
+        concept_code = (
+            src_concept_code
+            + anabio_concept_code
+            + anabio_itm_concept_code
+            + loinc_concept_code
+            + loinc_itm_concept_code
+        )
+        concept_name = (
+            src_concept_name
+            + anabio_concept_name
+            + anabio_itm_concept_name
+            + loinc_concept_name
+            + loinc_itm_concept_name
+        )
+        vocabulary_id = (
+            src_vocabulary_id
+            + glims_anabio_vocabulary_id
+            + itm_anabio_vocabulary_id
+            + glims_loinc_vocabulary_id
+            + itm_loinc_vocabulary_id
+        )
+
+        concept = pd.DataFrame(
+            {
+                "concept_id": concept_id,
+                "concept_code": concept_code,
+                "concept_name": concept_name,
+                "vocabulary_id": vocabulary_id,
+            }
+        )
+
+        concept_relationship = pd.DataFrame(
+            {
+                "concept_id_1": concept_id_1,
+                "concept_id_2": concept_id_2,
+                "relationship_id": relationship_id,
+            }
+        )
+
+        return concept, concept_relationship, src_concept_name
+
+    def _generate_measurement(
+        self,
+        visit_occurrence: pd.DataFrame,
+        hospital_ids: List[int],
+        src_concept_name: List[str],
+        mean_measurement: int = 1000,
+        units: List[str] = ["g", "g/l", "mol", "s"],
+    ):
+        t_min = self.t_min.timestamp()
+        t_max = self.t_max.timestamp()
+        measurements = []
+        for concept_name in src_concept_name:
+            concept_code = concept_name.split("_")[1]
+            unit = concept_name.split("_")[-1]
+            mean_value = (1 + units.index(unit)) * 2
+            std_value = 1
+            for care_site_id in hospital_ids:
+                t_start = t_min + np.random.randint(0, (t_max - t_min) / 20)
+                t_end = t_max - np.random.randint(0, (t_max - t_min) / 20)
+                valid_measurements = int(
+                    np.random.normal(mean_measurement, mean_measurement / 5)
+                )
+                missing_value = int(np.random.uniform(1, valid_measurements / 10))
+                n_measurements = valid_measurements + missing_value
+                increase_time = np.random.randint(
+                    (t_end - t_start) / 100, (t_end - t_start) / 10
+                )
+                increase_ratio = np.random.uniform(150, 200)
+                concept_code = concept_name.split("_")[1]
+                unit = concept_name.split("_")[-1]
+                mean_value = (1 + units.index(unit)) * 2
+                std_value = 1
+                params = dict(
+                    t_start=t_start,
+                    t_end=t_end,
+                    n_events=n_measurements,
+                    increase_ratio=increase_ratio,
+                    increase_time=increase_time,
+                    bio_date_col=self.bio_date_col,
+                    unit=unit,
+                    concept_code=concept_code,
+                )
+                if self.mode == "step":
+                    measurement = generate_bio_step(**params)
+                elif self.mode == "rect":
+                    measurement = generate_bio_rect(**params)
+                else:
+                    raise ValueError(
+                        f"Unknown mode {self.mode}, options are ('step', 'rect')"
+                    )
+                visit_care_site = visit_occurrence[
+                    visit_occurrence.care_site_id == care_site_id
+                ]
+                measurement[self.id_visit_col] = (
+                    visit_care_site[self.id_visit_col]
+                    .sample(measurement.shape[0], replace=True)
+                    .reset_index(drop=True)
+                )
+                measurement["value_as_number"] = [None] * missing_value + list(
+                    np.random.normal(
+                        mean_value, std_value, measurement.shape[0] - missing_value
+                    )
+                )
+                measurements.append(measurement)
+
+        measurements = pd.concat(measurements).reset_index(drop=True)
+        measurements["value_source_value"] = (
+            measurements["value_as_number"].astype(str)
+            + " "
+            + measurements["unit_source_value"].astype(str)
+        )
+        measurements[self.id_bio_col] = range(measurements.shape[0])
+        measurements = add_other_columns(measurements, self.other_measurement_columns)
+
+        return measurements
 
     def convert_to_koalas(self):
         if isinstance(self.care_site, ks.frame.DataFrame):

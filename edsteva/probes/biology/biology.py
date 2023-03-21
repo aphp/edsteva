@@ -18,78 +18,7 @@ from edsteva.utils.checks import check_tables
 from edsteva.utils.framework import is_koalas, to
 from edsteva.utils.typing import Data
 
-
-def compute_completeness(biology_predictor, standard_terminologies, root_terminology):
-    partition_cols = (
-        [
-            "care_site_level",
-            "care_site_id",
-            "care_site_short_name",
-            "stay_type",
-            "concepts_set",
-            "length_of_stay",
-            "date",
-        ]
-        + [
-            "{}_concept_code".format(terminology)
-            for terminology in standard_terminologies
-        ]
-        + [
-            "{}_concept_name".format(terminology)
-            for terminology in standard_terminologies
-        ]
-        + [
-            "{}_vocabulary".format(terminology)
-            for terminology in standard_terminologies
-        ]
-    )
-    n_measurement = (
-        biology_predictor.groupby(
-            partition_cols,
-            as_index=False,
-            dropna=False,
-        )
-        .agg({"measurement_id": "nunique"})
-        .rename(columns={"measurement_id": "n_measurement"})
-    )
-
-    n_measurement = to("pandas", n_measurement)
-
-    partition_cols = list(set(partition_cols) - {"date"})
-    q_99_measurement = (
-        n_measurement.groupby(
-            partition_cols,
-            as_index=False,
-            dropna=False,
-        )[["n_measurement"]]
-        .quantile(q=0.99)
-        .rename(columns={"n_measurement": "q_99_measurement"})
-    )
-
-    biology_predictor = n_measurement.merge(
-        q_99_measurement,
-        on=partition_cols,
-    )
-
-    biology_predictor["c"] = biology_predictor["q_99_measurement"].where(
-        biology_predictor["q_99_measurement"] == 0,
-        biology_predictor["n_measurement"] / biology_predictor["q_99_measurement"],
-    )
-    biology_predictor = biology_predictor.drop(columns="q_99_measurement")
-
-    return biology_predictor
-
-
-def get_hospital_measurements(measurement, visit_occurrence, care_site):
-    hospital_measurement = measurement.merge(
-        visit_occurrence.drop(columns="date"), on="visit_occurrence_id"
-    )
-    hospital_measurement = hospital_measurement.merge(care_site, on="care_site_id")
-
-    if is_koalas(hospital_measurement):
-        hospital_measurement.spark.cache()
-
-    return hospital_measurement
+from .viz_config import get_estimates_dashboard_config, get_predictor_dashboard_config
 
 
 class BiologyProbe(BaseProbe):
@@ -108,15 +37,35 @@ class BiologyProbe(BaseProbe):
         Variable from which data is grouped
 
         **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id"]``
-    """
+    _index: List[str]
+        Variable from which data is grouped
 
-    _index = [
-        "care_site_level",
-        "concepts_set",
-        "stay_type",
-        "length_of_stay",
-        "care_site_id",
-    ]
+        **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id"]``
+    _index: List[str]
+        Variable from which data is grouped
+
+        **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id"]``
+    _extra_predictor: str
+        Variable from which data is grouped
+
+        **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id"]``
+    """
+    get_predictor_dashboard_config = get_predictor_dashboard_config
+    get_estimates_dashboard_config = get_estimates_dashboard_config
+
+    def __init__(self, standard_terminologies: List[str] = ["ANABIO", "LOINC"]):
+        self._standard_terminologies = standard_terminologies
+        self._index = [
+            "care_site_level",
+            "concepts_set",
+            "stay_type",
+            "length_of_stay",
+            "care_site_id",
+        ] + [
+            "{}_concept_code".format(terminology)
+            for terminology in standard_terminologies
+        ]
+        self._metrics = ["c", "n_measurement"]
 
     def compute_process(
         self,
@@ -139,7 +88,6 @@ class BiologyProbe(BaseProbe):
             "Bicarbonate": "A0422|H9622|C6408|F4161",
         },
         stay_durations: List[float] = [1],
-        standard_terminologies: List[str] = ["ANABIO", "LOINC"],
         source_terminologies: Dict[str, str] = {
             "ANALYSES_LABORATOIRE": r"Analyses Laboratoire",
             "GLIMS_ANABIO": r"GLIMS.{0,20}Anabio",
@@ -179,7 +127,7 @@ class BiologyProbe(BaseProbe):
             data=data,
             required_tables=["measurement", "concept", "concept_relationship"],
         )
-
+        standard_terminologies = self._standard_terminologies
         biology_relationship = get_biology_relationship(
             data=data,
             standard_terminologies=standard_terminologies,
@@ -189,20 +137,6 @@ class BiologyProbe(BaseProbe):
 
         self.biology_relationship = biology_relationship
         root_terminology = mapping[0][0]
-        self._index.extend(
-            [
-                "{}_concept_code".format(terminology)
-                for terminology in standard_terminologies
-            ]
-            + [
-                "{}_concept_name".format(terminology)
-                for terminology in standard_terminologies
-            ]
-            + [
-                "{}_vocabulary".format(terminology)
-                for terminology in standard_terminologies
-            ]
-        )
 
         measurement = prepare_measurement(
             data=data,
@@ -249,6 +183,54 @@ class BiologyProbe(BaseProbe):
             care_site_levels=care_site_levels,
         )
 
-        return compute_completeness(
-            biology_predictor, standard_terminologies, root_terminology
+        return compute_completeness(self, biology_predictor)
+
+
+def compute_completeness(self, biology_predictor):
+    partition_cols = self._index.copy() + ["date"]
+    n_measurement = (
+        biology_predictor.groupby(
+            partition_cols,
+            as_index=False,
+            dropna=False,
         )
+        .agg({"measurement_id": "nunique"})
+        .rename(columns={"measurement_id": "n_measurement"})
+    )
+
+    n_measurement = to("pandas", n_measurement)
+    partition_cols = list(set(partition_cols) - {"date"})
+    q_99_measurement = (
+        n_measurement.groupby(
+            partition_cols,
+            as_index=False,
+            dropna=False,
+        )[["n_measurement"]]
+        .agg({"n_measurement": "max"})
+        .rename(columns={"n_measurement": "max_n_measurement"})
+    )
+
+    biology_predictor = n_measurement.merge(
+        q_99_measurement,
+        on=partition_cols,
+    )
+
+    biology_predictor["c"] = biology_predictor["max_n_measurement"].where(
+        biology_predictor["max_n_measurement"] == 0,
+        biology_predictor["n_measurement"] / biology_predictor["max_n_measurement"],
+    )
+    biology_predictor = biology_predictor.drop(columns="max_n_measurement")
+
+    return biology_predictor
+
+
+def get_hospital_measurements(measurement, visit_occurrence, care_site):
+    hospital_measurement = measurement.merge(
+        visit_occurrence.drop(columns="date"), on="visit_occurrence_id"
+    )
+    hospital_measurement = hospital_measurement.merge(care_site, on="care_site_id")
+
+    if is_koalas(hospital_measurement):
+        hospital_measurement.spark.cache()
+
+    return hospital_measurement

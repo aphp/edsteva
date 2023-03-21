@@ -1,4 +1,5 @@
 import uuid
+from copy import deepcopy
 
 import altair as alt
 from IPython.display import HTML, display
@@ -9,7 +10,7 @@ from edsteva.viz.dashboards.predictor_dashboard.fitted_probe import (
     fitted_probe_dashboard,
 )
 from edsteva.viz.dashboards.predictor_dashboard.probe import probe_dashboard
-from edsteva.viz.utils import filter_predictor, save_html
+from edsteva.viz.utils import filter_predictor, json_dir, save_html
 
 
 def predictor_dashboard(
@@ -17,14 +18,9 @@ def predictor_dashboard(
     fitted_model: BaseModel = None,
     care_site_level: str = None,
     save_path: str = None,
-    x_axis_title: str = "Time (Month Year)",
-    x_grid: bool = True,
-    y_axis_title: str = "Completeness predictor c(t)",
-    y_grid: bool = True,
-    show_n_visit: bool = False,
-    labelAngle: float = -90,
-    labelFontSize: float = 12,
-    titleFontSize: float = 13,
+    legend_predictor: str = "Predictor c(t)",
+    legend_model: str = "Model f(t)",
+    **kwargs,
 ):
     r"""Displays an interactive chart with:
 
@@ -53,8 +49,8 @@ def predictor_dashboard(
         Label name for the y axis.
     y_grid: bool, optional,
         If False, remove the grid for the y axis.
-    show_n_visit: bool, optional
-        show the number of visit instead of the completeness predictor $c(t)$.
+    show_n_events: bool, optional
+        show the number of events instead of the completeness predictor $c(t)$.
     labelAngle: float, optional
         The rotation angle of the label on the x_axis.
     labelFontSize: float, optional
@@ -62,49 +58,46 @@ def predictor_dashboard(
     titleFontSize: float, optional
         The font size of the titles.
     """
+    if save_path:
+        alt.data_transformers.enable("default")
+        alt.data_transformers.disable_max_rows()
 
-    index = list(set(probe._index).difference(["care_site_level", "care_site_id"]))
+    else:
+        alt.data_transformers.register("json_dir", json_dir)
+        alt.data_transformers.enable("json_dir")
+
+    probe_config = deepcopy(probe.get_predictor_dashboard_config())
 
     if fitted_model:
         predictor = fitted_model.predict(probe)
     else:
-        predictor = probe.predictor
-
+        predictor = probe.predictor.copy()
+    predictor = probe.add_names_columns(predictor)
     predictor = filter_predictor(
         predictor=predictor,
         care_site_level=care_site_level,
+        **kwargs,
     )
 
     if fitted_model:
+        model_config = deepcopy(fitted_model.get_predictor_dashboard_config())
         chart = fitted_probe_dashboard(
             predictor=predictor,
-            index=index,
-            x_axis_title=x_axis_title,
-            y_axis_title=y_axis_title,
-            x_grid=x_grid,
-            y_grid=y_grid,
-            labelAngle=labelAngle,
-            labelFontSize=labelFontSize,
+            probe_config=probe_config,
+            model_config=model_config,
+            legend_predictor=legend_predictor,
+            legend_model=legend_model,
         )
     else:
         chart = probe_dashboard(
             predictor=predictor,
-            index=index,
-            x_axis_title=x_axis_title,
-            y_axis_title=y_axis_title,
-            x_grid=x_grid,
-            y_grid=y_grid,
-            show_n_visit=show_n_visit,
-            labelAngle=labelAngle,
+            probe_config=probe_config,
         )
 
-    chart = chart.configure_axis(
-        labelFontSize=labelFontSize, titleFontSize=titleFontSize
-    ).configure_legend(labelFontSize=labelFontSize)
     vis_probe = "id" + uuid.uuid4().hex
     new_index_probe_id = "id" + uuid.uuid4().hex
     old_index_probe_id = "id" + uuid.uuid4().hex
-
+    left_shift = "145px" if fitted_model else "45px"
     html_chart = f"""
         <!DOCTYPE html>
         <html>
@@ -120,7 +113,7 @@ def predictor_dashboard(
             <div>
             <div id={vis_probe}></div>
             </div>
-            <div style="position:absolute;left:45px;top:380px;width: -webkit-fill-available;">
+            <div style="position:absolute;left:{left_shift};top:380px;width: -webkit-fill-available;">
             <div id={new_index_probe_id}>
               <div id={old_index_probe_id}></div>
             </div>
@@ -144,17 +137,12 @@ def predictor_dashboard(
             }}).catch(console.error);
         </script>
         </body>
-        <style>
-        .vega-bind {{
-        position: relative;
-        top: 10px;
-        }}
-        </style>
         </html>
         """
-    display(HTML(html_chart))
     if save_path:
         save_html(
             obj=html_chart,
             filename=save_path,
         )
+    else:
+        display(HTML(html_chart))

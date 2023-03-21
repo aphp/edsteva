@@ -1,0 +1,238 @@
+import uuid
+from copy import deepcopy
+from functools import reduce
+
+import altair as alt
+
+from edsteva.models import BaseModel
+from edsteva.probes import BaseProbe
+from edsteva.viz.utils import (
+    add_interactive_selection,
+    concatenate_charts,
+    configure_style,
+    generate_horizontal_bar_charts,
+    generate_vertical_bar_charts,
+    save_html,
+)
+
+
+def plot_estimates_densities(
+    probe: BaseProbe,
+    fitted_model: BaseModel,
+    save_path: str = None,
+    **kwargs,
+):
+    r"""Displays the density plot with the associated box plot of each estimate and metric computed in the input model. It can help you to set the thresholds.
+
+
+    Parameters
+    ----------
+    fitted_model : BaseModel
+        Model with estimates of interest
+        **EXAMPLE**: StepFunction Model with $(\hat{t_0}, \hat{c_0})$
+    save_path : str, optional
+        Folder path where to save the chart in HTML format.
+
+        **EXAMPLE**: `"my_folder/my_file.html"`
+    labelFontSize: float, optional
+        The font size of the labels (axis and legend).
+    titleFontSize: float, optional
+        The font size of the titles.
+    """
+    alt.data_transformers.disable_max_rows()
+
+    predictor = probe.predictor.copy()
+    estimates = fitted_model.estimates.copy()
+    predictor = probe.add_names_columns(predictor)
+    estimates = probe.add_names_columns(estimates)
+    probe_config = deepcopy(probe.get_predictor_dashboard_config())
+    vertical_bar_charts_config = probe_config["vertical_bar_charts"]
+    horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
+    chart_style = probe_config["chart_style"]
+
+    quantitative_estimates = []
+    time_estimates = []
+
+    for estimate in fitted_model._coefs + fitted_model._metrics:
+        if estimates[estimate].dtype == float or estimates[estimate].dtype == int:
+            max_value = estimates[estimate].max()
+            min_value = estimates[estimate].min()
+            estimates[estimate] = round(estimates[estimate], 3)
+
+            estimate_density = (
+                alt.vconcat(
+                    (
+                        (
+                            alt.Chart(estimates)
+                            .transform_density(
+                                estimate,
+                                as_=[estimate, "Density"],
+                                extent=[min_value, max_value],
+                                **kwargs,
+                            )
+                            .mark_area()
+                            .encode(
+                                x=alt.X(
+                                    "{}:Q".format(estimate),
+                                    title=None,
+                                ),
+                                y="Density:Q",
+                            )
+                        )
+                        + alt.Chart(estimates)
+                        .mark_rule(color="red")
+                        .encode(
+                            x="median({}):Q".format(estimate),
+                            tooltip=alt.Tooltip("median({}):Q".format(estimate)),
+                        )
+                    ).properties(width=800, height=300),
+                    (
+                        alt.Chart(estimates)
+                        .mark_tick()
+                        .encode(x=alt.X("{}:Q".format(estimate), axis=None))
+                    ),
+                    spacing=0,
+                )
+                & (
+                    alt.Chart(estimates)
+                    .mark_boxplot()
+                    .encode(
+                        x="{}:Q".format(estimate),
+                    )
+                )
+            ).resolve_scale(x="shared")
+            quantitative_estimates.append(estimate_density)
+
+        else:
+            estimates[estimate] = estimates[estimate].astype("datetime64[s]")
+            estimate_density = (
+                (
+                    alt.Chart(estimates)
+                    .transform_timeunit(estimate="yearmonth({})".format(estimate))
+                    .mark_bar(size=10)
+                    .encode(
+                        x=alt.X(
+                            "{}:T".format(estimate),
+                            axis=alt.Axis(
+                                tickCount="month",
+                                format="%Y, %b",
+                                labelAngle=-90,
+                            ),
+                            title=estimate,
+                        ),
+                        y=alt.Y(
+                            "count({}):Q".format(estimate),
+                            axis=alt.Axis(tickMinStep=1),
+                        ),
+                    )
+                )
+                + alt.Chart(estimates)
+                .mark_rule(color="red")
+                .encode(
+                    x="median({}):T".format(estimate),
+                    tooltip=alt.Tooltip("median({}):T".format(estimate)),
+                )
+            ).properties(width=800, height=300)
+            time_estimates.append(estimate_density)
+
+    estimates_densities = time_estimates + quantitative_estimates
+    care_site_level_selection = alt.selection_single(
+        fields=["care_site_level"],
+        bind=alt.binding_select(
+            name="Care site level : ", options=estimates["care_site_level"].unique()
+        ),
+        init={"care_site_level": estimates["care_site_level"].unique()[0]},
+    )
+    main_chart = reduce(
+        lambda estimate_density_1, estimate_density_2: estimate_density_1
+        & estimate_density_2,
+        estimates_densities,
+    ).add_selection(care_site_level_selection)
+
+    base = alt.Chart(predictor)
+
+    horizontal_bar_charts, y_variables_selections = generate_horizontal_bar_charts(
+        base=base,
+        horizontal_bar_charts_config=horizontal_bar_charts_config,
+    )
+    vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
+        base=base,
+        vertical_bar_charts_config=vertical_bar_charts_config,
+    )
+
+    selections = dict(
+        y_variables_selections,
+        **x_variables_selections,
+        **dict(cares_site_level=care_site_level_selection),
+    )
+    selection_charts = dict(
+        horizontal_bar_charts,
+        **vertical_bar_charts,
+    )
+    main_chart = add_interactive_selection(
+        base=main_chart, selection_charts=selection_charts, selections=selections
+    )
+
+    chart = concatenate_charts(
+        main_chart=main_chart,
+        horizontal_bar_charts=horizontal_bar_charts,
+        vertical_bar_charts=vertical_bar_charts,
+        spacing=0,
+    )
+    chart = configure_style(chart=chart, chart_style=chart_style)
+
+    vis_threshold = "id" + uuid.uuid4().hex
+    new_sliders_threshold_id = "id" + uuid.uuid4().hex
+    old_sliders_threshold_id = "id" + uuid.uuid4().hex
+    html_chart = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <script src="https://cdn.jsdelivr.net/npm/vega@{alt.VEGA_VERSION}"></script>
+          <script src="https://cdn.jsdelivr.net/npm/vega-lite@{alt.VEGALITE_VERSION}"></script>
+          <script src="https://cdn.jsdelivr.net/npm/vega-embed@{alt.VEGAEMBED_VERSION}"></script>
+        </head>
+        <body>
+
+        <div class="container">
+          <div class="row">
+            <div style="width: -webkit-fill-available;">
+            <div id={new_sliders_threshold_id}>
+              <div id={old_sliders_threshold_id}></div>
+            </div>
+            </div>
+            <div>
+            <div id={vis_threshold}></div>
+            </div>
+
+          </div>
+        </div>
+
+        <script type="text/javascript">
+        vegaEmbed('#{vis_threshold}', {chart.to_json(indent=None)}).then(function(result) {{
+            const sliders = document.getElementsByClassName('vega-bindings');
+            const newestimate = document.getElementById('{new_sliders_threshold_id}');
+            const oldestimate = document.getElementById('{old_sliders_threshold_id}');
+            for (var i = 0; i < sliders.length; i++) {{
+                if (sliders[i].parentElement.parentElement.id == '{vis_threshold}') {{
+                    var estimate_slider = sliders[i]
+                    var index_slider = estimate_slider.querySelectorAll(".vega-bind")
+                    }}
+                }}
+            newestimate.replaceChild(estimate_slider, oldestimate);
+            for (var i = 0; i < index_slider.length; i++) {{
+                if (index_slider[i].firstChild.innerHTML == "Group by: ") {{
+                    var index_color = index_slider[i]}}
+                }}
+            }}).catch(console.error);
+        </script>
+        </body>
+        </html>
+        """
+    if save_path:
+        save_html(
+            obj=html_chart,
+            filename=save_path,
+        )
+
+    return html_chart

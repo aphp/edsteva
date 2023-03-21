@@ -20,141 +20,7 @@ from edsteva.utils.checks import check_conditon_source_systems, check_tables
 from edsteva.utils.framework import is_koalas, to
 from edsteva.utils.typing import Data
 
-
-def compute_completeness(condition_predictor):
-    partition_cols = [
-        "care_site_level",
-        "care_site_id",
-        "care_site_short_name",
-        "stay_type",
-        "diag_type",
-        "condition_type",
-        "source_system",
-        "length_of_stay",
-        "date",
-    ]
-    n_visit_with_condition = (
-        condition_predictor.groupby(
-            partition_cols,
-            as_index=False,
-            dropna=False,
-        )
-        .agg({"has_condition": "count"})
-        .rename(columns={"has_condition": "n_visit_with_condition"})
-    )
-    partition_cols = list(
-        set(partition_cols) - {"diag_type", "condition_type", "source_system"}
-    )
-
-    n_visit = (
-        condition_predictor.groupby(
-            partition_cols,
-            as_index=False,
-            dropna=False,
-        )
-        .agg({"visit_id": "nunique"})
-        .rename(columns={"visit_id": "n_visit"})
-    )
-
-    condition_predictor = n_visit_with_condition.merge(
-        n_visit,
-        on=partition_cols,
-    )
-
-    condition_predictor = to("pandas", condition_predictor)
-
-    condition_predictor["c"] = condition_predictor["n_visit"].where(
-        condition_predictor["n_visit"] == 0,
-        condition_predictor["n_visit_with_condition"] / condition_predictor["n_visit"],
-    )
-    condition_predictor = condition_predictor.drop(columns=["n_visit_with_condition"])
-
-    return condition_predictor
-
-
-def get_hospital_visit(condition_occurrence, visit_occurrence, care_site):
-    condition_hospital = condition_occurrence.drop_duplicates(
-        ["visit_occurrence_id", "diag_type", "condition_type", "source_system"]
-    )
-    condition_hospital["has_condition"] = True
-    hospital_visit = visit_occurrence.merge(
-        condition_hospital,
-        on="visit_occurrence_id",
-        how="left",
-    )
-    hospital_visit = hospital_visit.rename(columns={"visit_occurrence_id": "visit_id"})
-    hospital_visit = hospital_visit.merge(care_site, on="care_site_id")
-
-    if is_koalas(hospital_visit):
-        hospital_visit.spark.cache()
-
-    return hospital_visit
-
-
-def get_uf_visit(
-    condition_occurrence,
-    visit_occurrence,
-    visit_detail,
-    care_site,
-    care_site_relationship,
-):  # pragma: no cover
-    condition_uf = (
-        condition_occurrence[
-            [
-                "visit_detail_id",
-                "diag_type",
-                "condition_type",
-                "source_system",
-            ]
-        ]
-        .drop_duplicates()
-        .rename(columns={"visit_detail_id": "visit_id"})
-    )
-    condition_uf["has_condition"] = True
-
-    visit_detail = visit_detail.merge(
-        visit_occurrence[["visit_occurrence_id", "stay_type"]],
-        on="visit_occurrence_id",
-    )
-    visit_detail = visit_detail.merge(
-        condition_uf,
-        on="visit_id",
-        how="left",
-    )
-    visit_detail = visit_detail.drop(columns=["visit_occurrence_id"])
-
-    uf_visit = convert_table_to_uf(
-        table=visit_detail,
-        table_name="visit_detail",
-        care_site_relationship=care_site_relationship,
-    )
-    uf_visit = uf_visit.merge(care_site, on="care_site_id")
-
-    uf_name = CARE_SITE_LEVEL_NAMES["UF"]
-    uf_visit = uf_visit[uf_visit["care_site_level"] == uf_name]
-
-    if is_koalas(uf_visit):
-        uf_visit.spark.cache()
-
-    return uf_visit
-
-
-def get_pole_visit(uf_visit, care_site, care_site_relationship):  # pragma: no cover
-    pole_visit = convert_table_to_pole(
-        table=uf_visit.drop(columns=["care_site_short_name", "care_site_level"]),
-        table_name="uf_visit",
-        care_site_relationship=care_site_relationship,
-    )
-
-    pole_visit = pole_visit.merge(care_site, on="care_site_id")
-
-    pole_name = CARE_SITE_LEVEL_NAMES["Pole"]
-    pole_visit = pole_visit[pole_visit["care_site_level"] == pole_name]
-
-    if is_koalas(pole_visit):
-        pole_visit.spark.cache()
-
-    return pole_visit
+from .viz_config import get_estimates_dashboard_config, get_predictor_dashboard_config
 
 
 class ConditionPerVisitProbe(BaseProbe):
@@ -184,6 +50,9 @@ class ConditionPerVisitProbe(BaseProbe):
         "source_system",
         "care_site_id",
     ]
+    _metrics = ["c", "n_visit", "n_visit_with_condition"]
+    get_predictor_dashboard_config = get_predictor_dashboard_config
+    get_estimates_dashboard_config = get_estimates_dashboard_config
 
     def compute_process(
         self,
@@ -197,10 +66,7 @@ class ConditionPerVisitProbe(BaseProbe):
         care_site_short_names: List[str] = None,
         extra_data: Data = None,
         diag_types: Union[str, Dict[str, str]] = None,
-        condition_types: Union[str, Dict[str, str]] = {
-            "All": ".*",
-            "Cancer": "C",
-        },
+        condition_types: Union[str, Dict[str, str]] = {"All": ".*"},
         source_systems: List[str] = ["ORBIS"],
         stay_durations: List[float] = None,
     ):
@@ -296,4 +162,129 @@ class ConditionPerVisitProbe(BaseProbe):
             care_site_levels=care_site_levels,
         )
 
-        return compute_completeness(condition_predictor)
+        return compute_completeness(self, condition_predictor)
+
+
+def compute_completeness(self, condition_predictor):
+    partition_cols = self._index.copy() + ["date"]
+    n_visit_with_condition = (
+        condition_predictor.groupby(
+            partition_cols,
+            as_index=False,
+            dropna=False,
+        )
+        .agg({"has_condition": "count"})
+        .rename(columns={"has_condition": "n_visit_with_condition"})
+    )
+    partition_cols = list(
+        set(partition_cols) - {"diag_type", "condition_type", "source_system"}
+    )
+
+    n_visit = (
+        condition_predictor.groupby(
+            partition_cols,
+            as_index=False,
+            dropna=False,
+        )
+        .agg({"visit_id": "nunique"})
+        .rename(columns={"visit_id": "n_visit"})
+    )
+
+    condition_predictor = n_visit_with_condition.merge(
+        n_visit,
+        on=partition_cols,
+    )
+
+    condition_predictor = to("pandas", condition_predictor)
+
+    condition_predictor["c"] = condition_predictor["n_visit"].where(
+        condition_predictor["n_visit"] == 0,
+        condition_predictor["n_visit_with_condition"] / condition_predictor["n_visit"],
+    )
+
+    return condition_predictor
+
+
+def get_hospital_visit(condition_occurrence, visit_occurrence, care_site):
+    condition_hospital = condition_occurrence.drop_duplicates(
+        ["visit_occurrence_id", "diag_type", "condition_type", "source_system"]
+    )
+    condition_hospital["has_condition"] = True
+    hospital_visit = visit_occurrence.merge(
+        condition_hospital,
+        on="visit_occurrence_id",
+        how="left",
+    )
+    hospital_visit = hospital_visit.rename(columns={"visit_occurrence_id": "visit_id"})
+    hospital_visit = hospital_visit.merge(care_site, on="care_site_id")
+
+    if is_koalas(hospital_visit):
+        hospital_visit.spark.cache()
+
+    return hospital_visit
+
+
+def get_uf_visit(
+    condition_occurrence,
+    visit_occurrence,
+    visit_detail,
+    care_site,
+    care_site_relationship,
+):  # pragma: no cover
+    condition_uf = (
+        condition_occurrence[
+            [
+                "visit_detail_id",
+                "diag_type",
+                "condition_type",
+                "source_system",
+            ]
+        ]
+        .drop_duplicates()
+        .rename(columns={"visit_detail_id": "visit_id"})
+    )
+    condition_uf["has_condition"] = True
+
+    visit_detail = visit_detail.merge(
+        visit_occurrence[["visit_occurrence_id", "stay_type"]],
+        on="visit_occurrence_id",
+    )
+    visit_detail = visit_detail.merge(
+        condition_uf,
+        on="visit_id",
+        how="left",
+    )
+    visit_detail = visit_detail.drop(columns=["visit_occurrence_id"])
+
+    uf_visit = convert_table_to_uf(
+        table=visit_detail,
+        table_name="visit_detail",
+        care_site_relationship=care_site_relationship,
+    )
+    uf_visit = uf_visit.merge(care_site, on="care_site_id")
+
+    uf_name = CARE_SITE_LEVEL_NAMES["UF"]
+    uf_visit = uf_visit[uf_visit["care_site_level"] == uf_name]
+
+    if is_koalas(uf_visit):
+        uf_visit.spark.cache()
+
+    return uf_visit
+
+
+def get_pole_visit(uf_visit, care_site, care_site_relationship):  # pragma: no cover
+    pole_visit = convert_table_to_pole(
+        table=uf_visit.drop(columns=["care_site_short_name", "care_site_level"]),
+        table_name="uf_visit",
+        care_site_relationship=care_site_relationship,
+    )
+
+    pole_visit = pole_visit.merge(care_site, on="care_site_id")
+
+    pole_name = CARE_SITE_LEVEL_NAMES["Pole"]
+    pole_visit = pole_visit[pole_visit["care_site_level"] == pole_name]
+
+    if is_koalas(pole_visit):
+        pole_visit.spark.cache()
+
+    return pole_visit

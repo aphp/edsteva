@@ -1,18 +1,23 @@
-from typing import List
+from typing import Dict, List
 
 import altair as alt
 import pandas as pd
 
+from edsteva.viz.utils import (
+    create_groupby_selection,
+    generate_main_chart,
+    generate_model_line,
+    generate_probe_line,
+)
+
 
 def fitted_probe_line(
     predictor: pd.DataFrame,
-    index: List[str],
-    x_axis_title: str = "Time (Month Year)",
-    y_axis_title: str = "Completeness predictor c(t)",
-    x_grid: bool = True,
-    y_grid: bool = True,
-    labelAngle: float = -90,
-    labelFontSize: float = 12,
+    probe_config: Dict[str, str],
+    model_config: Dict[str, str],
+    indexes: List[Dict[str, str]],
+    legend_predictor: str = "Predictor c(t)",
+    legend_model: str = "Model f(t)",
 ):
     r"""Script to be used by [``plot_probe()``][edsteva.viz.plots.plot_probe.wrapper]
 
@@ -35,83 +40,34 @@ def fitted_probe_line(
     labelFontSize: float, optional
         The font size of the labels (axis and legend).
     """
-    predictor["legend_predictor"] = "Predictor c(t)"
-    predictor["legend_model"] = "Model f(t)"
+    predictor["legend_predictor"] = legend_predictor
+    predictor["legend_model"] = legend_model
+    main_chart_config = probe_config["main_chart"]
+    model_line_config = model_config["model_line"]
+    probe_line_config = model_config["probe_line"]
 
-    base_chart = (
-        alt.Chart(predictor).encode(
-            x=alt.X(
-                f'yearmonth({"date"}):T',
-                title=x_axis_title,
-                axis=alt.Axis(tickCount="month", labelAngle=labelAngle, grid=x_grid),
-            ),
-        )
-    ).properties(width=800, height=300)
+    base = alt.Chart(predictor)
 
-    probe_line = base_chart.mark_line().encode(
-        y=alt.Y(
-            "mean(c):Q",
-            title=y_axis_title,
-            axis=alt.Axis(grid=y_grid),
-        ),
-        strokeDash=alt.StrokeDash(
-            "legend_predictor",
-            title="",
-            legend=alt.Legend(
-                symbolType="stroke",
-                symbolStrokeColor="steelblue",
-                labelFontSize=labelFontSize,
-                labelFontStyle="bold",
-                orient="left",
-            ),
-        ),
+    index_selection, index_fields = create_groupby_selection(
+        indexes=indexes,
     )
-    model_line = base_chart.mark_line(
-        interpolate="step-after", strokeDash=[5, 5]
-    ).encode(
-        y=alt.Y(
-            "mean(c_hat):Q",
-        ),
-        strokeWidth=alt.StrokeWidth(
-            "legend_model",
-            title="",
-            legend=alt.Legend(
-                symbolType="stroke",
-                symbolStrokeColor="steelblue",
-                labelFontSize=labelFontSize,
-                labelFontStyle="bold",
-                symbolDash=[2, 2],
-                orient="left",
-            ),
-        ),
+    main_chart = generate_main_chart(
+        base=base,
+        main_chart_config=main_chart_config,
+        index_selection=index_selection,
+        index_fields=index_fields,
     )
 
-    chart = probe_line + model_line
+    probe_line = generate_probe_line(
+        main_chart=main_chart, probe_line_config=probe_line_config
+    )
 
-    if len(index) >= 2:
-        index_selection = alt.selection_single(
-            fields=["index"],
-            bind=alt.binding_radio(name="Group by: ", options=index),
-            init={"index": index[0]},
-        )
-        chart = (
-            chart.transform_fold(index, as_=["index", "value"])
-            .encode(
-                color=alt.Color(
-                    "value:N",
-                    sort={"field": "c", "op": "mean", "order": "descending"},
-                    title=None,
-                ),
-            )
-            .transform_filter(index_selection)
-            .add_selection(index_selection)
-        )
-    elif len(index) == 1:
-        chart = chart.encode(
-            color=alt.Color(
-                "{}:N".format(index[0]),
-                sort={"field": "c", "op": "mean", "order": "descending"},
-            ),
-        )
+    model_line = generate_model_line(
+        main_chart=main_chart, model_line_config=model_line_config
+    )
 
-    return chart
+    main_chart = probe_line + model_line
+    if index_selection:
+        main_chart = main_chart.add_selection(index_selection)
+
+    return main_chart
