@@ -1,12 +1,11 @@
-from typing import Callable, List
+from typing import Dict, List
 
 import pandas as pd
 
-from edsteva.metrics import error_after_t0
+from edsteva.metrics import metrics
 from edsteva.models import BaseModel
-from edsteva.models.step_function import algos
-
-from .viz_config import get_estimates_dashboard_config, get_predictor_dashboard_config
+from edsteva.models.step_function.algos import algos
+from edsteva.models.step_function.viz_configs import viz_configs
 
 
 class StepFunction(BaseModel):
@@ -48,16 +47,22 @@ class StepFunction(BaseModel):
     | Hôpital                  | 8312022130   | 'Urg_Hospit' | 2022-02-01 | 0.652 |
     """
 
-    _coefs = ["t_0", "c_0"]
-    get_predictor_dashboard_config = get_predictor_dashboard_config
-    get_estimates_dashboard_config = get_estimates_dashboard_config
+    def __init__(
+        self,
+        algo: str = "loss_minimization",
+        _viz_config: Dict[str, str] = None,
+    ):
+        self._algo = algo
+        self._coefs = ["t_0", "c_0"]
+        self._default_metrics = ["error_after_t0"]
+        if _viz_config is None:
+            self._viz_config = {}
 
     def fit_process(
         self,
         predictor: pd.DataFrame,
         index: List[str] = None,
-        algo: Callable = algos.loss_minimization,
-        **kwargs
+        **kwargs,
     ) -> None:
         """Script to be used by [``fit()``][edsteva.models.base.BaseModel.fit]
 
@@ -73,7 +78,7 @@ class StepFunction(BaseModel):
             Algorithm used for the coefficients estimation ($t_0$ and $c_0$)
         """
 
-        estimates = algo(predictor=predictor, index=index, **kwargs)
+        estimates = algos.get(self._algo)(predictor=predictor, index=index, **kwargs)
 
         return estimates[index + self._coefs]
 
@@ -119,6 +124,15 @@ class StepFunction(BaseModel):
         )
         return prediction.drop(columns=self._metrics)
 
+    def get_viz_config(self, viz_type: str, **kwargs):
+        if viz_type in viz_configs.keys():
+            _viz_config = self._viz_config.get(viz_type)
+            if _viz_config is None:
+                _viz_config = "default"
+        else:
+            raise ValueError(f"edsteva has no {viz_type} registry !")
+        return viz_configs[viz_type].get(_viz_config)(self, **kwargs)
+
     def default_metrics(
         self,
         predictor: pd.DataFrame,
@@ -138,4 +152,6 @@ class StepFunction(BaseModel):
 
             **EXAMPLE**: `["care_site_level", "stay_type", "note_type", "care_site_id"]`
         """
-        return error_after_t0(predictor=predictor, estimates=estimates, index=index)
+        return metrics.get("error_after_t0")(
+            predictor=predictor, estimates=estimates, index=index
+        )

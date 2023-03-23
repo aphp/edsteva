@@ -48,7 +48,7 @@ def set_env_variables() -> None:
 
 
 def improve_performances(
-    to_add_conf: List[Tuple[str, str]] = [],
+    to_add_conf: List[Tuple[str, str]] = None,
     quiet_spark: bool = True,
 ) -> Tuple[SparkSession, SparkContext, SparkSession.sql]:
     """
@@ -84,6 +84,9 @@ def improve_performances(
     tz = os.environ.get("TZ", "UTC")
     os.environ["TZ"] = tz
     time.tzset()
+
+    if to_add_conf is None:
+        to_add_conf = []
 
     to_add_conf.extend(
         [

@@ -11,7 +11,8 @@ from loguru import logger
 from toolz.curried import pipe
 
 from edsteva import CACHE_DIR
-from edsteva.probes.utils import CARE_SITE_LEVEL_NAMES, filter_table_by_date
+from edsteva.probes.utils.filter_df import filter_table_by_date
+from edsteva.probes.utils.utils import CARE_SITE_LEVEL_NAMES
 
 
 def generate_main_chart(
@@ -181,8 +182,10 @@ def generate_vertical_bar_charts(
 def add_interactive_selection(
     base: alt.Chart,
     selections: Dict[str, alt.Selection],
-    selection_charts: Dict[str, List[alt.Chart]] = {},
+    selection_charts: Dict[str, List[alt.Chart]] = None,
 ):
+    if selection_charts is None:
+        selection_charts = {}
     for selection_variable, selection in selections.items():
         base = base.transform_filter(selection)
         for chart_variable in selection_charts.keys():
@@ -197,8 +200,10 @@ def add_interactive_selection(
 def add_estimates_filters(
     base: alt.Chart,
     estimates_filters: Dict[str, alt.Selection],
-    selection_charts: Dict[str, List[alt.Chart]] = {},
+    selection_charts: Dict[str, List[alt.Chart]] = None,
 ):
+    if selection_charts is None:
+        selection_charts = {}
     for estimate_filter in estimates_filters:
         base = base.transform_filter(estimate_filter)
         for chart_variable in selection_charts.keys():

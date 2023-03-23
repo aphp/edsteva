@@ -20,7 +20,7 @@ from edsteva.viz.utils import (
 )
 
 
-def plot_normalized_probe(
+def normalized_probe_plot(
     probe: BaseProbe,
     fitted_model: BaseModel,
     care_site_level: str = None,
@@ -97,7 +97,7 @@ def plot_normalized_probe(
     indexes = list(set(predictor.columns).difference(["date"] + probe._metrics))
     predictor = predictor.merge(estimates, on=probe._index)
 
-    probe_config = deepcopy(probe.get_estimates_dashboard_config())
+    probe_config = deepcopy(probe.get_viz_config("normalized_probe_plot"))
     main_chart_config = probe_config["main_chart"]
     error_line_config = probe_config["error_line"]
 
@@ -125,7 +125,11 @@ def plot_normalized_probe(
         if pd.api.types.is_datetime64_any_dtype(predictor[estimate]):
             predictor[estimate] = predictor[estimate].dt.strftime("%Y-%m")
     model_config = deepcopy(
-        fitted_model.get_estimates_dashboard_config(predictor=predictor)
+        deepcopy(
+            fitted_model.get_viz_config(
+                "normalized_probe_dashboard", predictor=predictor
+            )
+        )
     )
     probe_line_config = model_config["probe_line"]
     model_line_config = model_config["model_line"]

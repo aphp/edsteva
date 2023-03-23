@@ -16,7 +16,7 @@ from edsteva.viz.utils import (
 )
 
 
-def plot_estimates_densities(
+def estimates_densities_plot(
     probe: BaseProbe,
     fitted_model: BaseModel,
     save_path: str = None,
@@ -45,7 +45,7 @@ def plot_estimates_densities(
     estimates = fitted_model.estimates.copy()
     predictor = probe.add_names_columns(predictor)
     estimates = probe.add_names_columns(estimates)
-    probe_config = deepcopy(probe.get_predictor_dashboard_config())
+    probe_config = deepcopy(probe.get_viz_config("estimates_densities_plot"))
     vertical_bar_charts_config = probe_config["vertical_bar_charts"]
     horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
     chart_style = probe_config["chart_style"]

@@ -2,23 +2,11 @@ from datetime import datetime
 from typing import Dict, List, Tuple, Union
 
 import pandas as pd
-from loguru import logger
 
 from edsteva.probes.base import BaseProbe
-from edsteva.probes.utils import (
-    CARE_SITE_LEVEL_NAMES,
-    concatenate_predictor_by_level,
-    get_biology_relationship,
-    hospital_only,
-    prepare_care_site,
-    prepare_measurement,
-    prepare_visit_occurrence,
-)
-from edsteva.utils.checks import check_tables
-from edsteva.utils.framework import is_koalas, to
+from edsteva.probes.biology.completeness_predictors import completeness_predictors
+from edsteva.probes.biology.viz_configs import viz_configs
 from edsteva.utils.typing import Data
-
-from .viz_config import get_estimates_dashboard_config, get_predictor_dashboard_config
 
 
 class BiologyProbe(BaseProbe):
@@ -50,10 +38,14 @@ class BiologyProbe(BaseProbe):
 
         **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id"]``
     """
-    get_predictor_dashboard_config = get_predictor_dashboard_config
-    get_estimates_dashboard_config = get_estimates_dashboard_config
 
-    def __init__(self, standard_terminologies: List[str] = ["ANABIO", "LOINC"]):
+    def __init__(
+        self,
+        completeness_predictor: str = "per_measurement_default",
+        standard_terminologies: List[str] = ["ANABIO", "LOINC"],
+        _viz_config: Dict[str, str] = None,
+    ):
+        self._completeness_predictor = completeness_predictor
         self._standard_terminologies = standard_terminologies
         self._index = [
             "care_site_level",
@@ -65,7 +57,8 @@ class BiologyProbe(BaseProbe):
             "{}_concept_code".format(terminology)
             for terminology in standard_terminologies
         ]
-        self._metrics = ["c", "n_measurement"]
+        if _viz_config is None:
+            self._viz_config = {}
 
     def compute_process(
         self,
@@ -101,6 +94,7 @@ class BiologyProbe(BaseProbe):
             ("GLIMS_ANABIO", "ANABIO_ITM", "Mapped from"),
             ("ANABIO_ITM", "LOINC_ITM", "Maps to"),
         ],
+        **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
@@ -123,114 +117,28 @@ class BiologyProbe(BaseProbe):
         care_site_short_names : List[str], optional
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
         """
-        check_tables(
+        return completeness_predictors.get(self._completeness_predictor)(
+            self,
             data=data,
-            required_tables=["measurement", "concept", "concept_relationship"],
-        )
-        standard_terminologies = self._standard_terminologies
-        biology_relationship = get_biology_relationship(
-            data=data,
-            standard_terminologies=standard_terminologies,
-            source_terminologies=source_terminologies,
-            mapping=mapping,
-        )
-
-        self.biology_relationship = biology_relationship
-        root_terminology = mapping[0][0]
-
-        measurement = prepare_measurement(
-            data=data,
-            biology_relationship=biology_relationship,
-            concepts_sets=concepts_sets,
+            care_site_relationship=care_site_relationship,
             start_date=start_date,
             end_date=end_date,
-            root_terminology=root_terminology,
-            standard_terminologies=standard_terminologies,
-            per_visit=False,
-        )
-
-        visit_occurrence = prepare_visit_occurrence(
-            data=data,
-            start_date=None,
-            end_date=None,
+            care_site_levels=care_site_levels,
             stay_types=stay_types,
-            stay_durations=stay_durations,
-        )
-
-        care_site = prepare_care_site(
-            data=data,
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
-            care_site_relationship=care_site_relationship,
+            concepts_sets=concepts_sets,
+            stay_durations=stay_durations,
+            source_terminologies=source_terminologies,
+            mapping=mapping,
+            **kwargs,
         )
 
-        hospital_visit = get_hospital_measurements(
-            measurement=measurement,
-            visit_occurrence=visit_occurrence,
-            care_site=care_site,
-        )
-        hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
-        biology_predictor_by_level = {hospital_name: hospital_visit}
-
-        if care_site_levels and not hospital_only(care_site_levels=care_site_levels):
-            logger.info(
-                "Biological measurements are only available at hospital level for now"
-            )
-            care_site_levels = "Hospital"
-
-        biology_predictor = concatenate_predictor_by_level(
-            predictor_by_level=biology_predictor_by_level,
-            care_site_levels=care_site_levels,
-        )
-
-        return compute_completeness(self, biology_predictor)
-
-
-def compute_completeness(self, biology_predictor):
-    partition_cols = self._index.copy() + ["date"]
-    n_measurement = (
-        biology_predictor.groupby(
-            partition_cols,
-            as_index=False,
-            dropna=False,
-        )
-        .agg({"measurement_id": "nunique"})
-        .rename(columns={"measurement_id": "n_measurement"})
-    )
-
-    n_measurement = to("pandas", n_measurement)
-    partition_cols = list(set(partition_cols) - {"date"})
-    q_99_measurement = (
-        n_measurement.groupby(
-            partition_cols,
-            as_index=False,
-            dropna=False,
-        )[["n_measurement"]]
-        .agg({"n_measurement": "max"})
-        .rename(columns={"n_measurement": "max_n_measurement"})
-    )
-
-    biology_predictor = n_measurement.merge(
-        q_99_measurement,
-        on=partition_cols,
-    )
-
-    biology_predictor["c"] = biology_predictor["max_n_measurement"].where(
-        biology_predictor["max_n_measurement"] == 0,
-        biology_predictor["n_measurement"] / biology_predictor["max_n_measurement"],
-    )
-    biology_predictor = biology_predictor.drop(columns="max_n_measurement")
-
-    return biology_predictor
-
-
-def get_hospital_measurements(measurement, visit_occurrence, care_site):
-    hospital_measurement = measurement.merge(
-        visit_occurrence.drop(columns="date"), on="visit_occurrence_id"
-    )
-    hospital_measurement = hospital_measurement.merge(care_site, on="care_site_id")
-
-    if is_koalas(hospital_measurement):
-        hospital_measurement.spark.cache()
-
-    return hospital_measurement
+    def get_viz_config(self, viz_type: str, **kwargs):
+        if viz_type in viz_configs.keys():
+            _viz_config = self._viz_config.get(viz_type)
+            if _viz_config is None:
+                _viz_config = self._completeness_predictor
+        else:
+            raise ValueError(f"edsteva has no {viz_type} registry !")
+        return viz_configs[viz_type].get(_viz_config)(self, **kwargs)

@@ -1,3 +1,7 @@
-from .loss_minimization import loss_minimization
+import catalogue
 
-__all__ = ["loss_minimization"]
+from edsteva.models.rectangle_function.algos.loss_minimization import loss_minimization
+
+algos = catalogue.create("edsteva.models.rectangle_function", "algos")
+
+algos.register("loss_minimization", func=loss_minimization)

@@ -6,14 +6,10 @@ import pandas as pd
 from loguru import logger
 
 from edsteva import CACHE_DIR
-from edsteva.probes.utils import (
-    delete_object,
-    filter_table_by_care_site,
-    get_care_site_relationship,
-    load_object,
-    save_object,
-)
+from edsteva.probes.utils.filter_df import filter_table_by_care_site
+from edsteva.probes.utils.prepare_df import prepare_care_site_relationship
 from edsteva.utils.checks import check_columns, check_tables
+from edsteva.utils.file_management import delete_object, load_object, save_object
 from edsteva.utils.typing import Data, DataFrame
 
 
@@ -35,7 +31,7 @@ class BaseProbe(metaclass=ABCMeta):
     care_site_relationship: pd.DataFrame
         Available with the [``compute()``][edsteva.probes.base.BaseProbe.compute] method
 
-        It describes the care site structure (cf. [``get_care_site_relationship()``][edsteva.probes.utils.get_care_site_relationship])
+        It describes the care site structure (cf. [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_care_site_relationship])
     """
 
     def __init__(self):
@@ -191,7 +187,7 @@ class BaseProbe(metaclass=ABCMeta):
         Here are the following computation steps:
 
         - check if input data is valid with [``validate_input_data()``][edsteva.probes.base.BaseProbe.validate_input_data] method
-        - query care site relationship table with [``get_care_site_relationship()``][edsteva.probes.utils.get_care_site_relationship]
+        - query care site relationship table with [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_care_site_relationship]
         - compute predictor with [``compute_process()``][edsteva.probes.base.BaseProbe.compute_process] method
         - check if predictor is valid with [``is_computed_probe()``][edsteva.probes.base.BaseProbe.is_computed_probe] method
 
@@ -246,7 +242,7 @@ class BaseProbe(metaclass=ABCMeta):
 
         """
         self.validate_input_data(data=data)
-        care_site_relationship = get_care_site_relationship(data=data)
+        care_site_relationship = prepare_care_site_relationship(data=data)
 
         self.predictor = self.compute_process(
             data=data,

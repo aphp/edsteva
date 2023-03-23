@@ -227,6 +227,7 @@ def generate_note_step(
     note_type,
     care_site_id,
     date_col,
+    note_date_col,
     id_visit_col,
     note_type_col,
     t0_visit,
@@ -236,23 +237,31 @@ def generate_note_step(
     c_before = np.random.uniform(0, 0.2)
     c_after = np.random.uniform(0.8, 1)
 
-    note_before_t0_visit = visit_care_site[visit_care_site[date_col] <= t0_visit][
-        [id_visit_col]
-    ].sample(frac=c_before)
-
+    note_before_t0_visit = (
+        visit_care_site[visit_care_site[date_col] <= t0_visit][[id_visit_col, date_col]]
+        .sample(frac=c_before)
+        .rename(columns={date_col: note_date_col})
+    )
     # Stratify visit between t0_visit and t0 to
     # ensure that these elements are represented
     # in the final notes dataset.
-    note_before_t0 = visit_care_site[
-        (visit_care_site[date_col] <= t0) & (visit_care_site[date_col] > t0_visit)
-    ][[id_visit_col]].sample(frac=c_before)
+    note_before_t0 = (
+        visit_care_site[
+            (visit_care_site[date_col] <= t0) & (visit_care_site[date_col] > t0_visit)
+        ][[id_visit_col, date_col]]
+        .sample(frac=c_before)
+        .rename(columns={date_col: note_date_col})
+    )
 
-    note_after_t0 = visit_care_site[visit_care_site[date_col] > t0][
-        [id_visit_col]
-    ].sample(frac=c_after)
+    note_after_t0 = (
+        visit_care_site[visit_care_site[date_col] > t0][[id_visit_col, date_col]]
+        .sample(frac=c_after)
+        .rename(columns={date_col: note_date_col})
+    )
 
     note = pd.concat([note_before_t0_visit, note_before_t0, note_after_t0])
 
+    note[note_date_col] = note[note_date_col].astype("datetime64[s]")
     note[note_type_col] = note_type
     note["care_site_id"] = care_site_id
     note["t_0"] = t0
@@ -265,6 +274,7 @@ def generate_note_rect(
     note_type,
     care_site_id,
     date_col,
+    note_date_col,
     id_visit_col,
     note_type_col,
     t0_visit,
@@ -275,17 +285,24 @@ def generate_note_rect(
     c_out = np.random.uniform(0, 0.1)
     c_in = np.random.uniform(0.8, 1)
 
-    note_before_t0 = visit_care_site[visit_care_site[date_col] <= t0][
-        [id_visit_col]
-    ].sample(frac=c_out)
+    note_before_t0 = (
+        visit_care_site[visit_care_site[date_col] <= t0][[id_visit_col, date_col]]
+        .sample(frac=c_out)
+        .rename(columns={date_col: note_date_col})
+    )
+    note_between_t0_t1 = (
+        visit_care_site[
+            (visit_care_site[date_col] > t0) & (visit_care_site[date_col] <= t1)
+        ][[id_visit_col, date_col]]
+        .sample(frac=c_in)
+        .rename(columns={date_col: note_date_col})
+    )
 
-    note_between_t0_t1 = visit_care_site[
-        (visit_care_site[date_col] > t0) & (visit_care_site[date_col] <= t1)
-    ][[id_visit_col]].sample(frac=c_in)
-
-    note_after_t1 = visit_care_site[(visit_care_site[date_col] > t1)][
-        [id_visit_col]
-    ].sample(frac=c_out)
+    note_after_t1 = (
+        visit_care_site[(visit_care_site[date_col] > t1)][[id_visit_col, date_col]]
+        .sample(frac=c_out)
+        .rename(columns={date_col: note_date_col})
+    )
 
     note = pd.concat(
         [
@@ -295,6 +312,7 @@ def generate_note_rect(
         ]
     )
 
+    note[note_date_col] = note[note_date_col].astype("datetime64[s]")
     note[note_type_col] = note_type
     note["care_site_id"] = care_site_id
     note["t_0"] = t0
@@ -407,6 +425,8 @@ class SyntheticData:
     id_note_col: str = "note_id"
     id_bio_col: str = "measurement_id"
     note_type_col: str = "note_class_source_value"
+    note_date_col: str = "note_datetime"
+    condition_date_col: str = "condition_start_datetime"
     date_col: str = "visit_start_datetime"
     end_date_col: str = "visit_end_datetime"
     detail_date_col: str = "visit_detail_start_datetime"
@@ -565,10 +585,12 @@ class SyntheticData:
             n_condition = np.random.randint(1, 5)
             detail_id = visit[col_to_idx[self.id_detail_col]]
             visit_id = visit[col_to_idx[self.id_visit_col]]
+            date = visit[col_to_idx[self.detail_date_col]]
             condition = pd.DataFrame(
                 {
                     self.id_detail_col: [detail_id] * n_condition,
                     self.id_visit_col: [visit_id] * n_condition,
+                    self.condition_date_col: [date] * n_condition,
                 }
             )
             condition_occurrence.append(condition)
@@ -593,6 +615,7 @@ class SyntheticData:
         id_visit_col = self.id_visit_col
         id_note_col = self.id_note_col
         note_type_col = self.note_type_col
+        note_date_col = self.note_date_col
 
         notes = []
         for care_site_id in hospital_ids:
@@ -606,6 +629,7 @@ class SyntheticData:
             params = dict(
                 care_site_id=care_site_id,
                 date_col=date_col,
+                note_date_col=note_date_col,
                 id_visit_col=id_visit_col,
                 note_type_col=note_type_col,
                 t0_visit=t0_visit,

@@ -4,19 +4,9 @@ from typing import Dict, List, Union
 import pandas as pd
 
 from edsteva.probes.base import BaseProbe
-from edsteva.probes.utils import (
-    CARE_SITE_LEVEL_NAMES,
-    concatenate_predictor_by_level,
-    convert_table_to_pole,
-    hospital_only,
-    prepare_care_site,
-    prepare_visit_detail,
-    prepare_visit_occurrence,
-)
-from edsteva.utils.framework import is_koalas, to
+from edsteva.probes.visit.completeness_predictors import completeness_predictors
+from edsteva.probes.visit.viz_configs import viz_configs
 from edsteva.utils.typing import Data
-
-from .viz_config import get_estimates_dashboard_config, get_predictor_dashboard_config
 
 
 class VisitProbe(BaseProbe):
@@ -37,10 +27,15 @@ class VisitProbe(BaseProbe):
         **VALUE**: ``["care_site_level", "stay_type", "length_of_stay", "care_site_id"]``
     """
 
-    _index = ["care_site_level", "stay_type", "length_of_stay", "care_site_id"]
-    _metrics = ["c", "n_visit"]
-    get_predictor_dashboard_config = get_predictor_dashboard_config
-    get_estimates_dashboard_config = get_estimates_dashboard_config
+    def __init__(
+        self,
+        completeness_predictor: str = "per_visit_default",
+        _viz_config: Dict[str, str] = None,
+    ):
+        self._completeness_predictor = completeness_predictor
+        self._index = ["care_site_level", "stay_type", "length_of_stay", "care_site_id"]
+        if _viz_config is None:
+            self._viz_config = {}
 
     def compute_process(
         self,
@@ -53,6 +48,7 @@ class VisitProbe(BaseProbe):
         care_site_ids: List[int],
         care_site_short_names: List[str] = None,
         stay_durations: List[float] = None,
+        **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
@@ -75,138 +71,25 @@ class VisitProbe(BaseProbe):
         care_site_short_names : List[str], optional
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
         """
-
-        visit_occurrence = prepare_visit_occurrence(
+        return completeness_predictors.get(self._completeness_predictor)(
+            self,
             data=data,
+            care_site_relationship=care_site_relationship,
             start_date=start_date,
             end_date=end_date,
-            stay_types=stay_types,
-            stay_durations=stay_durations,
-        )
-
-        care_site = prepare_care_site(
-            data,
-            care_site_ids,
-            care_site_short_names,
-            care_site_relationship,
-        )
-
-        hospital_visit = get_hospital_visit(
-            visit_occurrence,
-            care_site,
-        )
-        hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
-        visit_predictor_by_level = {hospital_name: hospital_visit}
-
-        if not hospital_only(care_site_levels=care_site_levels):
-            visit_detail = prepare_visit_detail(data, start_date, end_date)
-
-            uf_name = CARE_SITE_LEVEL_NAMES["UF"]
-            uf_visit = get_uf_visit(
-                visit_occurrence,
-                visit_detail,
-                care_site,
-                care_site_relationship,
-            )
-            visit_predictor_by_level[uf_name] = uf_visit
-
-            pole_name = CARE_SITE_LEVEL_NAMES["Pole"]
-            pole_visit = get_pole_visit(
-                uf_visit,
-                care_site,
-                care_site_relationship,
-            )
-            visit_predictor_by_level[pole_name] = pole_visit
-
-        visit_predictor = concatenate_predictor_by_level(
-            predictor_by_level=visit_predictor_by_level,
             care_site_levels=care_site_levels,
+            stay_types=stay_types,
+            care_site_ids=care_site_ids,
+            care_site_short_names=care_site_short_names,
+            stay_durations=stay_durations,
+            **kwargs,
         )
 
-        return compute_completeness(self, visit_predictor)
-
-
-def compute_completeness(self, visit_predictor):
-    partition_cols = self._index.copy() + ["date"]
-
-    n_visit = (
-        visit_predictor.groupby(
-            partition_cols,
-            as_index=False,
-            dropna=False,
-        )
-        .agg({"visit_id": "nunique"})
-        .rename(columns={"visit_id": "n_visit"})
-    )
-
-    n_visit = to("pandas", n_visit)
-
-    partition_cols = list(set(partition_cols) - {"date"})
-    q_99_visit = (
-        n_visit.groupby(
-            partition_cols,
-            as_index=False,
-            dropna=False,
-        )
-        .agg({"n_visit": "max"})
-        .rename(columns={"n_visit": "max_n_visit"})
-    )
-
-    visit_predictor = n_visit.merge(
-        q_99_visit,
-        on=partition_cols,
-    )
-
-    visit_predictor["c"] = visit_predictor["max_n_visit"].where(
-        visit_predictor["max_n_visit"] == 0,
-        visit_predictor["n_visit"] / visit_predictor["max_n_visit"],
-    )
-    visit_predictor = visit_predictor.drop(columns="max_n_visit")
-
-    return visit_predictor
-
-
-def get_hospital_visit(visit_occurrence, care_site):
-    hospital_visit = visit_occurrence.rename(
-        columns={"visit_occurrence_id": "visit_id"}
-    )
-
-    hospital_visit = hospital_visit.merge(care_site, on="care_site_id")
-    hospital_visit = hospital_visit[
-        hospital_visit["care_site_level"] == CARE_SITE_LEVEL_NAMES["Hospital"]
-    ]
-    if is_koalas(hospital_visit):
-        hospital_visit.spark.cache()
-
-    return hospital_visit
-
-
-def get_uf_visit(visit_occurrence, visit_detail, care_site, care_site_relationship):
-    visit_detail = visit_detail.merge(
-        visit_occurrence[["visit_occurrence_id", "length_of_stay", "stay_type"]],
-        on="visit_occurrence_id",
-    ).drop(columns="visit_occurrence_id")
-
-    uf_visit = visit_detail.merge(care_site, on="care_site_id")
-    uf_visit = uf_visit[uf_visit["care_site_level"] == CARE_SITE_LEVEL_NAMES["UF"]]
-    if is_koalas(uf_visit):
-        uf_visit.spark.cache()
-
-    return uf_visit
-
-
-def get_pole_visit(uf_visit, care_site, care_site_relationship):
-    pole_visit = convert_table_to_pole(
-        table=uf_visit.drop(columns=["care_site_short_name", "care_site_level"]),
-        table_name="uf_visit",
-        care_site_relationship=care_site_relationship,
-    )
-
-    pole_visit = pole_visit.merge(care_site, on="care_site_id")
-    pole_visit = pole_visit[
-        pole_visit["care_site_level"] == CARE_SITE_LEVEL_NAMES["Pole"]
-    ]
-    if is_koalas(pole_visit):
-        pole_visit.spark.cache()
-
-    return pole_visit
+    def get_viz_config(self, viz_type: str, **kwargs):
+        if viz_type in viz_configs.keys():
+            _viz_config = self._viz_config.get(viz_type)
+            if _viz_config is None:
+                _viz_config = self._completeness_predictor
+        else:
+            raise ValueError(f"edsteva has no {viz_type} registry !")
+        return viz_configs[viz_type].get(_viz_config)(self, **kwargs)

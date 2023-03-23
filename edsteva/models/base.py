@@ -1,17 +1,14 @@
 from abc import ABCMeta, abstractmethod
 from functools import reduce
-from typing import Callable, List
+from typing import List
 
 import pandas as pd
 
 from edsteva import CACHE_DIR
+from edsteva.metrics import metrics
 from edsteva.probes.base import BaseProbe
-from edsteva.probes.utils import (
-    delete_object,
-    filter_table_by_date,
-    load_object,
-    save_object,
-)
+from edsteva.probes.utils.filter_df import filter_table_by_date
+from edsteva.utils.file_management import delete_object, load_object, save_object
 
 
 class BaseModel(metaclass=ABCMeta):
@@ -85,7 +82,7 @@ class BaseModel(metaclass=ABCMeta):
     def fit(
         self,
         probe: BaseProbe,
-        metric_functions: List[Callable] = None,
+        metric_functions: List[str] = None,
         start_date: str = None,
         end_date: str = None,
         **kwargs,
@@ -96,7 +93,7 @@ class BaseModel(metaclass=ABCMeta):
         ----------
         probe : BaseProbe
             Target variable to be fitted
-        metric_functions : List[Callable], optional
+        metric_functions : List[str], optional
             Metrics to apply on the fitted Probe. By default it will apply the default metric specified in the model.
 
             **EXAMPLE**: `[error, error_after_t0]`
@@ -142,16 +139,16 @@ class BaseModel(metaclass=ABCMeta):
             **kwargs,
         )
 
-        metrics = self._compute_metrics(
+        metrics_df = self._compute_metrics(
             predictor=predictor,
             estimates=estimates,
             index=index,
             metric_functions=metric_functions,
         )
 
-        if metrics is not None:
-            self._metrics = list(metrics.columns.difference(index))
-            self.estimates = estimates.merge(metrics, on=index)
+        if metrics_df is not None:
+            self._metrics = list(metrics_df.columns.difference(index))
+            self.estimates = estimates.merge(metrics_df, on=index)
 
         else:
             self.estimates = estimates
@@ -280,46 +277,27 @@ class BaseModel(metaclass=ABCMeta):
         predictor: pd.DataFrame,
         estimates: pd.DataFrame,
         index: List[str],
-        metric_functions: List[Callable] = None,
+        metric_functions: List[str] = None,
     ):
-        if metric_functions:
-            if callable(metric_functions):
-                metrics = metric_functions(
+        if metric_functions is None:
+            if hasattr(self, "_default_metrics"):
+                metric_functions = self._default_metrics
+            else:
+                metric_functions = []
+        if isinstance(metric_functions, str):
+            metric_functions = [metric_functions]
+        metrics_df = []
+        for metric_function in metric_functions:
+            metrics_df.append(
+                metrics.get(metric_function)(
                     predictor=predictor, estimates=estimates, index=index
                 )
-            elif isinstance(metric_functions, list):
-                metrics = []
-                for metric_function in metric_functions:
-                    if callable(metric_function):
-                        metrics.append(
-                            metric_function(
-                                predictor=predictor, estimates=estimates, index=index
-                            )
-                        )
-                    else:
-                        raise TypeError(
-                            "{} is not callable. The metrics input must be a list of callable functions".format(
-                                type(metric_function)
-                            )
-                        )
-                metrics = reduce(
-                    lambda left, right: pd.merge(left, right, on=index), metrics
-                )
-            else:
-                raise TypeError(
-                    "{} is not callable. The metrics input must be a callable function".format(
-                        type(metrics)
-                    )
-                )
-
-        elif hasattr(self, "default_metrics"):
-            metrics = self.default_metrics(
-                predictor=predictor, estimates=estimates, index=index
             )
-        else:
-            metrics = None
+        metrics_df = reduce(
+            lambda left, right: pd.merge(left, right, on=index), metrics_df
+        )
 
-        return metrics
+        return metrics_df
 
     def is_predictable_probe(
         self,
