@@ -55,6 +55,7 @@ def pandas(obj: DataObject, hdfs_user_path: str = None) -> DataObject:
         )
     try:
         pandas_obj = obj.to_pandas()
+        error = False
     except AttributeError:
         error = True
     if error:
