@@ -60,6 +60,7 @@ class NoteProbe(BaseProbe):
             "Ordonnance": "ordo",
             "CRH": "crh",
         },
+        hdfs_user_path: str = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -99,6 +100,7 @@ class NoteProbe(BaseProbe):
             care_site_short_names=care_site_short_names,
             note_types=note_types,
             stay_durations=stay_durations,
+            hdfs_user_path=hdfs_user_path,
             **kwargs,
         )
 

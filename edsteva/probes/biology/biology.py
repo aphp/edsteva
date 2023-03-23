@@ -94,6 +94,7 @@ class BiologyProbe(BaseProbe):
             ("GLIMS_ANABIO", "ANABIO_ITM", "Mapped from"),
             ("ANABIO_ITM", "LOINC_ITM", "Maps to"),
         ],
+        hdfs_user_path: str = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -131,6 +132,7 @@ class BiologyProbe(BaseProbe):
             stay_durations=stay_durations,
             source_terminologies=source_terminologies,
             mapping=mapping,
+            hdfs_user_path=hdfs_user_path,
             **kwargs,
         )
 

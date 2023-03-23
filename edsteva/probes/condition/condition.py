@@ -60,6 +60,7 @@ class ConditionProbe(BaseProbe):
         condition_types: Union[str, Dict[str, str]] = {"All": ".*"},
         source_systems: List[str] = ["ORBIS"],
         stay_durations: List[float] = None,
+        hdfs_user_path: str = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -105,6 +106,7 @@ class ConditionProbe(BaseProbe):
             stay_durations=stay_durations,
             condition_types=condition_types,
             source_systems=source_systems,
+            hdfs_user_path=hdfs_user_path,
             **kwargs,
         )
 

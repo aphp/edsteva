@@ -48,6 +48,7 @@ class VisitProbe(BaseProbe):
         care_site_ids: List[int],
         care_site_short_names: List[str] = None,
         stay_durations: List[float] = None,
+        hdfs_user_path: str = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -82,6 +83,7 @@ class VisitProbe(BaseProbe):
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
             stay_durations=stay_durations,
+            hdfs_user_path=hdfs_user_path,
             **kwargs,
         )
 

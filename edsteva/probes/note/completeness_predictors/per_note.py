@@ -34,6 +34,7 @@ def compute_completeness_predictor_per_note(
     extra_data: Data,
     stay_durations: List[float],
     note_types: Union[str, Dict[str, str]],
+    hdfs_user_path: str,
 ):
     """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
@@ -114,10 +115,10 @@ def compute_completeness_predictor_per_note(
     if is_koalas(note_predictor):
         note_predictor.spark.cache()
 
-    return compute_completeness(self, note_predictor)
+    return compute_completeness(self, note_predictor, hdfs_user_path=hdfs_user_path)
 
 
-def compute_completeness(self, note_predictor):
+def compute_completeness(self, note_predictor, hdfs_user_path: str = None):
     partition_cols = self._index.copy() + ["date"]
 
     n_note = (
@@ -129,7 +130,7 @@ def compute_completeness(self, note_predictor):
         .agg({"note_id": "nunique"})
         .rename(columns={"note_id": "n_note"})
     )
-    n_note = to("pandas", n_note)
+    n_note = to("pandas", n_note, hdfs_user_path=hdfs_user_path)
 
     partition_cols = list(set(partition_cols) - {"date"})
     max_note = (

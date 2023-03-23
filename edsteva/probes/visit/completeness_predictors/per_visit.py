@@ -29,6 +29,7 @@ def compute_completeness_predictor_per_visit(
     care_site_ids: List[int],
     care_site_short_names: List[str] = None,
     stay_durations: List[float] = None,
+    hdfs_user_path: str = None,
 ):
     """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
@@ -98,10 +99,10 @@ def compute_completeness_predictor_per_visit(
         care_site_levels=care_site_levels,
     )
 
-    return compute_completeness(self, visit_predictor)
+    return compute_completeness(self, visit_predictor, hdfs_user_path)
 
 
-def compute_completeness(self, visit_predictor):
+def compute_completeness(self, visit_predictor, hdfs_user_path):
     partition_cols = self._index.copy() + ["date"]
 
     n_visit = (
@@ -114,10 +115,10 @@ def compute_completeness(self, visit_predictor):
         .rename(columns={"visit_id": "n_visit"})
     )
 
-    n_visit = to("pandas", n_visit)
+    n_visit = to("pandas", n_visit, hdfs_user_path=hdfs_user_path)
 
     partition_cols = list(set(partition_cols) - {"date"})
-    q_99_visit = (
+    max_n_visit = (
         n_visit.groupby(
             partition_cols,
             as_index=False,
@@ -128,7 +129,7 @@ def compute_completeness(self, visit_predictor):
     )
 
     visit_predictor = n_visit.merge(
-        q_99_visit,
+        max_n_visit,
         on=partition_cols,
     )
 
