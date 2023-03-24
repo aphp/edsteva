@@ -48,20 +48,22 @@ def pandas(obj: DataObject, hdfs_user_path: str = None) -> DataObject:
         try:
             obj.to_parquet(parquet_path)
             obj = pa.parquet.read_table(parquet_path)
-        except AttributeError:
-            pass
-        logger.warning(
-            "Could not convert object to parquet. It will skip this step and convert directly to pandas if possible"
-        )
+        except Exception as e:
+            logger.warning(
+                "Cannot convert object to parquet. It will skip this step and convert directly to pandas if possible. /n Following error: {}",
+                e,
+            )
+
     try:
-        pandas_obj = obj.to_pandas()
         error = False
+        pandas_obj = obj.to_pandas()
     except AttributeError:
         error = True
+    if hdfs_user_path and os.path.exists(parquet_path):
+        os.remove(parquet_path)
     if error:
         raise ValueError("Could not convert object to pandas.")
-    elif hdfs_user_path and os.path.exists(parquet_path):
-        os.remove(parquet_path)
+
     return pandas_obj
 
 
