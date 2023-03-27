@@ -250,6 +250,7 @@ def concatenate_charts(
     time_line: alt.Chart = None,
     spacing: float = 10,
 ):
+    # Horizontal histograms
     bar_charts_rows = []
     for bar_charts_row in horizontal_bar_charts.values():
         bar_charts_row = reduce(
@@ -259,13 +260,15 @@ def concatenate_charts(
             bar_charts_row,
         )
         bar_charts_rows.append(bar_charts_row)
-    horizontal_bar_charts = reduce(
-        lambda bar_chart_1, bar_chart_2: (bar_chart_1 & bar_chart_2).resolve_scale(
-            color="independent"
-        ),
-        bar_charts_rows,
-    )
+    if bar_charts_rows:
+        horizontal_bar_charts = reduce(
+            lambda bar_chart_1, bar_chart_2: (bar_chart_1 & bar_chart_2).resolve_scale(
+                color="independent"
+            ),
+            bar_charts_rows,
+        )
 
+    # Vertical histograms
     bar_charts_columns = []
     for bar_charts_column in vertical_bar_charts.values():
         bar_charts_column = reduce(
@@ -275,23 +278,47 @@ def concatenate_charts(
             bar_charts_column,
         )
         bar_charts_columns.append(bar_charts_column)
-    vertical_bar_charts = reduce(
-        lambda bar_chart_1, bar_chart_2: (bar_chart_1 & bar_chart_2).resolve_scale(
-            color="independent"
-        ),
-        bar_charts_columns,
-    )
+    if bar_charts_columns:
+        if bar_charts_rows:
+            vertical_bar_charts = reduce(
+                lambda bar_chart_1, bar_chart_2: (
+                    bar_chart_1 & bar_chart_2
+                ).resolve_scale(color="independent"),
+                bar_charts_columns,
+            )
+        else:
+            vertical_bar_charts = reduce(
+                lambda bar_chart_1, bar_chart_2: (
+                    bar_chart_1 | bar_chart_2
+                ).resolve_scale(color="independent"),
+                bar_charts_columns,
+            )
+
+    if bar_charts_rows:
+        if bar_charts_columns:
+            bottom_chart = vertical_bar_charts | horizontal_bar_charts
+        else:
+            bottom_chart = horizontal_bar_charts
+    elif bar_charts_columns:
+        bottom_chart = vertical_bar_charts
+    else:
+        bottom_chart = None
+
     if time_line:
         top_chart = alt.vconcat(main_chart, time_line, spacing=100).resolve_scale(
             color="independent"
         )
     else:
         top_chart = main_chart
-    concat_chart = alt.vconcat(
-        top_chart,
-        (vertical_bar_charts | horizontal_bar_charts),
-        spacing=spacing,
-    )
+
+    if bottom_chart:
+        concat_chart = alt.vconcat(
+            top_chart,
+            bottom_chart,
+            spacing=spacing,
+        )
+    else:
+        concat_chart = top_chart
     return concat_chart
 
 
