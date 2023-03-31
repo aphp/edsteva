@@ -105,10 +105,16 @@ def generate_time_line(
 def generate_horizontal_bar_charts(
     base: alt.Chart,
     horizontal_bar_charts_config: Dict[str, str],
+    predictor: pd.DataFrame,
+    remove_singleton_bar_chart: bool,
 ):
     horizontal_bar_charts = {}
     y_variables_selections = {}
     for y_variable in horizontal_bar_charts_config["y"]:
+        if y_variable["field"] not in predictor.columns or (
+            remove_singleton_bar_chart and predictor[y_variable["field"]].nunique() <= 1
+        ):
+            continue
         y_variable_bar_charts = []
         y_variable_selection = alt.selection_multi(fields=[y_variable["field"]])
         y_variables_selections[y_variable["field"]] = y_variable_selection
@@ -143,10 +149,16 @@ def generate_horizontal_bar_charts(
 def generate_vertical_bar_charts(
     base: alt.Chart,
     vertical_bar_charts_config: Dict[str, str],
+    predictor: pd.DataFrame,
+    remove_singleton_bar_chart: bool,
 ):
     vertical_bar_charts = {}
     x_variables_selections = {}
     for x_variable in vertical_bar_charts_config["x"]:
+        if x_variable["field"] not in predictor.columns or (
+            remove_singleton_bar_chart and predictor[x_variable["field"]].nunique() <= 1
+        ):
+            continue
         x_variable_bar_charts = []
         x_variable_selection = alt.selection_multi(fields=[x_variable["field"]])
         x_variables_selections[x_variable["field"]] = x_variable_selection

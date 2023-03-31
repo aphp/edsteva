@@ -9,10 +9,14 @@ CARE_SITE_LEVEL_NAMES = {
     "Hospital": "Hôpital",
     "Pole": "Pôle/DMU",
     "UF": "Unité Fonctionnelle (UF)",
+    "UC": "Unité de consultation (UC)",
+    "UH": "Unité d’hébergement (UH)",
 }
 
-UNSUPPORTED_CARE_SITE_LEVEL_NAMES = {
-    "UC": "Unité de consultation (UC)",
+VISIT_DETAIL_TYPE = {
+    "UF": "PASS UF",
+    "UC": "PASS UC",
+    "UH": "PASS UH",
 }
 
 
@@ -33,16 +37,18 @@ def concatenate_predictor_by_level(
     if care_site_levels:
         if not isinstance(care_site_levels, list):
             care_site_levels = [care_site_levels]
-        unknown_levels, selected_levels = [], []
+        unknown_levels, unavailable_levels, selected_levels = [], [], []
         for level in care_site_levels:
-            if level in predictor_by_level:
+            if level in predictor_by_level.keys():
                 predictors_to_concat.append(predictor_by_level[level])
                 selected_levels.append(level)
             elif level in CARE_SITE_LEVEL_NAMES.keys():
-                predictors_to_concat.append(
-                    predictor_by_level[CARE_SITE_LEVEL_NAMES[level]]
-                )
-                selected_levels.append(level)
+                raw_level = CARE_SITE_LEVEL_NAMES[level]
+                if raw_level in predictor_by_level.keys():
+                    predictors_to_concat.append(predictor_by_level[raw_level])
+                    selected_levels.append(level)
+                else:
+                    unavailable_levels.append(level)
             else:
                 unknown_levels.append(level)
 
@@ -56,6 +62,11 @@ def concatenate_predictor_by_level(
                 unknown_levels,
                 list(CARE_SITE_LEVEL_NAMES.values())
                 + list(CARE_SITE_LEVEL_NAMES.keys()),
+            )
+        if unavailable_levels:
+            logger.warning(
+                "The following levels: {} are not available for this probe.",
+                unavailable_levels,
             )
     else:
         predictors_to_concat = list(predictor_by_level.values())

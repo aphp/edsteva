@@ -53,6 +53,8 @@ class BiologyProbe(BaseProbe):
             "stay_type",
             "length_of_stay",
             "care_site_id",
+            "care_site_specialty",
+            "specialties_set",
         ] + [
             "{}_concept_code".format(terminology)
             for terminology in standard_terminologies
@@ -70,6 +72,8 @@ class BiologyProbe(BaseProbe):
         stay_types: Union[str, Dict[str, str]],
         care_site_ids: List[int],
         care_site_short_names: List[str] = None,
+        care_site_specialties: List[str] = None,
+        specialties_sets: Union[str, Dict[str, str]] = None,
         concepts_sets: Union[str, Dict[str, str]] = {
             "Leucocytes": "A0174|K3232|H6740|E4358|C9784|C8824|E6953",
             "Plaquettes": "E4812|C0326|A1636|A0230|H6751|A1598|G7728|G7727|G7833|A2538|A2539|J4463",
@@ -118,6 +122,10 @@ class BiologyProbe(BaseProbe):
         care_site_short_names : List[str], optional
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
         """
+        if specialties_sets is None:
+            self._index.remove("specialties_set")
+        if concepts_sets is None:
+            self._index.remove("concepts_set")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -128,6 +136,8 @@ class BiologyProbe(BaseProbe):
             stay_types=stay_types,
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
+            care_site_specialties=care_site_specialties,
+            specialties_sets=specialties_sets,
             concepts_sets=concepts_sets,
             stay_durations=stay_durations,
             source_terminologies=source_terminologies,

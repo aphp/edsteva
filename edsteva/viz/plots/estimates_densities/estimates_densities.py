@@ -1,6 +1,8 @@
 import uuid
 from copy import deepcopy
+from datetime import datetime
 from functools import reduce
+from typing import List, Union
 
 import altair as alt
 
@@ -10,6 +12,7 @@ from edsteva.viz.utils import (
     add_interactive_selection,
     concatenate_charts,
     configure_style,
+    filter_predictor,
     generate_horizontal_bar_charts,
     generate_vertical_bar_charts,
     save_html,
@@ -20,6 +23,13 @@ def estimates_densities_plot(
     probe: BaseProbe,
     fitted_model: BaseModel,
     save_path: str = None,
+    care_site_level: str = None,
+    stay_type: List[str] = None,
+    care_site_id: List[int] = None,
+    start_date: Union[datetime, str] = None,
+    end_date: Union[datetime, str] = None,
+    care_site_short_name: List[int] = None,
+    remove_singleton_bar_chart: bool = True,
     **kwargs,
 ):
     r"""Displays the density plot with the associated box plot of each estimate and metric computed in the input model. It can help you to set the thresholds.
@@ -42,7 +52,27 @@ def estimates_densities_plot(
     alt.data_transformers.disable_max_rows()
 
     predictor = probe.predictor.copy()
+    predictor = filter_predictor(
+        predictor=predictor,
+        care_site_level=care_site_level,
+        stay_type=stay_type,
+        care_site_id=care_site_id,
+        care_site_short_name=care_site_short_name,
+        start_date=start_date,
+        end_date=end_date,
+        **kwargs,
+    )
     estimates = fitted_model.estimates.copy()
+    estimates = filter_predictor(
+        predictor=predictor,
+        care_site_level=care_site_level,
+        stay_type=stay_type,
+        care_site_id=care_site_id,
+        care_site_short_name=care_site_short_name,
+        start_date=None,
+        end_date=None,
+        **kwargs,
+    )
     predictor = probe.add_names_columns(predictor)
     estimates = probe.add_names_columns(estimates)
     probe_config = deepcopy(probe.get_viz_config("estimates_densities_plot"))
@@ -68,7 +98,6 @@ def estimates_densities_plot(
                                 estimate,
                                 as_=[estimate, "Density"],
                                 extent=[min_value, max_value],
-                                **kwargs,
                             )
                             .mark_area()
                             .encode(
@@ -154,10 +183,14 @@ def estimates_densities_plot(
     horizontal_bar_charts, y_variables_selections = generate_horizontal_bar_charts(
         base=base,
         horizontal_bar_charts_config=horizontal_bar_charts_config,
+        predictor=predictor,
+        remove_singleton_bar_chart=remove_singleton_bar_chart,
     )
     vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
         base=base,
         vertical_bar_charts_config=vertical_bar_charts_config,
+        predictor=predictor,
+        remove_singleton_bar_chart=remove_singleton_bar_chart,
     )
 
     selections = dict(

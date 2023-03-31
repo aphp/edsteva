@@ -41,6 +41,8 @@ class ConditionProbe(BaseProbe):
             "condition_type",
             "source_system",
             "care_site_id",
+            "care_site_specialty",
+            "specialties_set",
         ]
         if _viz_config is None:
             self._viz_config = {}
@@ -56,8 +58,10 @@ class ConditionProbe(BaseProbe):
         care_site_ids: List[int],
         extra_data: Data = None,
         care_site_short_names: List[str] = None,
+        care_site_specialties: List[str] = None,
         diag_types: Union[str, Dict[str, str]] = None,
-        condition_types: Union[str, Dict[str, str]] = {"All": ".*"},
+        specialties_sets: Union[str, Dict[str, str]] = None,
+        condition_types: Union[str, Dict[str, str]] = None,
         source_systems: List[str] = ["ORBIS"],
         stay_durations: List[float] = None,
         hdfs_user_path: str = None,
@@ -90,7 +94,10 @@ class ConditionProbe(BaseProbe):
         care_site_short_names : List[str], optional
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
         """
-
+        if specialties_sets is None:
+            self._index.remove("specialties_set")
+        if condition_types is None:
+            self._index.remove("condition_type")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -102,6 +109,8 @@ class ConditionProbe(BaseProbe):
             care_site_ids=care_site_ids,
             extra_data=extra_data,
             care_site_short_names=care_site_short_names,
+            care_site_specialties=care_site_specialties,
+            specialties_sets=specialties_sets,
             diag_types=diag_types,
             stay_durations=stay_durations,
             condition_types=condition_types,

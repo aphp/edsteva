@@ -289,6 +289,7 @@ class BaseProbe(metaclass=ABCMeta):
         self,
         care_site_ids: Union[int, List[int]] = None,
         care_site_short_names: Union[str, List[str]] = None,
+        care_site_specialties: Union[str, List[str]] = None,
     ) -> None:
         """Filters all the care sites related to the selected care sites.
 
@@ -301,10 +302,10 @@ class BaseProbe(metaclass=ABCMeta):
         """
         self.predictor = filter_table_by_care_site(
             table_to_filter=self.predictor,
-            table_name="{} predictor".format(type(self).__name__.lower()),
             care_site_relationship=self.care_site_relationship,
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
+            care_site_specialties=care_site_specialties,
         )
         logger.info("Use probe.reset_predictor() to get back the initial predictor")
 

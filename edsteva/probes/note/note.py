@@ -39,6 +39,8 @@ class NoteProbe(BaseProbe):
             "length_of_stay",
             "note_type",
             "care_site_id",
+            "care_site_specialty",
+            "specialties_set",
         ]
         if _viz_config is None:
             self._viz_config = {}
@@ -53,6 +55,8 @@ class NoteProbe(BaseProbe):
         stay_types: Union[str, Dict[str, str]],
         care_site_ids: List[int],
         care_site_short_names: List[str] = None,
+        care_site_specialties: List[str] = None,
+        specialties_sets: Union[str, Dict[str, str]] = None,
         extra_data: Data = None,
         stay_durations: List[float] = None,
         note_types: Union[str, Dict[str, str]] = {
@@ -87,6 +91,10 @@ class NoteProbe(BaseProbe):
         care_site_ids : List[int], optional
             **EXAMPLE**: `[8312056386, 8312027648]`
         """
+        if specialties_sets is None:
+            self._index.remove("specialties_set")
+        if note_types is None:
+            self._index.remove("note_type")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -98,6 +106,8 @@ class NoteProbe(BaseProbe):
             care_site_ids=care_site_ids,
             extra_data=extra_data,
             care_site_short_names=care_site_short_names,
+            care_site_specialties=care_site_specialties,
+            specialties_sets=specialties_sets,
             note_types=note_types,
             stay_durations=stay_durations,
             hdfs_user_path=hdfs_user_path,

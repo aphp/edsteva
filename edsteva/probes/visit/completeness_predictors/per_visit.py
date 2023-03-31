@@ -11,6 +11,7 @@ from edsteva.probes.utils.prepare_df import (
 )
 from edsteva.probes.utils.utils import (
     CARE_SITE_LEVEL_NAMES,
+    VISIT_DETAIL_TYPE,
     concatenate_predictor_by_level,
     hospital_only,
 )
@@ -27,9 +28,11 @@ def compute_completeness_predictor_per_visit(
     care_site_levels: List[str],
     stay_types: Union[str, Dict[str, str]],
     care_site_ids: List[int],
-    care_site_short_names: List[str] = None,
-    stay_durations: List[float] = None,
-    hdfs_user_path: str = None,
+    care_site_short_names: List[str],
+    care_site_specialties: List[str],
+    specialties_sets: Union[str, Dict[str, str]],
+    stay_durations: List[float],
+    hdfs_user_path: str,
 ):
     """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
@@ -62,10 +65,12 @@ def compute_completeness_predictor_per_visit(
     )
 
     care_site = prepare_care_site(
-        data,
-        care_site_ids,
-        care_site_short_names,
-        care_site_relationship,
+        data=data,
+        care_site_ids=care_site_ids,
+        care_site_short_names=care_site_short_names,
+        care_site_specialties=care_site_specialties,
+        care_site_relationship=care_site_relationship,
+        specialties_sets=specialties_sets,
     )
 
     hospital_visit = get_hospital_visit(
@@ -85,6 +90,22 @@ def compute_completeness_predictor_per_visit(
             care_site,
         )
         visit_predictor_by_level[uf_name] = uf_visit
+
+        uc_name = CARE_SITE_LEVEL_NAMES["UC"]
+        uc_visit = get_uc_visit(
+            visit_occurrence,
+            visit_detail,
+            care_site,
+        )
+        visit_predictor_by_level[uc_name] = uc_visit
+
+        uh_name = CARE_SITE_LEVEL_NAMES["UH"]
+        uh_visit = get_uh_visit(
+            visit_occurrence,
+            visit_detail,
+            care_site,
+        )
+        visit_predictor_by_level[uh_name] = uh_visit
 
         pole_name = CARE_SITE_LEVEL_NAMES["Pole"]
         pole_visit = get_pole_visit(
@@ -152,28 +173,58 @@ def get_hospital_visit(visit_occurrence, care_site):
         hospital_visit["care_site_level"] == CARE_SITE_LEVEL_NAMES["Hospital"]
     ]
     if is_koalas(hospital_visit):
-        hospital_visit.spark.cache()
+        hospital_visit = hospital_visit.spark.cache()
 
     return hospital_visit
 
 
 def get_uf_visit(visit_occurrence, visit_detail, care_site):
-    visit_detail = visit_detail.merge(
+    uf_visit = visit_detail[visit_detail.visit_detail_type == VISIT_DETAIL_TYPE["UF"]]
+    uf_visit = uf_visit.merge(
         visit_occurrence[["visit_occurrence_id", "length_of_stay", "stay_type"]],
         on="visit_occurrence_id",
     ).drop(columns="visit_occurrence_id")
-
-    uf_visit = visit_detail.merge(care_site, on="care_site_id")
+    uf_visit = uf_visit.merge(care_site, on="care_site_id")
     uf_visit = uf_visit[uf_visit["care_site_level"] == CARE_SITE_LEVEL_NAMES["UF"]]
     if is_koalas(uf_visit):
-        uf_visit.spark.cache()
+        uf_visit = uf_visit.spark.cache()
 
     return uf_visit
 
 
+def get_uc_visit(visit_occurrence, visit_detail, care_site):
+    uc_visit = visit_detail[visit_detail.visit_detail_type == VISIT_DETAIL_TYPE["UC"]]
+    uc_visit = uc_visit.merge(
+        visit_occurrence[["visit_occurrence_id", "length_of_stay", "stay_type"]],
+        on="visit_occurrence_id",
+    ).drop(columns="visit_occurrence_id")
+    uc_visit = uc_visit.merge(care_site, on="care_site_id")
+    uc_visit = uc_visit[uc_visit["care_site_level"] == CARE_SITE_LEVEL_NAMES["UC"]]
+    if is_koalas(uc_visit):
+        uc_visit = uc_visit.spark.cache()
+
+    return uc_visit
+
+
+def get_uh_visit(visit_occurrence, visit_detail, care_site):
+    uh_visit = visit_detail[visit_detail.visit_detail_type == VISIT_DETAIL_TYPE["UH"]]
+    uh_visit = uh_visit.merge(
+        visit_occurrence[["visit_occurrence_id", "length_of_stay", "stay_type"]],
+        on="visit_occurrence_id",
+    ).drop(columns="visit_occurrence_id")
+    uh_visit = uh_visit.merge(care_site, on="care_site_id")
+    uh_visit = uh_visit[uh_visit["care_site_level"] == CARE_SITE_LEVEL_NAMES["UH"]]
+    if is_koalas(uh_visit):
+        uh_visit = uh_visit.spark.cache()
+
+    return uh_visit
+
+
 def get_pole_visit(uf_visit, care_site, care_site_relationship):
     pole_visit = convert_uf_to_pole(
-        table=uf_visit.drop(columns=["care_site_short_name", "care_site_level"]),
+        table=uf_visit.drop(
+            columns=["care_site_short_name", "care_site_level", "care_site_specialty"]
+        ),
         table_name="uf_visit",
         care_site_relationship=care_site_relationship,
     )
@@ -183,6 +234,6 @@ def get_pole_visit(uf_visit, care_site, care_site_relationship):
         pole_visit["care_site_level"] == CARE_SITE_LEVEL_NAMES["Pole"]
     ]
     if is_koalas(pole_visit):
-        pole_visit.spark.cache()
+        pole_visit = pole_visit.spark.cache()
 
     return pole_visit

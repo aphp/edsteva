@@ -145,7 +145,6 @@ def prepare_measurement(
                 )
             )
         measurement = get_framework(measurement).concat(measurement_by_terminology)
-
     return measurement
 
 
@@ -273,8 +272,10 @@ def prepare_condition_occurrence(
 
 def prepare_care_site(
     data: Data,
-    care_site_ids: List[int],
-    care_site_short_names: List[str],
+    care_site_ids: Union[int, List[int]],
+    care_site_short_names: Union[str, List[str]],
+    care_site_specialties: Union[str, List[str]],
+    specialties_sets: Union[str, Dict[str, str]],
     care_site_relationship: pd.DataFrame,
 ):
     care_site = data.care_site[
@@ -282,20 +283,33 @@ def prepare_care_site(
             "care_site_id",
             "care_site_type_source_value",
             "care_site_short_name",
+            "place_of_service_source_value",
         ]
     ]
     care_site = care_site.rename(
-        columns={"care_site_type_source_value": "care_site_level"}
+        columns={
+            "care_site_type_source_value": "care_site_level",
+            "place_of_service_source_value": "care_site_specialty",
+        }
     )
-    if care_site_ids or care_site_short_names:
+    if care_site_ids or care_site_short_names or care_site_specialties:
         care_site = filter_table_by_care_site(
             table_to_filter=care_site,
-            table_name="care_site",
             care_site_relationship=care_site_relationship,
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
+            care_site_specialties=care_site_specialties,
         )
 
+    # Add specialties_set
+    if specialties_sets:
+        care_site = filter_table_by_type(
+            table=care_site,
+            table_name="care_site",
+            type_groups=specialties_sets,
+            source_col="care_site_specialty",
+            target_col="specialties_set",
+        )
     return care_site
 
 
@@ -379,7 +393,6 @@ def prepare_visit_detail(
     data: Data,
     start_date: datetime,
     end_date: datetime,
-    visit_detail_type: str = "PASS UF",
 ):
     visit_detail = data.visit_detail[
         [
@@ -395,15 +408,13 @@ def prepare_visit_detail(
         columns={
             "visit_detail_id": "visit_id",
             "visit_detail_start_datetime": "date",
+            "visit_detail_type_source_value": "visit_detail_type",
         }
     )
     visit_detail = filter_valid_observations(
         table=visit_detail, table_name="visit_detail", valid_naming="Actif"
     )
-    visit_detail = visit_detail[
-        visit_detail["visit_detail_type_source_value"] == visit_detail_type
-    ]  # Important to filter only "PASS" to remove duplicate visits
-    visit_detail = visit_detail.drop(columns=["visit_detail_type_source_value"])
+
     visit_detail = filter_table_by_date(
         table=visit_detail,
         table_name="visit_detail",
@@ -460,12 +471,14 @@ def prepare_care_site_relationship(data: Data) -> pd.DataFrame:
             "care_site_id",
             "care_site_type_source_value",
             "care_site_short_name",
+            "place_of_service_source_value",
         ]
     ]
     care_site = to("pandas", care_site)
     care_site = care_site.rename(
         columns={
             "care_site_type_source_value": "care_site_level",
+            "place_of_service_source_value": "care_site_specialty",
         }
     )
     care_site_relationship = care_site.merge(
@@ -477,6 +490,7 @@ def prepare_care_site_relationship(data: Data) -> pd.DataFrame:
             "care_site_level": "parent_care_site_level",
             "care_site_id": "parent_care_site_id",
             "care_site_short_name": "parent_care_site_short_name",
+            "care_site_specialty": "parent_care_site_specialty",
         }
     )
     logger.debug("Create care site relationship to link UC to UF and UF to Pole")

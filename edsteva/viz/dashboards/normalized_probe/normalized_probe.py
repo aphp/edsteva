@@ -32,6 +32,7 @@ def normalized_probe_dashboard(
     fitted_model: BaseModel,
     care_site_level: str = CARE_SITE_LEVEL_NAMES["Hospital"],
     save_path: str = None,
+    remove_singleton_bar_chart: bool = True,
     **kwargs,
 ):
     r"""Displays an interactive chart with:
@@ -121,10 +122,14 @@ def normalized_probe_dashboard(
     horizontal_bar_charts, y_variables_selections = generate_horizontal_bar_charts(
         base=base,
         horizontal_bar_charts_config=horizontal_bar_charts_config,
+        predictor=predictor,
+        remove_singleton_bar_chart=remove_singleton_bar_chart,
     )
     vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
         base=base,
         vertical_bar_charts_config=vertical_bar_charts_config,
+        predictor=predictor,
+        remove_singleton_bar_chart=remove_singleton_bar_chart,
     )
 
     selections = dict(

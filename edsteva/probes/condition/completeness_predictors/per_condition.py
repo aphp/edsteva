@@ -32,6 +32,8 @@ def compute_completeness_predictor_per_condition(
     care_site_ids: List[int],
     extra_data: Data,
     care_site_short_names: List[str],
+    care_site_specialties: List[str],
+    specialties_sets: Union[str, Dict[str, str]],
     diag_types: Union[str, Dict[str, str]],
     condition_types: Union[str, Dict[str, str]],
     source_systems: List[str],
@@ -96,6 +98,8 @@ def compute_completeness_predictor_per_condition(
         care_site_ids=care_site_ids,
         care_site_short_names=care_site_short_names,
         care_site_relationship=care_site_relationship,
+        care_site_specialties=care_site_specialties,
+        specialties_sets=specialties_sets,
     )
 
     hospital_visit = get_hospital_condition(
@@ -112,7 +116,6 @@ def compute_completeness_predictor_per_condition(
             data=data,
             start_date=start_date,
             end_date=end_date,
-            visit_detail_type="RUM",
         )
 
         uf_condition = get_uf_condition(
@@ -190,7 +193,7 @@ def get_hospital_condition(condition_occurrence, visit_occurrence, care_site):
     hospital_condition = hospital_condition.merge(care_site, on="care_site_id")
 
     if is_koalas(hospital_condition):
-        hospital_condition.spark.cache()
+        hospital_condition = hospital_condition.spark.cache()
 
     return hospital_condition
 
@@ -202,6 +205,7 @@ def get_uf_condition(
     care_site,
 ):  # pragma: no cover
     # Add visit information
+    visit_detail = visit_detail[visit_detail.visit_detail_type == "RUM"]
     uf_condition = condition_occurrence.merge(
         visit_occurrence.drop(columns="care_site_id"),
         on="visit_occurrence_id",
@@ -220,7 +224,7 @@ def get_uf_condition(
     uf_condition = uf_condition[uf_condition["care_site_level"] == uf_name]
 
     if is_koalas(uf_condition):
-        uf_condition.spark.cache()
+        uf_condition = uf_condition.spark.cache()
 
     return uf_condition
 
@@ -229,7 +233,9 @@ def get_pole_condition(
     uf_condition, care_site, care_site_relationship
 ):  # pragma: no cover
     pole_condition = convert_uf_to_pole(
-        table=uf_condition.drop(columns=["care_site_short_name", "care_site_level"]),
+        table=uf_condition.drop(
+            columns=["care_site_short_name", "care_site_level", "care_site_specialty"]
+        ),
         table_name="uf_condition",
         care_site_relationship=care_site_relationship,
     )
@@ -240,6 +246,6 @@ def get_pole_condition(
     pole_condition = pole_condition[pole_condition["care_site_level"] == pole_name]
 
     if is_koalas(pole_condition):
-        pole_condition.spark.cache()
+        pole_condition = pole_condition.spark.cache()
 
     return pole_condition

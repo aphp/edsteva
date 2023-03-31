@@ -31,6 +31,8 @@ def compute_completeness_predictor_per_note(
     stay_types: Union[str, Dict[str, str]],
     care_site_ids: List[int],
     care_site_short_names: List[str],
+    care_site_specialties: List[str],
+    specialties_sets: Union[str, Dict[str, str]],
     extra_data: Data,
     stay_durations: List[float],
     note_types: Union[str, Dict[str, str]],
@@ -77,10 +79,12 @@ def compute_completeness_predictor_per_note(
     ).drop(columns=["visit_occurrence_source_value", "date"])
 
     care_site = prepare_care_site(
-        data,
-        care_site_ids,
-        care_site_short_names,
-        care_site_relationship,
+        data=data,
+        care_site_ids=care_site_ids,
+        care_site_short_names=care_site_short_names,
+        care_site_relationship=care_site_relationship,
+        care_site_specialties=care_site_specialties,
+        specialties_sets=specialties_sets,
     )
 
     note_hospital = get_hospital_note(note, visit_occurrence, care_site)
@@ -90,7 +94,7 @@ def compute_completeness_predictor_per_note(
     # UF selection
     if not hospital_only(care_site_levels=care_site_levels):
         if extra_data:
-            note_uf = get_uf_note(
+            note_uf, note_uc, note_uh = get_note_detail(
                 extra_data,
                 note,
                 visit_occurrence,
@@ -98,6 +102,10 @@ def compute_completeness_predictor_per_note(
             )
             uf_name = CARE_SITE_LEVEL_NAMES["UF"]
             note_predictor_by_level[uf_name] = note_uf
+            uc_name = CARE_SITE_LEVEL_NAMES["UC"]
+            note_predictor_by_level[uc_name] = note_uc
+            uh_name = CARE_SITE_LEVEL_NAMES["UH"]
+            note_predictor_by_level[uh_name] = note_uh
 
             note_pole = get_pole_note(note_uf, care_site, care_site_relationship)
             pole_name = CARE_SITE_LEVEL_NAMES["Pole"]
@@ -163,38 +171,44 @@ def get_hospital_note(note, visit_occurrence, care_site):
     note_hospital = note_hospital.drop(columns="visit_occurrence_id")
     note_hospital = note_hospital.merge(care_site, on="care_site_id")
     if is_koalas(note_hospital):
-        note_hospital.spark.cache()
+        note_hospital = note_hospital.spark.cache()
 
     return note_hospital
 
 
-def get_uf_note(
+def get_note_detail(
     extra_data,
     note,
     visit_occurrence,
     care_site,
 ):  # pragma: no cover
-    note_uf = prepare_note_care_site(extra_data=extra_data, note=note)
-    note_uf = note_uf.merge(care_site, on="care_site_id")
-    note_uf = note_uf.merge(
+    note_detail = prepare_note_care_site(extra_data=extra_data, note=note)
+    note_detail = note_detail.merge(care_site, on="care_site_id")
+    note_detail = note_detail.merge(
         visit_occurrence.drop(columns="care_site_id"),
         on="visit_occurrence_id",
         how="left",
-    )
-    note_uf = note_uf.drop(columns="visit_occurrence_id")
+    ).drop(columns="visit_occurrence_id")
 
     uf_name = CARE_SITE_LEVEL_NAMES["UF"]
-    note_uf = note_uf[note_uf["care_site_level"] == uf_name]
+    note_uf = note_detail[note_detail["care_site_level"] == uf_name]
+    uc_name = CARE_SITE_LEVEL_NAMES["UC"]
+    note_uc = note_detail[note_detail["care_site_level"] == uc_name]
+    uh_name = CARE_SITE_LEVEL_NAMES["UH"]
+    note_uh = note_detail[note_detail["care_site_level"] == uh_name]
+    if is_koalas(note_detail):
+        note_uf = note_uf.spark.cache()
+        note_uc = note_uc.spark.cache()
+        note_uh = note_uh.spark.cache()
 
-    if is_koalas(note_uf):
-        note_uf.spark.cache()
-
-    return note_uf
+    return note_uf, note_uc, note_uh
 
 
 def get_pole_note(note_uf, care_site, care_site_relationship):  # pragma: no cover
     note_pole = convert_uf_to_pole(
-        table=note_uf.drop(columns=["care_site_short_name", "care_site_level"]),
+        table=note_uf.drop(
+            columns=["care_site_short_name", "care_site_level", "care_site_specialty"]
+        ),
         table_name="note_uf",
         care_site_relationship=care_site_relationship,
     )
@@ -205,6 +219,6 @@ def get_pole_note(note_uf, care_site, care_site_relationship):  # pragma: no cov
     note_pole = note_pole[note_pole["care_site_level"] == pole_name]
 
     if is_koalas(note_pole):
-        note_pole.spark.cache()
+        note_pole = note_pole.spark.cache()
 
     return note_pole

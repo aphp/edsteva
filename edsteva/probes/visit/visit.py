@@ -33,7 +33,14 @@ class VisitProbe(BaseProbe):
         _viz_config: Dict[str, str] = None,
     ):
         self._completeness_predictor = completeness_predictor
-        self._index = ["care_site_level", "stay_type", "length_of_stay", "care_site_id"]
+        self._index = [
+            "care_site_level",
+            "stay_type",
+            "length_of_stay",
+            "care_site_id",
+            "care_site_specialty",
+            "specialties_set",
+        ]
         if _viz_config is None:
             self._viz_config = {}
 
@@ -47,6 +54,8 @@ class VisitProbe(BaseProbe):
         stay_types: Union[str, Dict[str, str]],
         care_site_ids: List[int],
         care_site_short_names: List[str] = None,
+        care_site_specialties: List[str] = None,
+        specialties_sets: Union[str, Dict[str, str]] = None,
         stay_durations: List[float] = None,
         hdfs_user_path: str = None,
         **kwargs,
@@ -72,6 +81,8 @@ class VisitProbe(BaseProbe):
         care_site_short_names : List[str], optional
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
         """
+        if specialties_sets is None:
+            self._index.remove("specialties_set")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -82,6 +93,8 @@ class VisitProbe(BaseProbe):
             stay_types=stay_types,
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
+            care_site_specialties=care_site_specialties,
+            specialties_sets=specialties_sets,
             stay_durations=stay_durations,
             hdfs_user_path=hdfs_user_path,
             **kwargs,

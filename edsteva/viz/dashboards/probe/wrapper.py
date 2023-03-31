@@ -18,6 +18,7 @@ def probe_dashboard(
     save_path: str = None,
     legend_predictor: str = "Predictor c(t)",
     legend_model: str = "Model f(t)",
+    remove_singleton_bar_chart: bool = True,
     **kwargs,
 ):
     r"""Displays an interactive chart with:
@@ -84,11 +85,13 @@ def probe_dashboard(
             model_config=model_config,
             legend_predictor=legend_predictor,
             legend_model=legend_model,
+            remove_singleton_bar_chart=remove_singleton_bar_chart,
         )
     else:
         chart = probe_only_dashboard(
             predictor=predictor,
             probe_config=probe_config,
+            remove_singleton_bar_chart=remove_singleton_bar_chart,
         )
 
     vis_probe = "id" + uuid.uuid4().hex

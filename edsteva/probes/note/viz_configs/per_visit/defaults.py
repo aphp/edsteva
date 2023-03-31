@@ -49,6 +49,16 @@ horizontal_bar_charts = dict(
             "field": "care_site_short_name",
             "sort": "-x",
         },
+        {
+            "title": "Care site specialty",
+            "field": "care_site_specialty",
+            "sort": "-x",
+        },
+        {
+            "title": "Specialties-set",
+            "field": "specialties_set",
+            "sort": "-x",
+        },
     ],
     x=[
         dict(

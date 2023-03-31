@@ -32,6 +32,8 @@ def compute_completeness_predictor_per_visit(
     care_site_ids: List[int],
     extra_data: Data,
     care_site_short_names: List[str],
+    care_site_specialties: List[str],
+    specialties_sets: Union[str, Dict[str, str]],
     diag_types: Union[str, Dict[str, str]],
     condition_types: Union[str, Dict[str, str]],
     source_systems: List[str],
@@ -96,6 +98,8 @@ def compute_completeness_predictor_per_visit(
         care_site_ids=care_site_ids,
         care_site_short_names=care_site_short_names,
         care_site_relationship=care_site_relationship,
+        care_site_specialties=care_site_specialties,
+        specialties_sets=specialties_sets,
     )
 
     hospital_visit = get_hospital_visit(
@@ -108,9 +112,7 @@ def compute_completeness_predictor_per_visit(
 
     # UF selection
     if not hospital_only(care_site_levels=care_site_levels):
-        visit_detail = prepare_visit_detail(
-            data, start_date, end_date, visit_detail_type="RUM"
-        )
+        visit_detail = prepare_visit_detail(data, start_date, end_date)
 
         uf_visit = get_uf_visit(
             condition_occurrence,
@@ -191,7 +193,7 @@ def get_hospital_visit(condition_occurrence, visit_occurrence, care_site):
     hospital_visit = hospital_visit.merge(care_site, on="care_site_id")
 
     if is_koalas(hospital_visit):
-        hospital_visit.spark.cache()
+        hospital_visit = hospital_visit.spark.cache()
 
     return hospital_visit
 
@@ -202,6 +204,7 @@ def get_uf_visit(
     visit_detail,
     care_site,
 ):  # pragma: no cover
+    visit_detail = visit_detail[visit_detail.visit_detail_type == "RUM"]
     condition_uf = (
         condition_occurrence[
             [
@@ -233,14 +236,16 @@ def get_uf_visit(
     uf_visit = uf_visit[uf_visit["care_site_level"] == uf_name]
 
     if is_koalas(uf_visit):
-        uf_visit.spark.cache()
+        uf_visit = uf_visit.spark.cache()
 
     return uf_visit
 
 
 def get_pole_visit(uf_visit, care_site, care_site_relationship):  # pragma: no cover
     pole_visit = convert_uf_to_pole(
-        table=uf_visit.drop(columns=["care_site_short_name", "care_site_level"]),
+        table=uf_visit.drop(
+            columns=["care_site_short_name", "care_site_level", "care_site_specialty"]
+        ),
         table_name="uf_visit",
         care_site_relationship=care_site_relationship,
     )
@@ -251,6 +256,6 @@ def get_pole_visit(uf_visit, care_site, care_site_relationship):  # pragma: no c
     pole_visit = pole_visit[pole_visit["care_site_level"] == pole_name]
 
     if is_koalas(pole_visit):
-        pole_visit.spark.cache()
+        pole_visit = pole_visit.spark.cache()
 
     return pole_visit

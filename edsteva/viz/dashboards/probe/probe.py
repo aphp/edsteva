@@ -18,6 +18,7 @@ from edsteva.viz.utils import (
 def probe_only_dashboard(
     predictor: pd.DataFrame,
     probe_config: Dict[str, str],
+    remove_singleton_bar_chart: bool,
 ):
     """Script to be used by [``predictor_dashboard()``][edsteva.viz.dashboards.predictor_dashboard.wrapper]
 
@@ -54,10 +55,14 @@ def probe_only_dashboard(
     horizontal_bar_charts, y_variables_selections = generate_horizontal_bar_charts(
         base=base,
         horizontal_bar_charts_config=horizontal_bar_charts_config,
+        predictor=predictor,
+        remove_singleton_bar_chart=remove_singleton_bar_chart,
     )
     vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
         base=base,
         vertical_bar_charts_config=vertical_bar_charts_config,
+        predictor=predictor,
+        remove_singleton_bar_chart=remove_singleton_bar_chart,
     )
     selections = dict(
         date=time_selection,

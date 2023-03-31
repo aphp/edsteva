@@ -377,6 +377,6 @@ care_site_level_mapping = {
     35: "Unité de consultation (UC)",
     45: "Pôle/DMU",
     50: "Unité Fonctionnelle (UF)",
-    70: "Unité d'hébergement (UH)",
+    70: "Unité d’hébergement (UH)",
     100: "Unité de consultation (UC)",
 }

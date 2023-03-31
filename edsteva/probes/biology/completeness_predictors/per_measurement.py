@@ -30,6 +30,8 @@ def compute_completeness_predictor_per_measurement(
     stay_types: Union[str, Dict[str, str]],
     care_site_ids: List[int],
     care_site_short_names: List[str],
+    care_site_specialties: List[str],
+    specialties_sets: Union[str, Dict[str, str]],
     concepts_sets: Union[str, Dict[str, str]],
     stay_durations: List[float],
     source_terminologies: Dict[str, str],
@@ -76,6 +78,8 @@ def compute_completeness_predictor_per_measurement(
         data=data,
         care_site_ids=care_site_ids,
         care_site_short_names=care_site_short_names,
+        care_site_specialties=care_site_specialties,
+        specialties_sets=specialties_sets,
         care_site_relationship=care_site_relationship,
     )
 
@@ -146,6 +150,6 @@ def get_hospital_measurements(measurement, visit_occurrence, care_site):
     hospital_measurement = hospital_measurement.merge(care_site, on="care_site_id")
 
     if is_koalas(hospital_measurement):
-        hospital_measurement.spark.cache()
+        hospital_measurement = hospital_measurement.spark.cache()
 
     return hospital_measurement

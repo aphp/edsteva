@@ -27,7 +27,7 @@ CARE_SITE_STRUCTURE = {
             "Unité Fonctionnelle (UF)-113": {"Unité de consultation (UC)-1131": None},
         },
         "Pôle/DMU-12": {
-            "Unité Fonctionnelle (UF)-121": None,
+            "Unité Fonctionnelle (UF)-121": {"Unité d’hébergement (UH)-1211": None},
             "Unité Fonctionnelle (UF)-122": {"Unité de consultation (UC)-1221": None},
         },
     },
@@ -42,7 +42,10 @@ CARE_SITE_STRUCTURE = {
         },
         "Pôle/DMU-22": {
             "Unité Fonctionnelle (UF)-221": None,
-            "Unité Fonctionnelle (UF)-222": None,
+            "Unité Fonctionnelle (UF)-222": {
+                "Unité d’hébergement (UH)-2221": None,
+                "Unité d’hébergement (UH)-2222": None,
+            },
         },
     },
     "Hôpital-3": {
@@ -92,11 +95,6 @@ OTHER_CONDITION_COLUMNS = dict(
 )
 
 OTHER_DETAIL_COLUMNS = dict(
-    visit_detail_type_source_value=[
-        ("PASS UF", 0.4),
-        ("SSR", 0.1),
-        ("RUM", 0.5),
-    ],
     row_status_source_value=[
         ("Actif", 0.999),
         ("supprimé", 0.001),
@@ -451,8 +449,10 @@ class SyntheticData:
 
         care_site, fact_relationship, hospital_ids = self._generate_care_site_tables()
         visit_occurrence = self._generate_visit_occurrence(hospital_ids)
-        visit_detail = self._generate_visit_detail(visit_occurrence)
-        condition_occurrence = self._generate_condition_occurrence(visit_detail)
+        visit_detail = self._generate_visit_detail(visit_occurrence, care_site)
+        condition_occurrence = self._generate_condition_occurrence(
+            visit_detail,
+        )
         note = self._generate_note(hospital_ids, visit_occurrence)
         concept, concept_relationship, src_concept_name = self._generate_concept()
         measurement = self._generate_measurement(
@@ -479,6 +479,35 @@ class SyntheticData:
 
     def _generate_care_site_tables(self):
         care_site, fact_relationship = generate_care_site_tables(CARE_SITE_STRUCTURE)
+        uc_care_site = care_site[
+            care_site.care_site_type_source_value == "Unité de consultation (UC)"
+        ][["care_site_id"]].reset_index(drop=True)
+        uc_care_site = add_other_columns(
+            uc_care_site,
+            other_columns=dict(
+                place_of_service_source_value=[
+                    ("CARDIO", 0.2),
+                    ("PEDIATRIE", 0.4),
+                    ("PSYCHIATRIE", 0.4),
+                ]
+            ),
+        )
+        uh_care_site = care_site[
+            care_site.care_site_type_source_value == "Unité d’hébergement (UH)"
+        ][["care_site_id"]].reset_index(drop=True)
+        uh_care_site = add_other_columns(
+            uh_care_site,
+            other_columns=dict(
+                place_of_service_source_value=[
+                    ("REA ADULTE", 0.5),
+                    ("USI ADULTE", 0.5),
+                ]
+            ),
+        )
+        care_site = care_site.merge(
+            pd.concat([uc_care_site, uh_care_site]), on="care_site_id", how="left"
+        )
+        care_site.fillna("Non Renseigné", inplace=True)
         hospital_ids = list(
             care_site[care_site.care_site_type_source_value == "Hôpital"].care_site_id
         )
@@ -530,7 +559,7 @@ class SyntheticData:
 
         return visit_occurrence
 
-    def _generate_visit_detail(self, visit_occurrence):
+    def _generate_visit_detail(self, visit_occurrence, care_site):
         t_min = self.t_min.timestamp()
         t_max = self.t_max.timestamp()
         visit_detail = []
@@ -570,7 +599,38 @@ class SyntheticData:
             visit_detail,
             self.other_detail_columns,
         )
-
+        visit_detail = visit_detail.merge(care_site, on="care_site_id")
+        uc_detail = (
+            visit_detail[
+                visit_detail.care_site_type_source_value == "Unité de consultation (UC)"
+            ]
+            .copy()
+            .reset_index(drop=True)
+        )
+        uc_detail["visit_detail_type_source_value"] = "PASS UC"
+        uh_detail = (
+            visit_detail[
+                visit_detail.care_site_type_source_value == "Unité d’hébergement (UH)"
+            ]
+            .copy()
+            .reset_index(drop=True)
+        )
+        uh_detail["visit_detail_type_source_value"] = "PASS UH"
+        uf_detail = (
+            visit_detail[
+                visit_detail.care_site_type_source_value == "Unité Fonctionnelle (UF)"
+            ]
+            .copy()
+            .reset_index(drop=True)
+        )
+        uf_detail["visit_detail_type_source_value"] = "PASS UF"
+        rum_detail = uf_detail.copy()
+        rum_detail["visit_detail_type_source_value"] = "RUM"
+        care_site_col = list(care_site.columns)
+        care_site_col.remove("care_site_id")
+        visit_detail = pd.concat([uc_detail, uh_detail, uf_detail, rum_detail]).drop(
+            columns=care_site_col
+        )
         return visit_detail
 
     def _generate_condition_occurrence(self, visit_detail):
