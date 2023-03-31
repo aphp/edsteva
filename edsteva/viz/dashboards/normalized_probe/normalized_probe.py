@@ -91,7 +91,6 @@ def normalized_probe_dashboard(
     predictor = filter_predictor(
         predictor=predictor, care_site_level=care_site_level, **kwargs
     )
-    predictor = probe.add_names_columns(predictor)
     for estimate in fitted_model._coefs + fitted_model._metrics:
         if pd.api.types.is_datetime64_any_dtype(predictor[estimate]):
             predictor[estimate] = predictor[estimate].dt.strftime("%Y-%m")

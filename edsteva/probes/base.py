@@ -267,8 +267,9 @@ class BaseProbe(metaclass=ABCMeta):
             self.impute_missing_date(
                 only_impute_per_care_site=only_impute_per_care_site,
             )
-        self.cache_predictor()
         self.care_site_relationship = care_site_relationship
+        self.predictor = self.add_names_columns(self.predictor)
+        self.cache_predictor()
 
     def reset_predictor(
         self,

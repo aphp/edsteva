@@ -81,15 +81,12 @@ def probe_plot(
     probe_config = deepcopy(probe.get_viz_config("probe_plot"))
     chart_style = probe_config["chart_style"]
     predictor = probe.predictor.copy()
-    predictor = probe.add_names_columns(predictor)
     indexes = list(set(predictor.columns).difference(["date"] + probe._metrics))
 
     if fitted_model:
         predictor = fitted_model.predict(probe).copy()
     else:
         predictor = probe.predictor.copy()
-
-    predictor = probe.add_names_columns(predictor)
 
     predictor = filter_predictor(
         predictor=predictor,

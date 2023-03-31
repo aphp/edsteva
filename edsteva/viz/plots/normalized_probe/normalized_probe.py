@@ -93,7 +93,6 @@ def normalized_probe_plot(
     predictor = probe.predictor.copy()
     estimates = fitted_model.estimates.copy()
 
-    predictor = probe.add_names_columns(predictor)
     indexes = list(set(predictor.columns).difference(["date"] + probe._metrics))
     predictor = predictor.merge(estimates, on=probe._index)
 

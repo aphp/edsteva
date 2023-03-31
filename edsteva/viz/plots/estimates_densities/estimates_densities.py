@@ -73,8 +73,6 @@ def estimates_densities_plot(
         end_date=None,
         **kwargs,
     )
-    predictor = probe.add_names_columns(predictor)
-    estimates = probe.add_names_columns(estimates)
     probe_config = deepcopy(probe.get_viz_config("estimates_densities_plot"))
     vertical_bar_charts_config = probe_config["vertical_bar_charts"]
     horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]

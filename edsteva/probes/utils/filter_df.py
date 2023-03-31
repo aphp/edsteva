@@ -3,7 +3,6 @@ from typing import Dict, List, Union
 
 import numpy as np
 import pandas as pd
-from IPython.display import display
 from loguru import logger
 
 from edsteva.utils.checks import check_columns
@@ -182,7 +181,7 @@ def filter_table_by_care_site(
             care_site_ids = [care_site_ids]
         care_site_filter.append(
             care_site[care_site["care_site_id"].isin(care_site_ids)][
-                ["care_site_id", "care_site_level", "care_site_short_name"]
+                ["care_site_id", "care_site_level"]
             ]
         )
     if care_site_short_names:
@@ -190,7 +189,7 @@ def filter_table_by_care_site(
             care_site_short_names = [care_site_short_names]
         care_site_filter.append(
             care_site[care_site["care_site_short_name"].isin(care_site_short_names)][
-                ["care_site_id", "care_site_level", "care_site_short_name"]
+                ["care_site_id", "care_site_level"]
             ]
         )
     if care_site_specialties:
@@ -198,7 +197,7 @@ def filter_table_by_care_site(
             care_site_specialties = [care_site_specialties]
         care_site_filter.append(
             care_site[care_site["care_site_specialty"].isin(care_site_specialties)][
-                ["care_site_id", "care_site_level", "care_site_short_name"]
+                ["care_site_id", "care_site_level"]
             ]
         )
     if care_site_filter:
@@ -210,6 +209,8 @@ def filter_table_by_care_site(
             "care_site_ids or care_site_short_names or care_site_specialties must be provided"
         )
     extended_care_site_id_to_filter = []
+
+    # Parent care site to get
     parent_rel = care_site_relationship[
         ~care_site_relationship.parent_care_site_id.isna()
     ][
@@ -217,50 +218,69 @@ def filter_table_by_care_site(
             "care_site_id",
             "parent_care_site_id",
             "parent_care_site_level",
-            "parent_care_site_short_name",
         ]
     ]
-    while set(care_site_filter.care_site_level.unique()).intersection(
+    parent_care_site_filter = care_site_filter.copy()
+    while set(parent_care_site_filter.care_site_level.unique()).intersection(
         CARE_SITE_LEVEL_NAMES.values()
     ):
         extended_care_site_id_to_filter.append(
-            care_site_filter[
-                ["care_site_id", "care_site_level", "care_site_short_name"]
-            ]
+            parent_care_site_filter[["care_site_id", "care_site_level"]]
         )
-        care_site_filter = care_site_filter.merge(
+        parent_care_site_filter = parent_care_site_filter.merge(
             parent_rel,
             on="care_site_id",
         )[
             [
                 "parent_care_site_id",
                 "parent_care_site_level",
-                "parent_care_site_short_name",
             ]
         ].rename(
             columns={
                 "parent_care_site_id": "care_site_id",
                 "parent_care_site_level": "care_site_level",
-                "parent_care_site_short_name": "care_site_short_name",
+            }
+        )
+
+    # Child care site to get
+    child_rel = care_site_relationship[~care_site_relationship.care_site_id.isna()][
+        [
+            "care_site_id",
+            "care_site_level",
+            "parent_care_site_id",
+        ]
+    ].rename(
+        columns={
+            "care_site_id": "child_care_site_id",
+            "care_site_level": "child_care_site_level",
+            "parent_care_site_id": "care_site_id",
+        }
+    )
+    child_care_site_filter = care_site_filter.copy()
+    while set(child_care_site_filter.care_site_level.unique()).intersection(
+        CARE_SITE_LEVEL_NAMES.values()
+    ):
+        extended_care_site_id_to_filter.append(
+            child_care_site_filter[["care_site_id", "care_site_level"]]
+        )
+        child_care_site_filter = child_care_site_filter.merge(
+            child_rel,
+            on="care_site_id",
+        )[
+            [
+                "child_care_site_id",
+                "child_care_site_level",
+            ]
+        ].rename(
+            columns={
+                "child_care_site_id": "care_site_id",
+                "child_care_site_level": "care_site_level",
             }
         )
 
     extended_care_site_id_to_filter = pd.concat(
         extended_care_site_id_to_filter
     ).drop_duplicates()
-    unsupported_care_site = extended_care_site_id_to_filter[
-        ~(
-            extended_care_site_id_to_filter.care_site_level.isin(
-                CARE_SITE_LEVEL_NAMES.values()
-            )
-        )
-    ]
-    if not unsupported_care_site.empty:
-        logger.warning(
-            "The following care site ids are not supported because the associated care site levels are not in {}.",
-            CARE_SITE_LEVEL_NAMES.values(),
-        )
-        display(unsupported_care_site)
     extended_care_site_id_to_filter = list(
         extended_care_site_id_to_filter[
             (

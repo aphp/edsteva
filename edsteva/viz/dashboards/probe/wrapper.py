@@ -70,7 +70,6 @@ def probe_dashboard(
         predictor = fitted_model.predict(probe)
     else:
         predictor = probe.predictor.copy()
-    predictor = probe.add_names_columns(predictor)
     predictor = filter_predictor(
         predictor=predictor,
         care_site_level=care_site_level,
