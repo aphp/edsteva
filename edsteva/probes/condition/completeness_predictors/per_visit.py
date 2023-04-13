@@ -220,15 +220,14 @@ def get_uf_visit(
     condition_uf["has_condition"] = True
 
     visit_detail = visit_detail.merge(
-        visit_occurrence[["visit_occurrence_id", "stay_type"]],
+        visit_occurrence[["visit_occurrence_id", "stay_type", "length_of_stay"]],
         on="visit_occurrence_id",
     )
     visit_detail = visit_detail.merge(
         condition_uf,
         on="visit_id",
         how="left",
-    )
-    visit_detail = visit_detail.drop(columns=["visit_occurrence_id"])
+    ).drop(columns=["visit_occurrence_id"])
 
     uf_visit = visit_detail.merge(care_site, on="care_site_id")
 
