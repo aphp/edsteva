@@ -95,11 +95,11 @@ def compute_completeness_predictor_per_visit(
             visit_detail = prepare_visit_detail(data, start_date, end_date)
 
             uf_visit, uc_visit, uh_visit = get_visit_detail(
-                extra_data,
-                note,
-                visit_occurrence,
-                visit_detail,
-                care_site,
+                extra_data=extra_data,
+                note=note,
+                visit_occurrence=visit_occurrence,
+                visit_detail=visit_detail,
+                care_site=care_site,
             )
             uf_name = CARE_SITE_LEVEL_NAMES["UF"]
             note_predictor_by_level[uf_name] = uf_visit
@@ -203,7 +203,7 @@ def get_visit_detail(
         how="left",
     ).drop(columns="visit_occurrence_id")
 
-    note_detail = visit_detail.merge(care_site, on="care_site_id")
+    note_detail = note_detail.merge(care_site, on="care_site_id")
 
     uf_name = CARE_SITE_LEVEL_NAMES["UF"]
     uf_visit = note_detail[note_detail["care_site_level"] == uf_name]

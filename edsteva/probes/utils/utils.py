@@ -83,5 +83,4 @@ def concatenate_predictor_by_level(
             )
         )
 
-    framework = get_framework(predictors_to_concat[0])
-    return framework.concat(predictors_to_concat)
+    return get_framework(predictors_to_concat[0]).concat(predictors_to_concat)

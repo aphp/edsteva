@@ -383,8 +383,8 @@ def prepare_note_care_site(extra_data: Data, note: DataFrame):
         id_vars="note_id",
         value_name="care_site_source_value",
     )
-    note = note.merge(note_ref, on="note_id")
-    note = note.merge(care_site_ref, on="care_site_source_value")
+    note_ref = note_ref.merge(care_site_ref, on="care_site_source_value")
+    note = note.merge(note_ref[["note_id", "care_site_id"]], on="note_id")
 
     return note
 

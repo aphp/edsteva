@@ -78,7 +78,7 @@ def filter_table_by_date(
 ):
     check_columns(df=table, required_columns=["date"])
 
-    table.dropna(subset=["date"], inplace=True)
+    table = table.dropna(subset=["date"])
     logger.debug("Droping observations with missing date in table {}.", table_name)
     table["date"] = table["date"].astype("datetime64")
     start_date = pd.to_datetime(start_date)
