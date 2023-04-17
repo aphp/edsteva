@@ -8,7 +8,7 @@ from edsteva.models.base import BaseModel
 from edsteva.probes.base import BaseProbe
 from edsteva.viz.plots.probe.fitted_probe import fitted_probe_line
 from edsteva.viz.plots.probe.probe import probe_line
-from edsteva.viz.utils import configure_style, filter_predictor, json_dir, save_html
+from edsteva.viz.utils import configure_style, filter_predictor, save_html
 
 
 def probe_plot(
@@ -70,13 +70,8 @@ def probe_plot(
     titleFontSize: float, optional
         The font size of the titles.
     """
-    if save_path:
-        alt.data_transformers.enable("default")
-        alt.data_transformers.disable_max_rows()
-
-    else:
-        alt.data_transformers.register("json_dir", json_dir)
-        alt.data_transformers.enable("json_dir")
+    alt.data_transformers.enable("default")
+    alt.data_transformers.disable_max_rows()
 
     probe_config = deepcopy(probe.get_viz_config("probe_plot"))
     chart_style = probe_config["chart_style"]

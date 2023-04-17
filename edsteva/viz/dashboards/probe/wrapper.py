@@ -8,7 +8,7 @@ from edsteva.models.base import BaseModel
 from edsteva.probes.base import BaseProbe
 from edsteva.viz.dashboards.probe.fitted_probe import fitted_probe_dashboard
 from edsteva.viz.dashboards.probe.probe import probe_only_dashboard
-from edsteva.viz.utils import filter_predictor, json_dir, save_html
+from edsteva.viz.utils import filter_predictor, save_html
 
 
 def probe_dashboard(
@@ -57,13 +57,9 @@ def probe_dashboard(
     titleFontSize: float, optional
         The font size of the titles.
     """
-    if save_path:
-        alt.data_transformers.enable("default")
-        alt.data_transformers.disable_max_rows()
 
-    else:
-        alt.data_transformers.register("json_dir", json_dir)
-        alt.data_transformers.enable("json_dir")
+    alt.data_transformers.enable("default")
+    alt.data_transformers.disable_max_rows()
 
     probe_config = deepcopy(probe.get_viz_config("probe_dashboard"))
     if fitted_model:
