@@ -10,6 +10,8 @@ def probe_line(
     predictor: pd.DataFrame,
     probe_config: Dict[str, str],
     indexes: List[Dict[str, str]],
+    x_axis_title: str = None,
+    y_axis_title: str = None,
 ):
     """Script to be used by [``plot_probe()``][edsteva.viz.plots.plot_probe.wrapper]
 
@@ -44,6 +46,8 @@ def probe_line(
         main_chart_config=main_chart_config,
         index_selection=index_selection,
         index_fields=index_fields,
+        x_axis_title=x_axis_title,
+        y_axis_title=y_axis_title,
     )
     main_chart = main_chart.mark_line()
 

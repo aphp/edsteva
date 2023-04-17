@@ -20,7 +20,13 @@ def generate_main_chart(
     main_chart_config: Dict[str, str],
     index_selection: alt.Selection = None,
     index_fields: List[str] = None,
+    x_axis_title: str = None,
+    y_axis_title: str = None,
 ):
+    if x_axis_title:
+        main_chart_config["encode"]["x"]["title"] = x_axis_title
+    if y_axis_title:
+        main_chart_config["encode"]["x"]["title"] = y_axis_title
     if index_fields:
         base = base.transform_fold(index_fields, as_=["index", "value"])
         if "aggregates" in main_chart_config.keys():
@@ -37,16 +43,8 @@ def generate_main_chart(
             main_chart = main_chart.transform_filter(index_selection)
     else:
         main_chart = base.encode(
-            x=alt.X(
-                "yearmonth(date):T",
-                title="Time (Month Year)",
-                axis=alt.Axis(tickCount="month", labelAngle=0, grid=True),
-            ),
-            y=alt.Y(
-                "mean(c):Q",
-                title="Completeness predictor c(t)",
-                axis=alt.Axis(grid=True),
-            ),
+            x=main_chart_config["encode"]["x"],
+            y=main_chart_config["encode"]["y"],
         )
     return main_chart.properties(**main_chart_config["properties"])
 
@@ -252,7 +250,12 @@ def configure_style(
     return chart.configure_axis(
         labelFontSize=chart_style["labelFontSize"],
         titleFontSize=chart_style["titleFontSize"],
-    ).configure_legend(labelFontSize=chart_style["labelFontSize"])
+        labelLimit=500,
+    ).configure_legend(
+        labelFontSize=chart_style["labelFontSize"],
+        titleFontSize=chart_style["titleFontSize"],
+        labelLimit=500,
+    )
 
 
 def concatenate_charts(

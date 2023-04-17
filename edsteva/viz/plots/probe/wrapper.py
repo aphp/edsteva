@@ -23,6 +23,8 @@ def probe_plot(
     save_path: str = None,
     legend_predictor: str = "Predictor c(t)",
     legend_model: str = "Model f(t)",
+    x_axis_title: str = None,
+    y_axis_title: str = None,
     **kwargs,
 ):
     r"""
@@ -109,12 +111,16 @@ def probe_plot(
             indexes=indexes,
             legend_predictor=legend_predictor,
             legend_model=legend_model,
+            x_axis_title=x_axis_title,
+            y_axis_title=y_axis_title,
         )
     else:
         chart = probe_line(
             predictor=predictor,
             probe_config=probe_config,
             indexes=indexes,
+            x_axis_title=x_axis_title,
+            y_axis_title=y_axis_title,
         )
 
     if save_path:
