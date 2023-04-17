@@ -26,7 +26,7 @@ def generate_main_chart(
     if x_axis_title:
         main_chart_config["encode"]["x"]["title"] = x_axis_title
     if y_axis_title:
-        main_chart_config["encode"]["x"]["title"] = y_axis_title
+        main_chart_config["encode"]["y"]["title"] = y_axis_title
     if index_fields:
         base = base.transform_fold(index_fields, as_=["index", "value"])
         if "aggregates" in main_chart_config.keys():
