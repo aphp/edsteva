@@ -19,11 +19,18 @@ from edsteva.viz.utils import (
 
 def fitted_probe_dashboard(
     predictor: pd.DataFrame,
-    probe_config: Dict[str, str],
-    model_config: Dict[str, str],
+    remove_singleton_bar_chart: bool,
     legend_predictor: str,
     legend_model: str,
-    remove_singleton_bar_chart: bool,
+    x_axis_title: str,
+    y_axis_title: str,
+    main_chart_config: Dict[str, float],
+    model_line_config: Dict[str, str],
+    probe_line_config: Dict[str, str],
+    vertical_bar_charts_config: Dict[str, str],
+    horizontal_bar_charts_config: Dict[str, str],
+    time_line_config: Dict[str, str],
+    chart_style: Dict[str, float],
 ):
     r"""Script to be used by [``predictor_dashboard()``][edsteva.viz.dashboards.predictor_dashboard.wrapper]
 
@@ -31,38 +38,37 @@ def fitted_probe_dashboard(
     ----------
     predictor : pd.DataFrame
         $c(t)$ computed in the Probe with its prediction $\hat{c}(t)$
-    index : List[str]
-        Variable from which data is grouped
+    remove_singleton_bar_chart : bool, optional
+        If set to True, remove the bar charts with only one element
+        **EXAMPLE**: `True`
+    legend_predictor: str, optional,
+        Label name for the predictor legend.
+    legend_model: str, optional,
+        Label name for the model legend.
     x_axis_title: str, optional,
         Label name for the x axis.
-    x_grid: bool, optional,
-        If False, remove the grid for the x axis.
     y_axis_title: str, optional,
         Label name for the y axis.
-    y_grid: bool, optional,
-        If False, remove the grid for the y axis.
-    labelAngle: float, optional
-        The rotation angle of the label on the x_axis.
-    labelFontSize: float, optional
-        The font size of the labels (axis and legend).
+    main_chart_config: Dict[str, str], optional
+        Configuration used to construct the top main chart.
+    model_line_config: Dict[str, str], optional
+        Configuration used to construct the model line.
+    error_line_config: Dict[str, str], optional
+        Configuration used to construct the error line.
+    probe_line_config: Dict[str, str], optional
+        Configuration used to construct the probe line.
+    vertical_bar_charts_config: Dict[str, str], optional
+        Configuration used to construct the vertical bar charts.
+    horizontal_bar_charts_config: Dict[str, str], optional
+        Configuration used to construct the horizontal bar charts.
+    time_line_config: Dict[str, str], optional
+        Configuration used to construct the time line.
+    chart_style: Dict[str, float], optional
+        Configuration used to configure the chart style.
+        **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
     """
     predictor["legend_predictor"] = legend_predictor
     predictor["legend_model"] = legend_model
-
-    main_chart_config = probe_config["main_chart"]
-    time_line_config = probe_config["time_line"]
-    vertical_bar_charts_config = probe_config["vertical_bar_charts"]
-    horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
-    chart_style = probe_config["chart_style"]
-
-    model_line_config = model_config["model_line"]
-    probe_line_config = model_config["probe_line"]
-    horizontal_bar_charts_config["x"] = (
-        horizontal_bar_charts_config["x"] + model_config["extra_horizontal_bar_charts"]
-    )
-    vertical_bar_charts_config["y"] = (
-        vertical_bar_charts_config["y"] + model_config["extra_vertical_bar_charts"]
-    )
 
     base = alt.Chart(predictor)
     time_line, time_selection = generate_time_line(
@@ -104,6 +110,8 @@ def fitted_probe_dashboard(
         main_chart_config=main_chart_config,
         index_selection=index_selection,
         index_fields=index_fields,
+        x_axis_title=x_axis_title,
+        y_axis_title=y_axis_title,
     )
 
     probe_line = generate_probe_line(

@@ -11,26 +11,30 @@ from edsteva.utils.typing import Data
 
 class ConditionProbe(BaseProbe):
     r"""
-    The [``ConditionProbe``][edsteva.probes.condition.ConditionProbe] computes $c_{condition}(t)$ the availability of claim data in patients' administrative stay:
+    The [``ConditionProbe``][edsteva.probes.condition.ConditionProbe] computes $c(t)$ the availability of claim data:
 
-    $$
-    c_{condition}(t) = \frac{n_{with\,condition}(t)}{n_{visit}(t)}
-    $$
-
-    Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,condition}$ the number of stays having at least one claim code (e.g. ICD-10) recorded and $t$ is the month.
+    Parameters
+    ----------
+    completeness_predictor: str
+        Algorithm used to compute the completeness predictor
+        **EXAMPLE**: ``"per_visit_default"``
 
     Attributes
     ----------
+    _completeness_predictor: str
+        Algorithm used to compute the completeness predictor
+        **VALUE**: ``"per_visit_default"``
     _index: List[str]
         Variable from which data is grouped
-
-        **VALUE**: ``["care_site_level", "stay_type", "length_of_stay", "diag_type", "condition_type", "source_system", "care_site_id"]``
+        **VALUE**: ``["care_site_level", "stay_type", "length_of_stay", "care_site_specialty", "specialties_set", "diag_type", "condition_type", "source_system", "care_site_id"]``
+    _viz_config: List[str]
+        Dictionary of configuration for visualization purpose.
+        **VALUE**: ``{}``
     """
 
     def __init__(
         self,
         completeness_predictor: str = "per_visit_default",
-        _viz_config: Dict[str, str] = None,
     ):
         self._completeness_predictor = completeness_predictor
         self._index = [
@@ -44,8 +48,7 @@ class ConditionProbe(BaseProbe):
             "care_site_specialty",
             "specialties_set",
         ]
-        if _viz_config is None:
-            self._viz_config = {}
+        self._viz_config = {}
 
     def compute_process(
         self,
@@ -83,16 +86,24 @@ class ConditionProbe(BaseProbe):
             **EXAMPLE**: `["Hospital", "Pole", "UF"]`
         stay_types : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés"`
-        diag_types : Union[str, Dict[str, str]], optional
-            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "DP\DR": "DP|DR"}` or `"DP"`
-        condition_types : Union[str, Dict[str, str]], optional
-            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Pulmonary_embolism": "I26"}`
-        source_systems : List[str], optional
-            **EXAMPLE**: `["AREM", "ORBIS"]`
         care_site_ids : List[int], optional
             **EXAMPLE**: `[8312056386, 8312027648]`
         care_site_short_names : List[str], optional
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
+        care_site_specialties : List[str], optional
+            **EXAMPLE**: `["CARDIOLOGIE", "CHIRURGIE"]`
+        diag_types : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "DP\DR": "DP|DR"}` or `"DP"`
+        specialties_sets : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
+        condition_types : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Pulmonary_embolism": "I26"}`
+        source_systems : List[str], optional
+            **EXAMPLE**: `["AREM", "ORBIS"]`
+        stay_durations : List[float], optional
+            **EXAMPLE**: `[1, 30]`
+        hdfs_user_path : str, optional
+            **EXAMPLE**: `"hdfs://bbsedsi/user/<username>"`
         """
         if specialties_sets is None:
             self._index.remove("specialties_set")

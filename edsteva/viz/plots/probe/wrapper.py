@@ -1,6 +1,6 @@
 from copy import deepcopy
 from datetime import datetime
-from typing import List
+from typing import Dict, List
 
 import altair as alt
 
@@ -25,6 +25,10 @@ def probe_plot(
     legend_model: str = "Model f(t)",
     x_axis_title: str = None,
     y_axis_title: str = None,
+    main_chart_config: Dict[str, float] = None,
+    model_line_config: Dict[str, str] = None,
+    probe_line_config: Dict[str, str] = None,
+    chart_style: Dict[str, float] = None,
     **kwargs,
 ):
     r"""
@@ -51,32 +55,33 @@ def probe_plot(
         **EXAMPLE**: `"HOSPITAL XXXX"`
     save_path : str, optional
         Folder path where to save the chart in HTML format.
-
         **EXAMPLE**: `"my_folder/my_file.html"`
+    legend_predictor: str, optional,
+        Label name for the predictor legend.
+    legend_model: str, optional,
+        Label name for the model legend.
     x_axis_title: str, optional,
         Label name for the x axis.
-    x_grid: bool, optional,
-        If False, remove the grid for the x axis.
     y_axis_title: str, optional,
         Label name for the y axis.
-    y_grid: bool, optional,
-        If False, remove the grid for the y axis.
-    show_n_events: bool, optional
-        If True, compute the sum of the number of visit instead of the mean of the completeness predictor $c(t)$.
-    show_per_care_site: bool, optional
-        If True, the average completeness predictor $c(t)$ is computed for each care site independently. If False, it is computed over all care sites.
-    labelAngle: float, optional
-        The rotation angle of the label on the x_axis.
-    labelFontSize: float, optional
-        The font size of the labels (axis and legend).
-    titleFontSize: float, optional
-        The font size of the titles.
+    main_chart_config: Dict[str, str], optional
+        If not None, configuration used to construct the top main chart.
+    model_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the model line.
+    probe_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the probe line.
+    chart_style: Dict[str, float], optional
+        If not None, configuration used to configure the chart style.
+        **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
     """
     alt.data_transformers.enable("default")
     alt.data_transformers.disable_max_rows()
 
     probe_config = deepcopy(probe.get_viz_config("probe_plot"))
-    chart_style = probe_config["chart_style"]
+    if not main_chart_config:
+        main_chart_config = probe_config["main_chart"]
+    if not chart_style:
+        chart_style = probe_config["chart_style"]
     predictor = probe.predictor.copy()
     indexes = list(set(predictor.columns).difference(["date"] + probe._metrics))
 
@@ -104,23 +109,28 @@ def probe_plot(
 
     if fitted_model:
         model_config = deepcopy(fitted_model.get_viz_config("probe_plot"))
+        if not model_line_config:
+            model_line_config = model_config["model_line"]
+        if not probe_line_config:
+            probe_line_config = model_config["probe_line"]
         chart = fitted_probe_line(
             predictor=predictor,
-            probe_config=probe_config,
-            model_config=model_config,
             indexes=indexes,
             legend_predictor=legend_predictor,
             legend_model=legend_model,
             x_axis_title=x_axis_title,
             y_axis_title=y_axis_title,
+            main_chart_config=main_chart_config,
+            model_line_config=model_line_config,
+            probe_line_config=probe_line_config,
         )
     else:
         chart = probe_line(
             predictor=predictor,
-            probe_config=probe_config,
             indexes=indexes,
             x_axis_title=x_axis_title,
             y_axis_title=y_axis_title,
+            main_chart_config=main_chart_config,
         )
 
     if save_path:

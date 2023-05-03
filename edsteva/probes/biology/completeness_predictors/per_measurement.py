@@ -17,7 +17,7 @@ from edsteva.probes.utils.utils import (
 )
 from edsteva.utils.checks import check_tables
 from edsteva.utils.framework import is_koalas, to
-from edsteva.utils.typing import Data
+from edsteva.utils.typing import Data, DataFrame
 
 
 def compute_completeness_predictor_per_measurement(
@@ -38,7 +38,16 @@ def compute_completeness_predictor_per_measurement(
     mapping: List[Tuple[str, str, str]],
     hdfs_user_path: str,
 ):
-    """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]"""
+    r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
+
+    The ``per_visit`` algorithm computes $c_(t)$ the availability of biological measurements:
+
+    $$
+    c(t) = \frac{n_{biology}(t)}{n_{max}}
+    $$
+
+    Where $n_{biology}(t)$ is the number of biological measurements, $t$ is the month and $n_{max} = \max_{t}(n_{biology}(t))$.
+    """
     self._metrics = ["c", "n_measurement"]
     check_tables(
         data=data,
@@ -105,7 +114,11 @@ def compute_completeness_predictor_per_measurement(
     return compute_completeness(self, biology_predictor, hdfs_user_path)
 
 
-def compute_completeness(self, biology_predictor, hdfs_user_path: str = None):
+def compute_completeness(
+    self,
+    biology_predictor: DataFrame,
+    hdfs_user_path: str = None,
+):
     partition_cols = self._index.copy() + ["date"]
     n_measurement = (
         biology_predictor.groupby(
@@ -143,7 +156,11 @@ def compute_completeness(self, biology_predictor, hdfs_user_path: str = None):
     return biology_predictor
 
 
-def get_hospital_measurements(measurement, visit_occurrence, care_site):
+def get_hospital_measurements(
+    measurement: DataFrame,
+    visit_occurrence: DataFrame,
+    care_site: DataFrame,
+):
     hospital_measurement = measurement.merge(
         visit_occurrence.drop(columns="date"), on="visit_occurrence_id"
     )

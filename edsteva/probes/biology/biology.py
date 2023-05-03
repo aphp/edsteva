@@ -19,31 +19,35 @@ class BiologyProbe(BaseProbe):
 
     Where $n_{biology}(t)$ is the number of biological measurements, $n_{99}$ is the $99^{th}$ percentile and $t$ is the month.
 
+    Parameters
+    ----------
+    completeness_predictor: str
+        Algorithm used to compute the completeness predictor
+        **EXAMPLE**: ``"per_visit_default"``
+    standard_terminologies: List[str]
+        List of standards terminologies to consider
+        **EXAMPLE**: ``["LOINC", "ANABIO"]``
+
     Attributes
     ----------
+    _completeness_predictor: str
+        Algorithm used to compute the completeness predictor
+        **VALUE**: ``"per_visit_default"``
+    _standard_terminologies: List[str]
+        List of standards terminologies to consider
+        **VALUE**: ``["LOINC", "ANABIO"]``
     _index: List[str]
         Variable from which data is grouped
-
-        **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id"]``
-    _index: List[str]
-        Variable from which data is grouped
-
-        **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id"]``
-    _index: List[str]
-        Variable from which data is grouped
-
-        **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id"]``
-    _extra_predictor: str
-        Variable from which data is grouped
-
-        **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id"]``
+        **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id", "care_site_specialty", "specialties_set", "<std_terminology>_concept_code"]``
+    _viz_config: List[str]
+        Dictionary of configuration for visualization purpose.
+        **VALUE**: ``{}``
     """
 
     def __init__(
         self,
         completeness_predictor: str = "per_measurement_default",
         standard_terminologies: List[str] = ["ANABIO", "LOINC"],
-        _viz_config: Dict[str, str] = None,
     ):
         self._completeness_predictor = completeness_predictor
         self._standard_terminologies = standard_terminologies
@@ -59,8 +63,7 @@ class BiologyProbe(BaseProbe):
             "{}_concept_code".format(terminology)
             for terminology in standard_terminologies
         ]
-        if _viz_config is None:
-            self._viz_config = {}
+        self._viz_config = {}
 
     def compute_process(
         self,
@@ -121,6 +124,22 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `[8312056386, 8312027648]`
         care_site_short_names : List[str], optional
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
+        care_site_specialties : List[str], optional
+            **EXAMPLE**: `["CARDIOLOGIE", "CHIRURGIE"]`
+        specialties_sets : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
+        concepts_sets : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"Créatinine": "E3180|G1974|J1002|A7813|A0094|G1975|J1172|G7834|F9409|F9410|C0697|H4038|F2621", "Leucocytes": r"A0174|K3232|H6740|E4358|C9784|C8824|E6953"}`
+        stay_durations : List[float], optional
+            **EXAMPLE**: `[1, 30]`
+        source_terminologies : Dict[str, str], optional
+            Dictionary of regex used to detect terminology in the column `vocabulary_id`.
+            **EXAMPLE**: `{"GLIMS_LOINC": r"GLIMS.{0,20}LOINC"}`
+        mapping : List[Tuple[str, str, str]], optional
+            List of values to filter in the column `relationship_id` in order to map between 2 terminologies.
+            **EXAMPLE**: `[("ANALYSES_LABORATOIRE", "GLIMS_ANABIO", "Maps to")]`
+        hdfs_user_path : str, optional
+            **EXAMPLE**: `"hdfs://bbsedsi/user/<username>"`
         """
         if specialties_sets is None:
             self._index.remove("specialties_set")

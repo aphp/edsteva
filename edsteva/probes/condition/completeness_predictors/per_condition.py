@@ -16,9 +16,9 @@ from edsteva.probes.utils.utils import (
     concatenate_predictor_by_level,
     hospital_only,
 )
-from edsteva.utils.checks import check_conditon_source_systems, check_tables
+from edsteva.utils.checks import check_condition_source_systems, check_tables
 from edsteva.utils.framework import is_koalas, to
-from edsteva.utils.typing import Data
+from edsteva.utils.typing import Data, DataFrame
 
 
 def compute_completeness_predictor_per_condition(
@@ -40,37 +40,20 @@ def compute_completeness_predictor_per_condition(
     stay_durations: List[float],
     hdfs_user_path: str,
 ):
-    """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
+    r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
-    Parameters
-    ----------
-    data : Data
-        Instantiated [``HiveData``][edsteva.io.hive.HiveData], [``PostgresData``][edsteva.io.postgres.PostgresData] or [``LocalData``][edsteva.io.files.LocalData]
-    care_site_relationship : pd.DataFrame
-        DataFrame computed in the [``compute()``][edsteva.probes.base.BaseProbe.compute] that gives the hierarchy of the care site structure.
-    start_date : datetime, optional
-        **EXAMPLE**: `"2019-05-01"`
-    end_date : datetime, optional
-        **EXAMPLE**: `"2021-07-01"`
-    care_site_levels : List[str], optional
-        **EXAMPLE**: `["Hospital", "Pole", "UF"]`
-    stay_types : Union[str, Dict[str, str]], optional
-        **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés"`
-    diag_types : Union[str, Dict[str, str]], optional
-        **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "DP\DR": "DP|DR"}` or `"DP"`
-    condition_types : Union[str, Dict[str, str]], optional
-        **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Pulmonary_embolism": "I26"}`
-    source_systems : List[str], optional
-        **EXAMPLE**: `["AREM", "ORBIS"]`
-    care_site_ids : List[int], optional
-        **EXAMPLE**: `[8312056386, 8312027648]`
-    care_site_short_names : List[str], optional
-        **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
+    The ``per_condition`` algorithm computes $c_(t)$ the availability of claim data as follow:
+
+    $$
+    c(t) = \frac{n_{condition}(t)}{n_{max}}
+    $$
+
+    Where $n_{condition}(t)$ is the number of claim codes (e.g. ICD-10) recorded, $t$ is the month and $n_{max} = \max_{t}(n_{condition}(t))$.
     """
 
     self._metrics = ["c", "n_condition"]
     check_tables(data=data, required_tables=["condition_occurrence"])
-    check_conditon_source_systems(source_systems=source_systems)
+    check_condition_source_systems(source_systems=source_systems)
     if "AREM" in source_systems and not hospital_only(
         care_site_levels=care_site_levels
     ):
@@ -143,7 +126,11 @@ def compute_completeness_predictor_per_condition(
     )
 
 
-def compute_completeness(self, condition_predictor, hdfs_user_path: str):
+def compute_completeness(
+    self,
+    condition_predictor: DataFrame,
+    hdfs_user_path: str,
+):
     partition_cols = self._index.copy() + ["date"]
 
     n_condition = (
@@ -183,7 +170,11 @@ def compute_completeness(self, condition_predictor, hdfs_user_path: str):
     return condition_predictor
 
 
-def get_hospital_condition(condition_occurrence, visit_occurrence, care_site):
+def get_hospital_condition(
+    condition_occurrence: DataFrame,
+    visit_occurrence: DataFrame,
+    care_site: DataFrame,
+):
     hospital_condition = condition_occurrence.merge(
         visit_occurrence,
         on="visit_occurrence_id",
@@ -199,10 +190,10 @@ def get_hospital_condition(condition_occurrence, visit_occurrence, care_site):
 
 
 def get_uf_condition(
-    condition_occurrence,
-    visit_occurrence,
-    visit_detail,
-    care_site,
+    condition_occurrence: DataFrame,
+    visit_occurrence: DataFrame,
+    visit_detail: DataFrame,
+    care_site: DataFrame,
 ):  # pragma: no cover
     # Add visit information
     visit_detail = visit_detail[visit_detail.visit_detail_type == "RUM"]
@@ -230,7 +221,9 @@ def get_uf_condition(
 
 
 def get_pole_condition(
-    uf_condition, care_site, care_site_relationship
+    uf_condition: DataFrame,
+    care_site: DataFrame,
+    care_site_relationship: DataFrame,
 ):  # pragma: no cover
     pole_condition = convert_uf_to_pole(
         table=uf_condition.drop(

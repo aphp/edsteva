@@ -1,5 +1,6 @@
 import uuid
 from copy import deepcopy
+from typing import Dict
 
 import altair as alt
 from IPython.display import HTML, display
@@ -16,9 +17,18 @@ def probe_dashboard(
     fitted_model: BaseModel = None,
     care_site_level: str = None,
     save_path: str = None,
+    remove_singleton_bar_chart: bool = True,
     legend_predictor: str = "Predictor c(t)",
     legend_model: str = "Model f(t)",
-    remove_singleton_bar_chart: bool = True,
+    x_axis_title: str = None,
+    y_axis_title: str = None,
+    main_chart_config: Dict[str, float] = None,
+    model_line_config: Dict[str, str] = None,
+    probe_line_config: Dict[str, str] = None,
+    vertical_bar_charts_config: Dict[str, str] = None,
+    horizontal_bar_charts_config: Dict[str, str] = None,
+    time_line_config: Dict[str, str] = None,
+    chart_style: Dict[str, float] = None,
     **kwargs,
 ):
     r"""Displays an interactive chart with:
@@ -38,30 +48,50 @@ def probe_dashboard(
         **EXAMPLE**: `"Hospital"`, `"Hôpital"` or `"UF"`
     save_path : str, optional
         Folder path where to save the chart in HTML format.
-
         **EXAMPLE**: `"my_folder/my_file.html"`
+    remove_singleton_bar_chart : bool, optional
+        If set to True, remove the bar charts with only one element
+        **EXAMPLE**: `True`
+    legend_predictor: str, optional,
+        Label name for the predictor legend.
+    legend_model: str, optional,
+        Label name for the model legend.
     x_axis_title: str, optional,
         Label name for the x axis.
-    x_grid: bool, optional,
-        If False, remove the grid for the x axis.
     y_axis_title: str, optional,
         Label name for the y axis.
-    y_grid: bool, optional,
-        If False, remove the grid for the y axis.
-    show_n_events: bool, optional
-        show the number of events instead of the completeness predictor $c(t)$.
-    labelAngle: float, optional
-        The rotation angle of the label on the x_axis.
-    labelFontSize: float, optional
-        The font size of the labels (axis and legend).
-    titleFontSize: float, optional
-        The font size of the titles.
+    main_chart_config: Dict[str, str], optional
+        If not None, configuration used to construct the top main chart.
+    model_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the model line.
+    probe_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the probe line.
+    vertical_bar_charts_config: Dict[str, str], optional
+        If not None, configuration used to construct the vertical bar charts.
+    horizontal_bar_charts_config: Dict[str, str], optional
+        If not None, configuration used to construct the horizontal bar charts.
+    time_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the time line.
+    chart_style: Dict[str, float], optional
+        If not None, configuration used to configure the chart style.
+        **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
     """
 
     alt.data_transformers.enable("default")
     alt.data_transformers.disable_max_rows()
 
     probe_config = deepcopy(probe.get_viz_config("probe_dashboard"))
+    if not main_chart_config:
+        main_chart_config = probe_config["main_chart"]
+    if not time_line_config:
+        time_line_config = probe_config["time_line"]
+    if not vertical_bar_charts_config:
+        vertical_bar_charts_config = probe_config["vertical_bar_charts"]
+    if not horizontal_bar_charts_config:
+        horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
+    if not chart_style:
+        chart_style = probe_config["chart_style"]
+
     if fitted_model:
         predictor = fitted_model.predict(probe)
     else:
@@ -74,19 +104,46 @@ def probe_dashboard(
 
     if fitted_model:
         model_config = deepcopy(fitted_model.get_viz_config("probe_dashboard"))
+        if not model_line_config:
+            model_line_config = model_config["model_line"]
+        if not probe_line_config:
+            probe_line_config = model_config["probe_line"]
+        if not vertical_bar_charts_config:
+            vertical_bar_charts_config["y"] = (
+                vertical_bar_charts_config["y"]
+                + model_config["extra_vertical_bar_charts"]
+            )
+        if not horizontal_bar_charts_config:
+            horizontal_bar_charts_config["x"] = (
+                horizontal_bar_charts_config["x"]
+                + model_config["extra_horizontal_bar_charts"]
+            )
         chart = fitted_probe_dashboard(
             predictor=predictor,
-            probe_config=probe_config,
-            model_config=model_config,
             legend_predictor=legend_predictor,
             legend_model=legend_model,
             remove_singleton_bar_chart=remove_singleton_bar_chart,
+            x_axis_title=x_axis_title,
+            y_axis_title=y_axis_title,
+            main_chart_config=main_chart_config,
+            model_line_config=model_line_config,
+            probe_line_config=probe_line_config,
+            vertical_bar_charts_config=vertical_bar_charts_config,
+            horizontal_bar_charts_config=horizontal_bar_charts_config,
+            time_line_config=time_line_config,
+            chart_style=chart_style,
         )
     else:
         chart = probe_only_dashboard(
             predictor=predictor,
-            probe_config=probe_config,
             remove_singleton_bar_chart=remove_singleton_bar_chart,
+            x_axis_title=x_axis_title,
+            y_axis_title=y_axis_title,
+            main_chart_config=main_chart_config,
+            vertical_bar_charts_config=vertical_bar_charts_config,
+            horizontal_bar_charts_config=horizontal_bar_charts_config,
+            time_line_config=time_line_config,
+            chart_style=chart_style,
         )
 
     vis_probe = "id" + uuid.uuid4().hex

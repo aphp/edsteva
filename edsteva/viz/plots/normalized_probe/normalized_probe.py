@@ -1,6 +1,6 @@
 from copy import deepcopy
 from datetime import datetime
-from typing import List, Union
+from typing import Dict, List, Union
 
 import altair as alt
 import pandas as pd
@@ -9,6 +9,7 @@ from edsteva.models.base import BaseModel
 from edsteva.probes.base import BaseProbe
 from edsteva.viz.utils import (
     add_estimates_filters,
+    configure_style,
     create_groupby_selection,
     filter_predictor,
     generate_error_line,
@@ -32,8 +33,15 @@ def normalized_probe_plot(
     t_min: int = None,
     t_max: int = None,
     save_path: str = None,
-    labelFontSize: float = 12,
-    titleFontSize: float = 13,
+    x_axis_title: str = None,
+    y_axis_title: str = None,
+    main_chart_config: Dict[str, float] = None,
+    model_line_config: Dict[str, str] = None,
+    probe_line_config: Dict[str, str] = None,
+    error_line_config: Dict[str, str] = None,
+    estimates_selections: Dict[str, str] = None,
+    estimates_filters: Dict[str, str] = None,
+    chart_style: Dict[str, float] = None,
     **kwargs,
 ):
     r"""Displays a chart with the aggregated normalized completeness predictor $\frac{c(\Delta t)}{c_0}$ over normalized time $\Delta t = t - t_0$. It represents the overall deviation from the Model.
@@ -46,22 +54,6 @@ def normalized_probe_plot(
         Class describing the completeness predictor $c(t)$
     fitted_model : BaseModel
         Model fitted to the probe
-    t_0_max : datetime, optional
-        Initial value for the $t_0$ threshold. If None, it will be set as the maximum possible $t_0$ value.
-
-        **EXAMPLE**: `"2022-01"`, `datetime(2020, 2, 1)`
-    error_max : float, optional
-        Initial value for the $error$ threshold. If None, it will be set as the maximum possible error value.
-
-        **EXAMPLE**: `0.02`, `0.25`
-    c_0_min : float, optional
-        Initial value for the $c_0$ threshold. If None, it will be set as 0.
-
-        **EXAMPLE**: `0.1`, `0.8`
-    stay_type : List[str], optional
-        **EXAMPLE**: `"All"` or `["All", "Urg"]`
-    care_site_id : List[int], optional
-        **EXAMPLE**: `[8312056386, 8312027648]`
     care_site_level : str, optional
         **EXAMPLE**: `"Hospital"`, `"Hôpital"` or `"UF"`
     stay_type : List[str], optional
@@ -74,20 +66,33 @@ def normalized_probe_plot(
         **EXAMPLE**: `"2021-07-01"`
     care_site_short_name : List[int], optional
         **EXAMPLE**: `"HOSPITAL XXXX"`
+    t_min : int, optional
+        Minimal difference with $t_0$ in month $\Delta t_{min}$
+        **EXAMPLE**: `-24`
+    t_max : int, optional
+        Maximal difference with $t_0$ in month $\Delta t_{max}$
+        **EXAMPLE**: `24`
     save_path : str, optional
         Folder path where to save the chart in HTML format.
-
-        **EXAMPLE**: `"my_folder/my_file.html"`
     x_axis_title: str, optional,
-        Label name for the x axis
+        Label name for the x axis.
     y_axis_title: str, optional,
-        Label name for the y axis
-    show_per_care_site: bool, optional
-        If True, the average completeness predictor $c(t)$ is computed for each care site independently. If False, it is computed over all care sites.
-    labelFontSize: float, optional
-        The font size of the labels (axis and legend).
-    titleFontSize: float, optional
-        The font size of the titles.
+        Label name for the y axis.
+    main_chart_config: Dict[str, str], optional
+        If not None, configuration used to construct the top main chart.
+    model_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the model line.
+    error_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the error line.
+    probe_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the probe line.
+    estimates_selections: Dict[str, str], optional
+        If not None, configuration used to construct the estimates selections.
+    estimates_filters: Dict[str, str], optional
+        If not None, configuration used to construct the estimates filters.
+    chart_style: Dict[str, float], optional
+        If not None, configuration used to configure the chart style.
+        **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
     """
 
     predictor = probe.predictor.copy()
@@ -97,8 +102,23 @@ def normalized_probe_plot(
     predictor = predictor.merge(estimates, on=probe._index)
 
     probe_config = deepcopy(probe.get_viz_config("normalized_probe_plot"))
-    main_chart_config = probe_config["main_chart"]
-    error_line_config = probe_config["error_line"]
+    model_config = deepcopy(
+        fitted_model.get_viz_config("normalized_probe_dashboard", predictor=predictor)
+    )
+    if not probe_line_config:
+        probe_line_config = model_config["probe_line"]
+    if not model_line_config:
+        model_line_config = model_config["model_line"]
+    if not estimates_selections:
+        estimates_selections = model_config["estimates_selections"]
+    if not estimates_filters:
+        estimates_filters = model_config["estimates_filters"]
+    if not main_chart_config:
+        main_chart_config = probe_config["main_chart"]
+    if not error_line_config:
+        error_line_config = probe_config["error_line"]
+    if not chart_style:
+        chart_style = probe_config["chart_style"]
 
     predictor["normalized_date"] = month_diff(
         predictor["date"], predictor["t_0"]
@@ -123,17 +143,6 @@ def normalized_probe_plot(
     for estimate in fitted_model._coefs + fitted_model._metrics:
         if pd.api.types.is_datetime64_any_dtype(predictor[estimate]):
             predictor[estimate] = predictor[estimate].dt.strftime("%Y-%m")
-    model_config = deepcopy(
-        deepcopy(
-            fitted_model.get_viz_config(
-                "normalized_probe_dashboard", predictor=predictor
-            )
-        )
-    )
-    probe_line_config = model_config["probe_line"]
-    model_line_config = model_config["model_line"]
-    estimates_selections = model_config["estimates_selections"]
-    estimates_filters = model_config["estimates_filters"]
 
     if t_min:
         predictor = predictor[predictor.normalized_date >= t_min]
@@ -159,6 +168,8 @@ def normalized_probe_plot(
         main_chart_config=main_chart_config,
         index_selection=index_selection,
         index_fields=index_fields,
+        x_axis_title=x_axis_title,
+        y_axis_title=y_axis_title,
     )
     probe_line = generate_probe_line(
         main_chart=main_chart, probe_line_config=probe_line_config
@@ -176,11 +187,11 @@ def normalized_probe_plot(
     for estimate_selection in estimates_selections:
         main_chart = main_chart.add_selection(estimate_selection)
 
+    main_chart = configure_style(chart=main_chart, chart_style=chart_style)
+
     if save_path:
         save_html(
-            obj=main_chart.configure_axis(
-                labelFontSize=labelFontSize, titleFontSize=titleFontSize
-            ).configure_legend(labelFontSize=labelFontSize),
+            obj=main_chart,
             filename=save_path,
         )
 

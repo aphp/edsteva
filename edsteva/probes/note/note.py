@@ -11,26 +11,30 @@ from edsteva.utils.typing import Data
 
 class NoteProbe(BaseProbe):
     r"""
-    The ``NoteProbe`` computes $c(t)$ the availability of clinical documents linked to patients' administrative visit:
+    The ``NoteProbe`` computes $c(t)$ the availability of clinical documents
 
-    $$
-    c(t) = \frac{n_{with\,doc}(t)}{n_{visit}(t)}
-    $$
-
-    Where $n_{visit}(t)$ is the number of visits, $n_{with\,doc}$ the number of visits having at least one document and $t$ is the month.
+    Parameters
+    ----------
+    completeness_predictor: str
+        Algorithm used to compute the completeness predictor
+        **EXAMPLE**: ``"per_visit_default"``
 
     Attributes
     ----------
+    _completeness_predictor: str
+        Algorithm used to compute the completeness predictor
+        **VALUE**: ``"per_visit_default"``
     _index: List[str]
         Variable from which data is grouped
-
-        **VALUE**: ``["care_site_level", "stay_type", "length_of_stay", "note_type", "care_site_id"]``
+        **VALUE**: ["care_site_level", "stay_type", "length_of_stay", "note_type", "care_site_id", "care_site_specialty", "specialties_set"]``
+    _viz_config: List[str]
+        Dictionary of configuration for visualization purpose.
+        **VALUE**: ``{}``
     """
 
     def __init__(
         self,
         completeness_predictor: str = "per_visit_default",
-        _viz_config: Dict[str, str] = None,
     ):
         self._completeness_predictor = completeness_predictor
         self._index = [
@@ -42,8 +46,7 @@ class NoteProbe(BaseProbe):
             "care_site_specialty",
             "specialties_set",
         ]
-        if _viz_config is None:
-            self._viz_config = {}
+        self._viz_config = {}
 
     def compute_process(
         self,
@@ -87,9 +90,20 @@ class NoteProbe(BaseProbe):
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
         stay_types : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés`
-        note_types : Union[str, Dict[str, str]], optional
         care_site_ids : List[int], optional
             **EXAMPLE**: `[8312056386, 8312027648]`
+        care_site_specialties : List[str], optional
+            **EXAMPLE**: `["CARDIOLOGIE", "CHIRURGIE"]`
+        specialties_sets : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
+        extra_data : Data
+            Instantiated [``HiveData``][edsteva.io.hive.HiveData], [``PostgresData``][edsteva.io.postgres.PostgresData] or [``LocalData``][edsteva.io.files.LocalData]
+        stay_durations : List[float], optional
+            **EXAMPLE**: `[1, 30]`
+        note_types : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"CRH": "crh", "Urgence": "urge"}`
+        hdfs_user_path : str, optional
+            **EXAMPLE**: `"hdfs://bbsedsi/user/<username>"`
         """
         if specialties_sets is None:
             self._index.remove("specialties_set")

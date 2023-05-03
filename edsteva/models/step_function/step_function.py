@@ -1,8 +1,7 @@
-from typing import Dict, List
+from typing import List
 
 import pandas as pd
 
-from edsteva.metrics import metrics
 from edsteva.models import BaseModel
 from edsteva.models.step_function.algos import algos
 from edsteva.models.step_function.viz_configs import viz_configs
@@ -20,12 +19,26 @@ class StepFunction(BaseModel):
     - the characteristic time $t_0$ estimates the time after which the data is available
     - the characteristic value $c_0$ estimates the stabilized routine completeness
 
+    Parameters
+    ----------
+    algo: str
+        Algorithm used to compute the estimates
+        **EXAMPLE**: ``"loss_minimization"``
+
     Attributes
     ----------
+    _algo: List[str]
+        Algorithm used to compute the estimates
+        **VALUE**: ``"loss_minimization"``
     _coefs: List[str]
         Model coefficients
-
         **VALUE**: ``["t_0", "c_0"]``
+    _default_metrics: List[str]
+        Metrics to used by default
+        **VALUE**: ``[error_after_t0]``
+    _viz_config: List[str]
+        Dictionary of configuration for visualization purpose.
+        **VALUE**: ``{}``
 
     Example
     ----------
@@ -50,13 +63,11 @@ class StepFunction(BaseModel):
     def __init__(
         self,
         algo: str = "loss_minimization",
-        _viz_config: Dict[str, str] = None,
     ):
         self._algo = algo
         self._coefs = ["t_0", "c_0"]
         self._default_metrics = ["error_after_t0"]
-        if _viz_config is None:
-            self._viz_config = {}
+        self._viz_config = {}
 
     def fit_process(
         self,
@@ -132,26 +143,3 @@ class StepFunction(BaseModel):
         else:
             raise ValueError(f"edsteva has no {viz_type} registry !")
         return viz_configs[viz_type].get(_viz_config)(self, **kwargs)
-
-    def default_metrics(
-        self,
-        predictor: pd.DataFrame,
-        estimates: pd.DataFrame,
-        index: List[str],
-    ):
-        r"""Default metrics used if metric_functions is set to None. Here the default metric is the mean squared error computed after $t_0$
-
-        Parameters
-        ----------
-        predictor : pd.DataFrame
-            Target DataFrame describing the completeness predictor $c(t)$
-        estimates : pd.DataFrame
-            Target DataFrame describing the estimates $(\hat{t_0}, \hat{c_0})$
-        index : List[str]
-            Variable from which data is grouped
-
-            **EXAMPLE**: `["care_site_level", "stay_type", "note_type", "care_site_id"]`
-        """
-        return metrics.get("error_after_t0")(
-            predictor=predictor, estimates=estimates, index=index
-        )

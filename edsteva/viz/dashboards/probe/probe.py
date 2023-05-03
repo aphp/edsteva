@@ -17,8 +17,14 @@ from edsteva.viz.utils import (
 
 def probe_only_dashboard(
     predictor: pd.DataFrame,
-    probe_config: Dict[str, str],
     remove_singleton_bar_chart: bool,
+    x_axis_title: str,
+    y_axis_title: str,
+    main_chart_config: Dict[str, float],
+    vertical_bar_charts_config: Dict[str, str],
+    horizontal_bar_charts_config: Dict[str, str],
+    time_line_config: Dict[str, str],
+    chart_style: Dict[str, float],
 ):
     """Script to be used by [``predictor_dashboard()``][edsteva.viz.dashboards.predictor_dashboard.wrapper]
 
@@ -26,26 +32,25 @@ def probe_only_dashboard(
     ----------
     predictor : pd.DataFrame
         $c(t)$ computed in the Probe.
-    index : List[str]
-        Variable from which data is grouped.
+    remove_singleton_bar_chart : bool, optional
+        If set to True, remove the bar charts with only one element
+        **EXAMPLE**: `True`
     x_axis_title: str, optional,
         Label name for the x axis.
-    x_grid: bool, optional,
-        If False, remove the grid for the x axis.
     y_axis_title: str, optional,
         Label name for the y axis.
-    y_grid: bool, optional,
-        If False, remove the grid for the y axis.
-    show_n_events: bool, optional
-        show the number of events instead of the completeness predictor $c(t)$.
-    labelAngle: float, optional
-        The rotation angle of the label on the x_axis.
+    main_chart_config: Dict[str, str], optional
+        If not None, configuration used to construct the top main chart.
+    vertical_bar_charts_config: Dict[str, str], optional
+        If not None, configuration used to construct the vertical bar charts.
+    horizontal_bar_charts_config: Dict[str, str], optional
+        If not None, configuration used to construct the horizontal bar charts.
+    time_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the time line.
+    chart_style: Dict[str, float], optional
+        If not None, configuration used to configure the chart style.
+        **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
     """
-    main_chart_config = probe_config["main_chart"]
-    time_line_config = probe_config["time_line"]
-    vertical_bar_charts_config = probe_config["vertical_bar_charts"]
-    horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
-    chart_style = probe_config["chart_style"]
 
     base = alt.Chart(predictor)
     time_line, time_selection = generate_time_line(
@@ -85,6 +90,8 @@ def probe_only_dashboard(
         main_chart_config=main_chart_config,
         index_selection=index_selection,
         index_fields=index_fields,
+        x_axis_title=x_axis_title,
+        y_axis_title=y_axis_title,
     )
 
     main_chart = main_chart.mark_line()

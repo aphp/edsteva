@@ -13,13 +13,14 @@ from edsteva.viz.utils import (
 
 def fitted_probe_line(
     predictor: pd.DataFrame,
-    probe_config: Dict[str, str],
-    model_config: Dict[str, str],
     indexes: List[Dict[str, str]],
-    legend_predictor: str = "Predictor c(t)",
-    legend_model: str = "Model f(t)",
-    x_axis_title: str = None,
-    y_axis_title: str = None,
+    legend_predictor: str,
+    legend_model: str,
+    x_axis_title: str,
+    y_axis_title: str,
+    main_chart_config: Dict[str, float],
+    model_line_config: Dict[str, str],
+    probe_line_config: Dict[str, str],
 ):
     r"""Script to be used by [``plot_probe()``][edsteva.viz.plots.plot_probe.wrapper]
 
@@ -27,26 +28,25 @@ def fitted_probe_line(
     ----------
     predictor : pd.DataFrame
         $c(t)$ computed in the Probe with its prediction $\hat{c}(t)$
-    index : List[str]
+    indexes : List[str]
         Variable from which data is grouped
+    legend_predictor: str, optional,
+        Label name for the predictor legend.
+    legend_model: str, optional,
+        Label name for the model legend.
     x_axis_title: str, optional,
         Label name for the x axis.
-    x_grid: bool, optional,
-        If False, remove the grid for the x axis.
     y_axis_title: str, optional,
         Label name for the y axis.
-    y_grid: bool, optional,
-        If False, remove the grid for the y axis.
-    labelAngle: float, optional
-        The rotation angle of the label on the x_axis.
-    labelFontSize: float, optional
-        The font size of the labels (axis and legend).
+    main_chart_config: Dict[str, str], optional
+        If not None, configuration used to construct the top main chart.
+    model_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the model line.
+    probe_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the probe line.
     """
     predictor["legend_predictor"] = legend_predictor
     predictor["legend_model"] = legend_model
-    main_chart_config = probe_config["main_chart"]
-    model_line_config = model_config["model_line"]
-    probe_line_config = model_config["probe_line"]
 
     base = alt.Chart(predictor)
 

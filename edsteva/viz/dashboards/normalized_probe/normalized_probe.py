@@ -1,5 +1,6 @@
 import uuid
 from copy import deepcopy
+from typing import Dict
 
 import altair as alt
 import pandas as pd
@@ -33,6 +34,18 @@ def normalized_probe_dashboard(
     care_site_level: str = CARE_SITE_LEVEL_NAMES["Hospital"],
     save_path: str = None,
     remove_singleton_bar_chart: bool = True,
+    x_axis_title: str = None,
+    y_axis_title: str = None,
+    main_chart_config: Dict[str, str] = None,
+    model_line_config: Dict[str, str] = None,
+    error_line_config: Dict[str, str] = None,
+    probe_line_config: Dict[str, str] = None,
+    estimates_selections: Dict[str, str] = None,
+    estimates_filters: Dict[str, str] = None,
+    vertical_bar_charts_config: Dict[str, str] = None,
+    horizontal_bar_charts_config: Dict[str, str] = None,
+    time_line_config: Dict[str, str] = None,
+    chart_style: Dict[str, float] = None,
     **kwargs,
 ):
     r"""Displays an interactive chart with:
@@ -52,12 +65,34 @@ def normalized_probe_dashboard(
         **EXAMPLE**: `"Hospital"`, `"Hôpital"` or `"UF"`
     save_path : str, optional
         Folder path where to save the chart in HTML format.
-
-        **EXAMPLE**: `"my_folder/my_file.html"`
-    labelFontSize: float, optional
-        The font size of the labels (axis and legend).
-    titleFontSize: float, optional
-        The font size of the titles.
+    remove_singleton_bar_chart : bool, optional
+        If set to True, remove the bar charts with only one element
+        **EXAMPLE**: `True`
+    x_axis_title: str, optional,
+        Label name for the x axis.
+    y_axis_title: str, optional,
+        Label name for the y axis.
+    main_chart_config: Dict[str, str], optional
+        If not None, configuration used to construct the top main chart.
+    model_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the model line.
+    error_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the error line.
+    probe_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the probe line.
+    estimates_selections: Dict[str, str], optional
+        If not None, configuration used to construct the estimates selections.
+    estimates_filters: Dict[str, str], optional
+        If not None, configuration used to construct the estimates filters.
+    vertical_bar_charts_config: Dict[str, str], optional
+        If not None, configuration used to construct the vertical bar charts.
+    horizontal_bar_charts_config: Dict[str, str], optional
+        If not None, configuration used to construct the horizontal bar charts.
+    time_line_config: Dict[str, str], optional
+        If not None, configuration used to construct the time line.
+    chart_style: Dict[str, float], optional
+        If not None, configuration used to configure the chart style.
+        **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
     """
     alt.data_transformers.disable_max_rows()
 
@@ -77,40 +112,46 @@ def normalized_probe_dashboard(
 
     predictor.t_0 = predictor.t_0.dt.strftime("%Y-%m")
     probe_config = deepcopy(probe.get_viz_config("normalized_probe_dashboard"))
-    main_chart_config = probe_config["main_chart"]
-    time_line_config = probe_config["time_line"]
-    error_line_config = probe_config["error_line"]
-    vertical_bar_charts_config = probe_config["vertical_bar_charts"]
-    horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
-    chart_style = probe_config["chart_style"]
+    model_config = deepcopy(
+        fitted_model.get_viz_config("normalized_probe_dashboard", predictor=predictor)
+    )
+    if not main_chart_config:
+        main_chart_config = probe_config["main_chart"]
+    if not time_line_config:
+        time_line_config = probe_config["time_line"]
+    if not error_line_config:
+        error_line_config = probe_config["error_line"]
+    if not vertical_bar_charts_config:
+        vertical_bar_charts_config = probe_config["vertical_bar_charts"]
+        vertical_bar_charts_config["y"] = (
+            vertical_bar_charts_config["y"] + model_config["extra_vertical_bar_charts"]
+        )
+    if not horizontal_bar_charts_config:
+        horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
+        horizontal_bar_charts_config["x"] = (
+            horizontal_bar_charts_config["x"]
+            + model_config["extra_horizontal_bar_charts"]
+        )
+    if not chart_style:
+        chart_style = probe_config["chart_style"]
+    if not probe_line_config:
+        probe_line_config = model_config["probe_line"]
+    if not model_line_config:
+        model_line_config = model_config["model_line"]
+    if not estimates_selections:
+        estimates_selections = model_config["estimates_selections"]
+    if not estimates_filters:
+        estimates_filters = model_config["estimates_filters"]
 
     predictor["legend_predictor"] = main_chart_config["legend_title"]
     predictor["legend_error_band"] = error_line_config["legend_title"]
     predictor["legend_model"] = type(fitted_model).__name__
-
     predictor = filter_predictor(
         predictor=predictor, care_site_level=care_site_level, **kwargs
     )
     for estimate in fitted_model._coefs + fitted_model._metrics:
         if pd.api.types.is_datetime64_any_dtype(predictor[estimate]):
             predictor[estimate] = predictor[estimate].dt.strftime("%Y-%m")
-    model_config = deepcopy(
-        deepcopy(
-            fitted_model.get_viz_config(
-                "normalized_probe_dashboard", predictor=predictor
-            )
-        )
-    )
-    probe_line_config = model_config["probe_line"]
-    model_line_config = model_config["model_line"]
-    estimates_selections = model_config["estimates_selections"]
-    estimates_filters = model_config["estimates_filters"]
-    horizontal_bar_charts_config["x"] = (
-        horizontal_bar_charts_config["x"] + model_config["extra_horizontal_bar_charts"]
-    )
-    vertical_bar_charts_config["y"] = (
-        vertical_bar_charts_config["y"] + model_config["extra_vertical_bar_charts"]
-    )
 
     base = alt.Chart(predictor)
     time_line, time_selection = generate_time_line(
@@ -159,6 +200,8 @@ def normalized_probe_dashboard(
         main_chart_config=main_chart_config,
         index_selection=index_selection,
         index_fields=index_fields,
+        x_axis_title=x_axis_title,
+        y_axis_title=y_axis_title,
     )
     probe_line = generate_probe_line(
         main_chart=main_chart, probe_line_config=probe_line_config

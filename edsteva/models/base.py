@@ -212,9 +212,7 @@ class BaseModel(metaclass=ABCMeta):
 
         """
 
-        if not path:
-            path = CACHE_DIR / "edsteva" / "models" / f"{self.name.lower()}.pickle"
-
+        path = path or self._get_path()
         loaded_model = load_object(path)
         self.__dict__ = loaded_model.__dict__.copy()
         self.path = path
@@ -245,12 +243,10 @@ class BaseModel(metaclass=ABCMeta):
 
         self.is_computed_estimates()
 
+        if name:
+            self.name = name
         if not path:
-            if name:
-                self.name = name
-            else:
-                self.name = type(self).__name__
-            path = CACHE_DIR / "edsteva" / "models" / f"{self.name.lower()}.pickle"
+            path = self._get_path()
 
         self.path = path
         save_object(self, path)
@@ -263,14 +259,21 @@ class BaseModel(metaclass=ABCMeta):
         path : str, optional
             **EXAMPLE**: `"my_folder/my_file.html"`
         """
-
         if not path:
             if hasattr(self, "path"):
                 path = self.path
             else:
-                path = CACHE_DIR / "edsteva" / "models" / f"{self.name.lower()}.pickle"
+                path = self._get_path()
 
         delete_object(self, path)
+
+    def _get_path(self):
+        base_path = CACHE_DIR / "edsteva" / "models"
+        if hasattr(self, "name"):
+            filename = f"{self.name.lower()}.pickle"
+        else:
+            filename = f"{type(self).__name__.lower()}.pickle"
+        return base_path / filename
 
     def _compute_metrics(
         self,

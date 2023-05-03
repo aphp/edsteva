@@ -1,22 +1,19 @@
 import os
-from functools import partial
 
 import pandas as pd
 import pytest
 
 from edsteva import CACHE_DIR
 from edsteva.io import SyntheticData
-from edsteva.metrics import error, error_after_t0
 from edsteva.models.rectangle_function import RectangleFunction
 from edsteva.models.step_function import StepFunction
-from edsteva.models.step_function import algos as step_algos
 from edsteva.probes import NoteProbe, VisitProbe
 from edsteva.utils.loss_functions import l1_loss
-from edsteva.viz.dashboards import estimates_dashboard, predictor_dashboard
+from edsteva.viz.dashboards import normalized_probe_dashboard, probe_dashboard
 from edsteva.viz.plots import (
-    plot_estimates_densities,
-    plot_normalized_probe,
-    plot_probe,
+    estimates_densities_plot,
+    normalized_probe_plot,
+    probe_plot,
 )
 
 pytestmark = pytest.mark.filterwarnings("ignore")
@@ -37,20 +34,16 @@ def test_step_function_visit_occurence():
         care_site_short_names=["Hôpital-1", "Hôpital-2"],
     )
 
-    visit_model = StepFunction()
+    visit_model = StepFunction(algo="quantile")
     visit_model.fit(
         probe=visit,
-        algo=step_algos.quantile,
-        metric_functions=[error, error_after_t0],
+        metric_functions=["error", "error_after_t0"],
         start_date=data.t_min,
         end_date=data.t_max,
     )
 
-    loss_l1 = partial(step_algos.loss_minimization, loss_function=l1_loss)
-    visit_model.fit(
-        probe=visit,
-        algo=loss_l1,
-    )
+    visit_model = StepFunction(algo="loss_minimization")
+    visit_model.fit(probe=visit, loss_function=l1_loss)
 
     visit_model.fit(
         probe=visit,
@@ -208,23 +201,14 @@ def test_viz_visit(data, Model):
         end_date=data.t_max,
     )
 
-    plot_probe(
+    probe_plot(
         probe=visit,
         care_site_level="Hospital",
         start_date=data.t_min,
         end_date=data.t_max,
     )
 
-    plot_probe(
-        probe=visit,
-        care_site_level="Hospital",
-        start_date=data.t_min,
-        end_date=data.t_max,
-        show_n_visit=True,
-        show_per_care_site=False,
-    )
-
-    plot_probe(
+    probe_plot(
         probe=visit,
         fitted_model=visit_model,
         care_site_level="Hospital",
@@ -232,7 +216,7 @@ def test_viz_visit(data, Model):
         end_date=data.t_max,
     )
 
-    plot_normalized_probe(
+    normalized_probe_plot(
         probe=visit,
         fitted_model=visit_model,
         care_site_level="Hospital",
@@ -241,21 +225,28 @@ def test_viz_visit(data, Model):
         stay_type="ALL",
         care_site_id="1",
         care_site_short_name="Hôpital-1",
-        t_0_max="2020",
-        c_0_min=-5,
-        error_max=0.54,
+        t_min=-24,
+        t_max=24,
     )
 
-    plot_estimates_densities(
+    estimates_densities_plot(
+        probe=visit,
         fitted_model=visit_model,
     )
 
-    predictor_dashboard(
-        probe=visit, fitted_model=visit_model, care_site_level="Hospital"
+    probe_dashboard(
+        probe=visit,
+        fitted_model=visit_model,
+        care_site_level="Hospital",
     )
 
-    predictor_dashboard(probe=visit, care_site_level="Hospital")
+    probe_dashboard(
+        probe=visit,
+        care_site_level="Hospital",
+    )
 
-    estimates_dashboard(
-        probe=visit, fitted_model=visit_model, care_site_level="Hospital"
+    normalized_probe_dashboard(
+        probe=visit,
+        fitted_model=visit_model,
+        care_site_level="Hospital",
     )

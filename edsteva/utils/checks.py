@@ -71,7 +71,7 @@ def check_tables(data: Data, required_tables: List[str]):
         )
 
 
-def check_conditon_source_systems(
+def check_condition_source_systems(
     source_systems: List[str], valid_source_systems: List[str] = ["AREM", "ORBIS"]
 ):
     if source_systems and isinstance(source_systems, list):

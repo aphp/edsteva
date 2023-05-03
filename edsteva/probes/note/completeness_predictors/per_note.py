@@ -18,7 +18,7 @@ from edsteva.probes.utils.utils import (
 )
 from edsteva.utils.checks import check_tables
 from edsteva.utils.framework import is_koalas, to
-from edsteva.utils.typing import Data
+from edsteva.utils.typing import Data, DataFrame
 
 
 def compute_completeness_predictor_per_note(
@@ -38,29 +38,15 @@ def compute_completeness_predictor_per_note(
     note_types: Union[str, Dict[str, str]],
     hdfs_user_path: str,
 ):
-    """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
+    r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
-    Parameters
-    ----------
-    data : Data
-        Instantiated [``HiveData``][edsteva.io.hive.HiveData], [``PostgresData``][edsteva.io.postgres.PostgresData] or [``LocalData``][edsteva.io.files.LocalData]
-    care_site_relationship : pd.DataFrame
-        DataFrame computed in the [``compute()``][edsteva.probes.base.BaseProbe.compute] that gives the hierarchy of the care site structure.
-    extra_data : Data, optional
-        Instantiated [``HiveData``][edsteva.io.hive.HiveData], [``PostgresData``][edsteva.io.postgres.PostgresData] or [``LocalData``][edsteva.io.files.LocalData]. This is not OMOP-standardized data but data needed to associate note with UF and Pole. If not provided, it will only compute the predictor for hospitals.
-    start_date : datetime, optional
-        **EXAMPLE**: `"2019-05-01"`
-    end_date : datetime, optional
-        **EXAMPLE**: `"2021-07-01"`
-    care_site_levels : List[str], optional
-        **EXAMPLE**: `["Hospital", "Pole", "UF"]`
-    care_site_short_names : List[str], optional
-        **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
-    stay_types : Union[str, Dict[str, str]], optional
-        **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés`
-    note_types : Union[str, Dict[str, str]], optional
-    care_site_ids : List[int], optional
-        **EXAMPLE**: `[8312056386, 8312027648]`
+    The ``per_note`` algorithm computes $c_(t)$ the availability of clinical documents as follow:
+
+    $$
+    c(t) = \frac{n_{note}(t)}{n_{max}}
+    $$
+
+    Where $n_{note}(t)$ is the number of clinical documents, $t$ is the month and $n_{max} = \max_{t}(n_{note}(t))$.
     """
     self._metrics = ["c", "n_note"]
     check_tables(data=data, required_tables=["note"])
@@ -126,7 +112,11 @@ def compute_completeness_predictor_per_note(
     return compute_completeness(self, note_predictor, hdfs_user_path=hdfs_user_path)
 
 
-def compute_completeness(self, note_predictor, hdfs_user_path: str = None):
+def compute_completeness(
+    self,
+    note_predictor: DataFrame,
+    hdfs_user_path: str = None,
+):
     partition_cols = self._index.copy() + ["date"]
 
     n_note = (
@@ -166,7 +156,11 @@ def compute_completeness(self, note_predictor, hdfs_user_path: str = None):
     return note_predictor
 
 
-def get_hospital_note(note, visit_occurrence, care_site):
+def get_hospital_note(
+    note: DataFrame,
+    visit_occurrence: DataFrame,
+    care_site: DataFrame,
+):
     note_hospital = note.merge(visit_occurrence, on="visit_occurrence_id", how="left")
     note_hospital = note_hospital.drop(columns="visit_occurrence_id")
     note_hospital = note_hospital.merge(care_site, on="care_site_id")
@@ -177,10 +171,10 @@ def get_hospital_note(note, visit_occurrence, care_site):
 
 
 def get_note_detail(
-    extra_data,
-    note,
-    visit_occurrence,
-    care_site,
+    extra_data: Data,
+    note: DataFrame,
+    visit_occurrence: DataFrame,
+    care_site: DataFrame,
 ):  # pragma: no cover
     note_detail = prepare_note_care_site(extra_data=extra_data, note=note)
     note_detail = note_detail.merge(care_site, on="care_site_id")
@@ -204,7 +198,11 @@ def get_note_detail(
     return note_uf, note_uc, note_uh
 
 
-def get_pole_note(note_uf, care_site, care_site_relationship):  # pragma: no cover
+def get_pole_note(
+    note_uf: DataFrame,
+    care_site: DataFrame,
+    care_site_relationship: DataFrame,
+):  # pragma: no cover
     note_pole = convert_uf_to_pole(
         table=note_uf.drop(
             columns=["care_site_short_name", "care_site_level", "care_site_specialty"]

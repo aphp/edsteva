@@ -36,7 +36,6 @@ class BaseProbe(metaclass=ABCMeta):
 
     def __init__(self):
         self.is_valid_probe()
-        self.name = self._get_name()
 
     _schema = ["care_site_level", "care_site_id", "date", "c"]
 
@@ -129,7 +128,7 @@ class BaseProbe(metaclass=ABCMeta):
         # {'Hôpital-1': {'min': Timestamp('2010-06-01'), 'max': Timestamp('2019-11-01')}
         if only_impute_per_care_site:
             site_to_min_max_ds = (
-                self.predictor.groupby(["care_site_short_name"])["date"]
+                self.predictor.groupby(["care_site_id"])["date"]
                 .agg([min, max])
                 .to_dict("index")
             )
@@ -137,21 +136,21 @@ class BaseProbe(metaclass=ABCMeta):
         partition_cols = self._index.copy()
         groups = []
         for partition, group in self.predictor.groupby(partition_cols):
-            group = date_index.merge(group, on="date", how="left")
+            group_with_dates = date_index.merge(group, on="date", how="left")
 
             # Filter on each care site timeframe.
             if only_impute_per_care_site:
-                care_site_short_name = partition[-1]  # TO DO
-                ds_min = site_to_min_max_ds[care_site_short_name]["min"]
-                ds_max = site_to_min_max_ds[care_site_short_name]["max"]
+                care_site_id = group["care_site_id"].iloc[0]
+                ds_min = site_to_min_max_ds[care_site_id]["min"]
+                ds_max = site_to_min_max_ds[care_site_id]["max"]
                 group = group.loc[(group["date"] >= ds_min) & (group["date"] <= ds_max)]
 
             # Fill specific partition values.
             for key, val in zip(partition_cols, partition):
-                group[key] = val
+                group_with_dates[key] = val
             # Fill remaining NaN from counts values with 0.
-            group.fillna(0, inplace=True)
-            groups.append(group)
+            group_with_dates.fillna(0, inplace=True)
+            groups.append(group_with_dates)
 
         self.predictor = pd.concat(groups)
 
@@ -388,11 +387,9 @@ class BaseProbe(metaclass=ABCMeta):
 
         self.is_computed_probe()
 
+        if name:
+            self.name = name
         if not path:
-            if name:
-                self.name = name
-            else:
-                self.name = type(self).__name__
             path = self._get_path()
 
         self.path = path
@@ -417,8 +414,8 @@ class BaseProbe(metaclass=ABCMeta):
 
     def _get_path(self):
         base_path = CACHE_DIR / "edsteva" / "probes"
-        filename = f"{self.name.lower()}.pickle"
+        if hasattr(self, "name"):
+            filename = f"{self.name.lower()}.pickle"
+        else:
+            filename = f"{type(self).__name__.lower()}.pickle"
         return base_path / filename
-
-    def _get_name(self):
-        return type(self).__name__

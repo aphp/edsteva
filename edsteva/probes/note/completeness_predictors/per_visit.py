@@ -19,7 +19,7 @@ from edsteva.probes.utils.utils import (
 )
 from edsteva.utils.checks import check_tables
 from edsteva.utils.framework import is_koalas, to
-from edsteva.utils.typing import Data
+from edsteva.utils.typing import Data, DataFrame
 
 
 def compute_completeness_predictor_per_visit(
@@ -39,30 +39,17 @@ def compute_completeness_predictor_per_visit(
     note_types: Union[str, Dict[str, str]],
     hdfs_user_path: str,
 ):
-    """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
+    r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
-    Parameters
-    ----------
-    data : Data
-        Instantiated [``HiveData``][edsteva.io.hive.HiveData], [``PostgresData``][edsteva.io.postgres.PostgresData] or [``LocalData``][edsteva.io.files.LocalData]
-    care_site_relationship : pd.DataFrame
-        DataFrame computed in the [``compute()``][edsteva.probes.base.BaseProbe.compute] that gives the hierarchy of the care site structure.
-    extra_data : Data, optional
-        Instantiated [``HiveData``][edsteva.io.hive.HiveData], [``PostgresData``][edsteva.io.postgres.PostgresData] or [``LocalData``][edsteva.io.files.LocalData]. This is not OMOP-standardized data but data needed to associate note with UF and Pole. If not provided, it will only compute the predictor for hospitals.
-    start_date : datetime, optional
-        **EXAMPLE**: `"2019-05-01"`
-    end_date : datetime, optional
-        **EXAMPLE**: `"2021-07-01"`
-    care_site_levels : List[str], optional
-        **EXAMPLE**: `["Hospital", "Pole", "UF"]`
-    care_site_short_names : List[str], optional
-        **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
-    stay_types : Union[str, Dict[str, str]], optional
-        **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés`
-    note_types : Union[str, Dict[str, str]], optional
-    care_site_ids : List[int], optional
-        **EXAMPLE**: `[8312056386, 8312027648]`
+    The ``per_visit`` algorithm computes $c_(t)$ the availability of clinical documents linked to patients' administrative stays:
+
+    $$
+    c(t) = \frac{n_{with\,doc}(t)}{n_{visit}(t)}
+    $$
+
+    Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,doc}$ the number of visits having at least one document and $t$ is the month.
     """
+
     self._metrics = ["c", "n_visit", "n_visit_with_note"]
     check_tables(data=data, required_tables=["note"])
 
@@ -127,7 +114,11 @@ def compute_completeness_predictor_per_visit(
     return compute_completeness(self, note_predictor, hdfs_user_path=hdfs_user_path)
 
 
-def compute_completeness(self, note_predictor, hdfs_user_path: str = None):
+def compute_completeness(
+    self,
+    note_predictor: DataFrame,
+    hdfs_user_path: str = None,
+):
     partition_cols = self._index.copy() + ["date"]
 
     n_visit_with_note = (
@@ -166,7 +157,11 @@ def compute_completeness(self, note_predictor, hdfs_user_path: str = None):
     return note_predictor
 
 
-def get_hospital_visit(note, visit_occurrence, care_site):
+def get_hospital_visit(
+    note: DataFrame,
+    visit_occurrence: DataFrame,
+    care_site: DataFrame,
+):
     note_hospital = note[["visit_occurrence_id", "note_type"]].drop_duplicates()
     note_hospital["has_note"] = True
     hospital_visit = visit_occurrence.merge(
@@ -181,11 +176,11 @@ def get_hospital_visit(note, visit_occurrence, care_site):
 
 
 def get_visit_detail(
-    extra_data,
-    note,
-    visit_occurrence,
-    visit_detail,
-    care_site,
+    extra_data: Data,
+    note: DataFrame,
+    visit_occurrence: DataFrame,
+    visit_detail: DataFrame,
+    care_site: DataFrame,
 ):  # pragma: no cover
     visit_detail = visit_detail.merge(
         visit_occurrence[["visit_occurrence_id", "stay_type", "length_of_stay"]],
@@ -220,7 +215,11 @@ def get_visit_detail(
     return uf_visit, uc_visit, uh_visit
 
 
-def get_pole_visit(uf_visit, care_site, care_site_relationship):  # pragma: no cover
+def get_pole_visit(
+    uf_visit: DataFrame,
+    care_site: DataFrame,
+    care_site_relationship: DataFrame,
+):  # pragma: no cover
     pole_visit = convert_uf_to_pole(
         table=uf_visit.drop(
             columns=["care_site_short_name", "care_site_level", "care_site_specialty"]

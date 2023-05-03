@@ -939,6 +939,9 @@ class SyntheticData:
         self.fact_relationship = ks.DataFrame(self.fact_relationship)
         self.visit_detail = ks.DataFrame(self.visit_detail)
         self.note = ks.DataFrame(self.note)
+        self.concept = ks.DataFrame(self.concept)
+        self.concept_relationship = ks.DataFrame(self.concept_relationship)
+        self.measurement = ks.DataFrame(self.measurement)
         self.module = "koalas"
 
     def reset_to_pandas(self):
@@ -951,6 +954,9 @@ class SyntheticData:
         self.fact_relationship = self.fact_relationship.to_pandas()
         self.visit_detail = self.visit_detail.to_pandas()
         self.note = self.note.to_pandas()
+        self.concept = self.concept.to_pandas()
+        self.concept_relationship = self.concept_relationship.to_pandas()
+        self.measurement = self.measurement.to_pandas()
         self.module = "pandas"
 
     def delete_table(self, table_name: str) -> None:

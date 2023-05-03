@@ -11,26 +11,30 @@ from edsteva.utils.typing import Data
 
 class VisitProbe(BaseProbe):
     r"""
-    The ``VisitProbe`` computes $c_(t)$ the availability of administrative data related to visits for each care site according to time:
+    The ``VisitProbe`` computes $c_(t)$ the availability of administrative data according to time:
 
-    $$
-    c(t) = \frac{n_{visit}(t)}{n_{99}}
-    $$
-
-    Where $n_{visit}(t)$ is the number of visits, $n_{99}$ is the $99^{th}$ percentile of visits and $t$ is the month.
+    Parameters
+    ----------
+    completeness_predictor: str
+        Algorithm used to compute the completeness predictor
+        **EXAMPLE**: ``"per_visit_default"``
 
     Attributes
     ----------
+    _completeness_predictor: str
+        Algorithm used to compute the completeness predictor
+        **VALUE**: ``"per_visit_default"``
     _index: List[str]
         Variable from which data is grouped
-
         **VALUE**: ``["care_site_level", "stay_type", "length_of_stay", "care_site_id"]``
+    _viz_config: List[str]
+        Dictionary of configuration for visualization purpose.
+        **VALUE**: ``{}``
     """
 
     def __init__(
         self,
         completeness_predictor: str = "per_visit_default",
-        _viz_config: Dict[str, str] = None,
     ):
         self._completeness_predictor = completeness_predictor
         self._index = [
@@ -41,8 +45,7 @@ class VisitProbe(BaseProbe):
             "care_site_specialty",
             "specialties_set",
         ]
-        if _viz_config is None:
-            self._viz_config = {}
+        self._viz_config = {}
 
     def compute_process(
         self,
@@ -73,13 +76,21 @@ class VisitProbe(BaseProbe):
         end_date : datetime, optional
             **EXAMPLE**: `"2021-07-01"`
         care_site_levels : List[str], optional
-            **EXAMPLE**: `["Hospital", "Pole", "UF"]`
+            **EXAMPLE**: `["Hospital", "Pole", "UF", "UC", "UH"]`
         stay_types : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés`
         care_site_ids : List[int], optional
             **EXAMPLE**: `[8312056386, 8312027648]`
         care_site_short_names : List[str], optional
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
+        care_site_specialties : List[str], optional
+            **EXAMPLE**: `["CARDIOLOGIE", "CHIRURGIE"]`
+        specialties_sets : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
+        stay_durations : List[float], optional
+            **EXAMPLE**: `[1, 30]`
+        hdfs_user_path : str, optional
+            **EXAMPLE**: `"hdfs://bbsedsi/user/<username>"`
         """
         if specialties_sets is None:
             self._index.remove("specialties_set")
