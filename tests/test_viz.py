@@ -114,7 +114,7 @@ def test_viz_visit(data, Model, Probe, tmp_dir):
             care_site_ids=["1", "2"],
             care_site_short_names=["Hôpital-1", "Hôpital-2"],
             concepts_sets=None,
-            note_type=None,
+            note_types=None,
         )
         model = Model()
         model.fit(
