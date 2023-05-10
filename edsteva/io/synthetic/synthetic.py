@@ -7,15 +7,11 @@ import pandas as pd
 from databricks import koalas as ks
 from loguru import logger
 
-from edsteva.io.synthetic.utils import (
-    generate_care_site_tables,
-    generate_events_after_t0,
-    generate_events_after_t1,
-    generate_events_around_t0,
-    generate_events_around_t1,
-    generate_events_before_t0,
-    recursive_items,
-)
+from edsteva.io.synthetic.biology import generate_bio
+from edsteva.io.synthetic.care_site import generate_care_site_tables
+from edsteva.io.synthetic.note import generate_note
+from edsteva.io.synthetic.utils import recursive_items
+from edsteva.io.synthetic.visit import generate_stays
 
 DataFrame = Union[ks.DataFrame, pd.DataFrame]
 
@@ -131,287 +127,6 @@ def add_other_columns(table: pd.DataFrame, other_columns: Dict):
     return table
 
 
-def generate_stays_step(
-    t_start: int,
-    t_end: int,
-    n_events: int,
-    increase_time: int,
-    increase_ratio: float,
-    care_site_id: int,
-    date_col: str,
-):
-    t0 = np.random.randint(t_start + increase_time, t_end - increase_time)
-    params = dict(
-        t_start=t_start,
-        t_end=t_end,
-        n_events=n_events,
-        t0=t0,
-        increase_ratio=increase_ratio,
-        increase_time=increase_time,
-    )
-    df = pd.concat(
-        [
-            generate_events_before_t0(**params),
-            generate_events_after_t0(**params),
-            generate_events_around_t0(**params),
-        ]
-    ).to_frame()
-    df.columns = [date_col]
-    df["care_site_id"] = care_site_id
-    df["t_0_min"] = t0 - increase_time / 2
-    df["t_0_max"] = t0 + increase_time / 2
-
-    return df
-
-
-def generate_stays_rect(
-    t_start: int,
-    t_end: int,
-    n_events: int,
-    increase_time: int,
-    increase_ratio: float,
-    care_site_id: int,
-    date_col: str,
-):
-    t0 = np.random.randint(
-        t_start + increase_time, (t_end + t_start) / 2 - increase_time
-    )
-    t1 = np.random.randint((t_end + t_start) / 2 + increase_time, t_end - increase_time)
-    t0_params = dict(
-        t_start=t_start,
-        t_end=t1 - increase_time / 2,
-        n_events=n_events,
-        t0=t0,
-        increase_ratio=increase_ratio,
-        increase_time=increase_time,
-    )
-    before_t0 = generate_events_before_t0(**t0_params)
-    around_t0 = generate_events_around_t0(**t0_params)
-    # Raise n_visit to enforce a rectangle shape
-    between_t0_t1 = generate_events_after_t0(**t0_params)
-    t1_params = dict(
-        t_start=t_start,
-        t_end=t_end,
-        n_events=n_events,
-        t1=t1,
-        increase_time=increase_time,
-        increase_ratio=increase_ratio,
-    )
-    around_t1 = generate_events_around_t1(**t1_params)
-    after_t1 = generate_events_after_t1(**t1_params)
-
-    df = pd.concat(
-        [
-            before_t0,
-            around_t0,
-            between_t0_t1,
-            around_t1,
-            after_t1,
-        ]
-    ).to_frame()
-
-    df.columns = [date_col]
-    df["care_site_id"] = care_site_id
-    df["t_0_min"] = t0 - increase_time / 2
-    df["t_0_max"] = t0 + increase_time / 2
-    df["t_1_min"] = t1 - increase_time / 2
-    df["t_1_max"] = t1 + increase_time / 2
-
-    return df
-
-
-def generate_note_step(
-    visit_care_site,
-    note_type,
-    care_site_id,
-    date_col,
-    note_date_col,
-    id_visit_col,
-    note_type_col,
-    t0_visit,
-    t_end,
-):
-    t0 = np.random.randint(t0_visit, t_end)
-    c_before = np.random.uniform(0, 0.2)
-    c_after = np.random.uniform(0.8, 1)
-
-    note_before_t0_visit = (
-        visit_care_site[visit_care_site[date_col] <= t0_visit][[id_visit_col, date_col]]
-        .sample(frac=c_before)
-        .rename(columns={date_col: note_date_col})
-    )
-    # Stratify visit between t0_visit and t0 to
-    # ensure that these elements are represented
-    # in the final notes dataset.
-    note_before_t0 = (
-        visit_care_site[
-            (visit_care_site[date_col] <= t0) & (visit_care_site[date_col] > t0_visit)
-        ][[id_visit_col, date_col]]
-        .sample(frac=c_before)
-        .rename(columns={date_col: note_date_col})
-    )
-
-    note_after_t0 = (
-        visit_care_site[visit_care_site[date_col] > t0][[id_visit_col, date_col]]
-        .sample(frac=c_after)
-        .rename(columns={date_col: note_date_col})
-    )
-
-    note = pd.concat([note_before_t0_visit, note_before_t0, note_after_t0])
-
-    note[note_date_col] = note[note_date_col].astype("datetime64[s]")
-    note[note_type_col] = note_type
-    note["care_site_id"] = care_site_id
-    note["t_0"] = t0
-
-    return note
-
-
-def generate_note_rect(
-    visit_care_site: pd.DataFrame,
-    note_type,
-    care_site_id,
-    date_col,
-    note_date_col,
-    id_visit_col,
-    note_type_col,
-    t0_visit,
-    t1_visit,
-):
-    t0 = np.random.randint(t0_visit, t0_visit + (t1_visit - t0_visit) / 3)
-    t1 = np.random.randint(t0_visit + 2 * (t1_visit - t0_visit) / 3, t1_visit)
-    c_out = np.random.uniform(0, 0.1)
-    c_in = np.random.uniform(0.8, 1)
-
-    note_before_t0 = (
-        visit_care_site[visit_care_site[date_col] <= t0][[id_visit_col, date_col]]
-        .sample(frac=c_out)
-        .rename(columns={date_col: note_date_col})
-    )
-    note_between_t0_t1 = (
-        visit_care_site[
-            (visit_care_site[date_col] > t0) & (visit_care_site[date_col] <= t1)
-        ][[id_visit_col, date_col]]
-        .sample(frac=c_in)
-        .rename(columns={date_col: note_date_col})
-    )
-
-    note_after_t1 = (
-        visit_care_site[(visit_care_site[date_col] > t1)][[id_visit_col, date_col]]
-        .sample(frac=c_out)
-        .rename(columns={date_col: note_date_col})
-    )
-
-    note = pd.concat(
-        [
-            note_before_t0,
-            note_between_t0_t1,
-            note_after_t1,
-        ]
-    )
-
-    note[note_date_col] = note[note_date_col].astype("datetime64[s]")
-    note[note_type_col] = note_type
-    note["care_site_id"] = care_site_id
-    note["t_0"] = t0
-    note["t_1"] = t1
-
-    return note
-
-
-def generate_bio_step(
-    t_start: int,
-    t_end: int,
-    n_events: int,
-    increase_time: int,
-    increase_ratio: float,
-    bio_date_col: str,
-    unit: str,
-    concept_code: str,
-):
-    t0 = np.random.randint(t_start + increase_time, t_end - increase_time)
-    params = dict(
-        t_start=t_start,
-        t_end=t_end,
-        n_events=n_events,
-        t0=t0,
-        increase_ratio=increase_ratio,
-        increase_time=increase_time,
-    )
-    df = pd.concat(
-        [
-            generate_events_before_t0(**params),
-            generate_events_after_t0(**params),
-            generate_events_around_t0(**params),
-        ]
-    ).to_frame()
-    df.columns = [bio_date_col]
-    df["unit_source_value"] = unit
-    df["measurement_source_concept_id"] = concept_code
-    df["t_0_min"] = t0 - increase_time / 2
-    df["t_0_max"] = t0 + increase_time / 2
-
-    return df
-
-
-def generate_bio_rect(
-    t_start: int,
-    t_end: int,
-    n_events: int,
-    increase_time: int,
-    increase_ratio: float,
-    bio_date_col: str,
-    unit: str,
-    concept_code: str,
-):
-    t0 = np.random.randint(
-        t_start + increase_time, (t_end + t_start) / 2 - increase_time
-    )
-    t1 = np.random.randint((t_end + t_start) / 2 + increase_time, t_end - increase_time)
-    t0_params = dict(
-        t_start=t_start,
-        t_end=t1 - increase_time / 2,
-        n_events=n_events,
-        t0=t0,
-        increase_ratio=increase_ratio,
-        increase_time=increase_time,
-    )
-    before_t0 = generate_events_before_t0(**t0_params)
-    around_t0 = generate_events_around_t0(**t0_params)
-    # Raise n_visit to enforce a rectangle shape
-    between_t0_t1 = generate_events_after_t0(**t0_params)
-    t1_params = dict(
-        t_start=t_start,
-        t_end=t_end,
-        n_events=n_events,
-        t1=t1,
-        increase_time=increase_time,
-        increase_ratio=increase_ratio,
-    )
-    around_t1 = generate_events_around_t1(**t1_params)
-    after_t1 = generate_events_after_t1(**t1_params)
-
-    df = pd.concat(
-        [
-            before_t0,
-            around_t0,
-            between_t0_t1,
-            around_t1,
-            after_t1,
-        ]
-    ).to_frame()
-
-    df.columns = [bio_date_col]
-    df["unit_source_value"] = unit
-    df["measurement_source_concept_id"] = concept_code
-    df["t_0_min"] = t0 - increase_time / 2
-    df["t_0_max"] = t0 + increase_time / 2
-    df["t_1_min"] = t1 - increase_time / 2
-    df["t_1_max"] = t1 + increase_time / 2
-
-    return df
-
-
 @dataclass
 class SyntheticData:
     module: str = "pandas"
@@ -442,6 +157,14 @@ class SyntheticData:
     )
     seed: int = None
     mode: str = "step"
+
+    def __post_init__(self):
+        if self.module not in ["pandas", "koalas"]:
+            raise ValueError(
+                f"Unknown module {self.mode}, options are ('pandas', 'koalas')"
+            )
+        if self.mode not in ["step", "rect"]:
+            raise ValueError(f"Unknown mode {self.mode}, options are ('step', 'rect')")
 
     def generate(self):
         if self.seed:
@@ -533,15 +256,9 @@ class SyntheticData:
                 increase_time=increase_time,
                 care_site_id=care_site_id,
                 date_col=self.date_col,
+                mode=self.mode,
             )
-            if self.mode == "step":
-                vo_stays = generate_stays_step(**params)
-            elif self.mode == "rect":
-                vo_stays = generate_stays_rect(**params)
-            else:
-                raise ValueError(
-                    f"Unknown mode {self.mode}, options are ('step', 'rect')"
-                )
+            vo_stays = generate_stays(**params)
             visit_occurrence.append(vo_stays)
 
         visit_occurrence = pd.concat(visit_occurrence).reset_index(drop=True)
@@ -693,20 +410,11 @@ class SyntheticData:
                 id_visit_col=id_visit_col,
                 note_type_col=note_type_col,
                 t0_visit=t0_visit,
+                mode=self.mode,
             )
-
             for note_type in note_types:
                 params["note_type"] = note_type
-                if self.mode == "step":
-                    params["t_end"] = visit_care_site[date_col].max()
-                    note = generate_note_step(visit_care_site, **params)
-                elif self.mode == "rect":
-                    params["t1_visit"] = visit_care_site["t_1_min"].max()
-                    note = generate_note_rect(visit_care_site, **params)
-                else:
-                    raise ValueError(
-                        f"Unknown mode {self.mode}, options: ('step', 'rect')"
-                    )
+                note = generate_note(visit_care_site, **params)
                 notes.append(note)
 
         notes = pd.concat(notes).reset_index(drop=True)
@@ -864,6 +572,7 @@ class SyntheticData:
         t_min = self.t_min.timestamp()
         t_max = self.t_max.timestamp()
         measurements = []
+        visit_occurrence = visit_occurrence.sample(frac=0.9)
         for concept_name in src_concept_name:
             concept_code = concept_name.split("_")[1]
             unit = concept_name.split("_")[-1]
@@ -894,21 +603,15 @@ class SyntheticData:
                     bio_date_col=self.bio_date_col,
                     unit=unit,
                     concept_code=concept_code,
+                    mode=self.mode,
                 )
-                if self.mode == "step":
-                    measurement = generate_bio_step(**params)
-                elif self.mode == "rect":
-                    measurement = generate_bio_rect(**params)
-                else:
-                    raise ValueError(
-                        f"Unknown mode {self.mode}, options are ('step', 'rect')"
-                    )
+                measurement = generate_bio(**params)
                 visit_care_site = visit_occurrence[
                     visit_occurrence.care_site_id == care_site_id
                 ]
                 measurement[self.id_visit_col] = (
                     visit_care_site[self.id_visit_col]
-                    .sample(measurement.shape[0], replace=True)
+                    .sample(n=measurement.shape[0], replace=True)
                     .reset_index(drop=True)
                 )
                 measurement["value_as_number"] = [None] * missing_value + list(
@@ -931,7 +634,7 @@ class SyntheticData:
 
     def convert_to_koalas(self):
         if isinstance(self.care_site, ks.frame.DataFrame):
-            print("Module is already Koalas!")
+            logger.info("Module is already Koalas!")
             return
         self.care_site = ks.DataFrame(self.care_site)
         self.visit_occurrence = ks.DataFrame(self.visit_occurrence)
@@ -946,7 +649,7 @@ class SyntheticData:
 
     def reset_to_pandas(self):
         if isinstance(self.care_site, pd.core.frame.DataFrame):
-            print("Module is already Pandas!")
+            logger.info("Module is already Pandas!")
             return
         self.care_site = self.care_site.to_pandas()
         self.visit_occurrence = self.visit_occurrence.to_pandas()

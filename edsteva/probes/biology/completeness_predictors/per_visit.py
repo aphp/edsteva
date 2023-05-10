@@ -37,6 +37,7 @@ def compute_completeness_predictor_per_visit(
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
     hdfs_user_path: str,
+    **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
@@ -127,21 +128,14 @@ def compute_completeness(
         .agg({"has_measurement": "count"})
         .rename(columns={"has_measurement": "n_visit_with_measurement"})
     )
-    partition_cols = list(
-        set(partition_cols)
-        - set(
-            ["concepts_set"]
-            + [
-                "{}_concept_code".format(terminology)
-                for terminology in self._standard_terminologies
-            ]
-            + [
-                "{}_concept_name".format(terminology)
-                for terminology in self._standard_terminologies
-            ]
-        )
+    biology_column = set(
+        ["concepts_set"]
+        + [
+            "{}_concept_code".format(terminology)
+            for terminology in self._standard_terminologies
+        ]
     )
-
+    partition_cols = list(set(partition_cols) - set(biology_column))
     n_visit = (
         biology_predictor.groupby(
             partition_cols,
@@ -151,7 +145,6 @@ def compute_completeness(
         .agg({"visit_id": "nunique"})
         .rename(columns={"visit_id": "n_visit"})
     )
-
     biology_predictor = n_visit_with_measurement.merge(
         n_visit,
         on=partition_cols,
@@ -164,6 +157,21 @@ def compute_completeness(
         biology_predictor["n_visit_with_measurement"] / biology_predictor["n_visit"],
     )
 
+    # Impute missing columns for visit without measurement
+    missing_column = list(
+        set(biology_predictor.columns).intersection(set(biology_column))
+    )
+    missing_measurement = biology_predictor[
+        biology_predictor.n_visit_with_measurement == 0
+    ].copy()
+    biology_predictor = biology_predictor[
+        biology_predictor.n_visit_with_measurement > 0
+    ]
+    for partition, _ in biology_predictor.groupby(missing_column):
+        for i in range(len(missing_column)):
+            missing_measurement[missing_column[i]] = partition[i]
+        biology_predictor = pd.concat([biology_predictor, missing_measurement])
+
     return biology_predictor
 
 
@@ -174,19 +182,21 @@ def get_hospital_visit(
     standard_terminologies: List[str],
 ):
     hospital_measurement = measurement[
-        ["visit_occurrence_id", "concepts_set"]
-        + [
-            "{}_concept_code".format(terminology)
-            for terminology in standard_terminologies
-        ]
-        + [
-            "{}_concept_name".format(terminology)
-            for terminology in standard_terminologies
-        ]
+        set(measurement.columns).intersection(
+            set(
+                ["visit_occurrence_id", "concepts_set"]
+                + [
+                    "{}_concept_code".format(terminology)
+                    for terminology in standard_terminologies
+                ]
+                + [
+                    "{}_concept_name".format(terminology)
+                    for terminology in standard_terminologies
+                ]
+            )
+        )
     ].drop_duplicates()
     hospital_measurement["has_measurement"] = True
-    print(type(hospital_measurement))
-    print(type(visit_occurrence))
     hospital_visit = visit_occurrence.merge(
         hospital_measurement,
         on="visit_occurrence_id",

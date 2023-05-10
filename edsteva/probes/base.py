@@ -34,10 +34,16 @@ class BaseProbe(metaclass=ABCMeta):
         It describes the care site structure (cf. [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_care_site_relationship])
     """
 
-    def __init__(self):
-        self.is_valid_probe()
-
     _schema = ["care_site_level", "care_site_id", "date", "c"]
+
+    def __init__(
+        self,
+        completeness_predictor: str,
+        index: List[str],
+    ):
+        self._completeness_predictor = completeness_predictor
+        self._cache_index = index.copy()
+        self._viz_config = {}
 
     def validate_input_data(self, data: Data) -> None:
         """Raises an error if the input data is not valid
@@ -49,7 +55,7 @@ class BaseProbe(metaclass=ABCMeta):
         """
 
         if not isinstance(data, Data.__args__):
-            raise TypeError("Unsupported type {} for data".format(type(data)))
+            raise TypeError("Unsupported type {} for data".format(type(data).__name__))
 
         check_tables(
             data=data,
@@ -60,20 +66,13 @@ class BaseProbe(metaclass=ABCMeta):
             ],
         )
 
-    def is_valid_probe(self) -> None:
-        """Raises an error if the instantiated Probe is not valid"""
-        if not hasattr(self, "_index"):
-            raise Exception(
-                "Probe must have _index attribute. Please review the code of your probe"
-            )
-
     def is_computed_probe(self) -> None:
         """Raises an error if the Probe has not been computed properly"""
         if hasattr(self, "predictor"):
             if not isinstance(self.predictor, pd.DataFrame):
                 raise TypeError(
                     "Predictor must be a Pandas DataFrame and not a {}, please review the process method or your arguments".format(
-                        type(self.predictor)
+                        type(self.predictor).__name__
                     )
                 )
             if self.predictor.empty:
@@ -178,6 +177,7 @@ class BaseProbe(metaclass=ABCMeta):
         care_site_ids: List[int] = None,
         impute_missing_dates: bool = True,
         only_impute_per_care_site: bool = False,
+        with_cache: bool = True,
         **kwargs,
     ) -> None:
         """Calls [``compute_process()``][edsteva.probes.base.BaseProbe.compute_process]
@@ -241,6 +241,7 @@ class BaseProbe(metaclass=ABCMeta):
 
         """
         self.validate_input_data(data=data)
+        self._reset_index()
         care_site_relationship = prepare_care_site_relationship(data=data)
 
         self.predictor = self.compute_process(
@@ -268,7 +269,8 @@ class BaseProbe(metaclass=ABCMeta):
             )
         self.care_site_relationship = care_site_relationship
         self.predictor = self.add_names_columns(self.predictor)
-        self.cache_predictor()
+        if with_cache:
+            self.cache_predictor()
 
     def reset_predictor(
         self,
@@ -316,6 +318,7 @@ class BaseProbe(metaclass=ABCMeta):
                     ["care_site_id", "care_site_short_name"]
                 ].drop_duplicates(),
                 on="care_site_id",
+                how="left",
             )
         if hasattr(self, "biology_relationship"):
             concept_codes = [
@@ -331,6 +334,7 @@ class BaseProbe(metaclass=ABCMeta):
                     concept_codes + concept_names
                 ].drop_duplicates(),
                 on=concept_codes,
+                how="left",
             )
         return df.reset_index(drop=True)
 
@@ -405,10 +409,7 @@ class BaseProbe(metaclass=ABCMeta):
         """
 
         if not path:
-            if hasattr(self, "path"):
-                path = self.path
-            else:
-                path = self._get_path()
+            path = self.path
 
         delete_object(self, path)
 
@@ -419,3 +420,9 @@ class BaseProbe(metaclass=ABCMeta):
         else:
             filename = f"{type(self).__name__.lower()}.pickle"
         return base_path / filename
+
+    def _reset_index(
+        self,
+    ) -> None:
+        """Reset the index to its initial state"""
+        self._index = self._cache_index.copy()

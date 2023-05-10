@@ -6,40 +6,19 @@ import pytest
 from edsteva import CACHE_DIR, improve_performances
 from edsteva.io import SyntheticData
 from edsteva.probes import BiologyProbe, ConditionProbe, NoteProbe, VisitProbe
-from edsteva.utils.checks import MissingColumnError, MissingTableError
+from edsteva.probes.utils.filter_df import (
+    filter_table_by_care_site,
+    filter_valid_observations,
+)
+from edsteva.probes.utils.utils import CARE_SITE_LEVEL_NAMES
+from edsteva.utils.framework import is_koalas
 
 pytestmark = pytest.mark.filterwarnings("ignore")
 
 
 improve_performances()
-data_step = SyntheticData(seed=41, mode="step").generate()
-data_rect = SyntheticData(seed=41, mode="rect").generate()
-data_missing = SyntheticData(seed=41, mode="step").generate()
-
-
-def test_missing_checks():
-    with pytest.raises(TypeError):
-        data_fake = [1, 2, 3]
-        visit = VisitProbe()
-        visit.compute(
-            data=data_fake,
-        )
-    with pytest.raises(MissingColumnError):
-        data_missing.visit_occurrence = data_missing.visit_occurrence.drop(
-            columns="visit_occurrence_id"
-        )
-        visit = VisitProbe()
-        visit.compute(
-            data=data_missing,
-        )
-    with pytest.raises(MissingTableError):
-        data_missing.delete_table("unknown_table")  # Test typo
-        data_missing.delete_table("fact_relationship")
-        visit = VisitProbe()
-        visit.compute(
-            data=data_missing,
-        )
-
+data_step = SyntheticData(mean_visit=100, seed=41, mode="step").generate()
+data_rect = SyntheticData(mean_visit=100, seed=41, mode="rect").generate()
 
 params = [
     dict(
@@ -49,12 +28,12 @@ params = [
         biology_predictor="per_visit_default",
         only_impute_per_care_site=True,
         impute_missing_dates=True,
-        care_site_levels=["UF", "UC", "UH"],
+        care_site_levels=["Pole", "UF", "UC", "UH"],
         care_site_short_names=None,
         care_site_ids=None,
-        care_site_specialties=["REA ADULTE", "PSYCHIATRIE"],
+        care_site_specialties="PSYCHIATRIE",
         specialties_sets=None,
-        stay_durations=[1],
+        stay_durations=[1, 30],
         note_types={"ALL": ".*"},
         stay_types=None,
         diag_types=None,
@@ -68,7 +47,7 @@ params = [
             "entity 5": "A4",
         },
         start_date=None,
-        end_date=None,
+        end_date=datetime(2020, 1, 1),
         test_save=False,
         module="koalas",
     ),
@@ -79,12 +58,12 @@ params = [
         biology_predictor="per_measurement_default",
         only_impute_per_care_site=False,
         impute_missing_dates=True,
-        care_site_levels="Pole",
+        care_site_levels=["Hospital", "Pole", "UF"],
         care_site_ids="1",
         care_site_short_names="Hôpital-1",
-        care_site_specialties="PSYCHIATRIE",
+        care_site_specialties=None,
         specialties_sets={"All": ".*"},
-        stay_durations=None,
+        stay_durations=[1],
         note_types="CRH",
         stay_types="hospitalisés",
         diag_types="DP",
@@ -94,7 +73,7 @@ params = [
         start_date="2010-01-03",
         end_date=None,
         test_save=False,
-        module="pandas",
+        module="koalas",
     ),
     dict(
         visit_predictor="per_visit_default",
@@ -103,10 +82,10 @@ params = [
         biology_predictor="per_visit_default",
         only_impute_per_care_site=False,
         impute_missing_dates=False,
-        care_site_levels=["Hospital", "UF", "Pole"],
+        care_site_levels="Hôpital",
         care_site_ids=["1", "2"],
         care_site_short_names=["Hôpital-1", "Hôpital-2"],
-        care_site_specialties=None,
+        care_site_specialties=["REA ADULTE", "PSYCHIATRIE"],
         specialties_sets=None,
         stay_durations=None,
         stay_types={"ALL": ".*", "HC": "hospitalisés", "Urg": "urgences"},
@@ -114,13 +93,73 @@ params = [
         diag_types={"ALL": ".*", "DP/DR": "DP|DR"},
         condition_types={"ALL": ".*", "Cancer": "C"},
         source_systems=["ORBIS"],
-        concepts_sets={"entity 1": "A0"},
+        concepts_sets=None,
         start_date=datetime(2010, 5, 10),
         end_date=datetime(2020, 1, 1),
         test_save=True,
         module="pandas",
     ),
 ]
+
+
+@pytest.mark.parametrize("data", [data_step])
+def test_base_probe(data):
+    visit = VisitProbe()
+    with pytest.raises(Exception):
+        filter_valid_observations(data.care_site, "care_site")
+    with pytest.raises(AttributeError):
+        visit.compute(data=data, care_site_levels=["fail"])
+    with pytest.raises(TypeError):
+        visit.compute(data=data, stay_types=45)
+    with pytest.raises(Exception):
+        visit.is_computed_probe()
+    with pytest.raises(TypeError):
+        visit.predictor = "fail"
+        visit.is_computed_probe()
+    visit.compute(data=data)
+    with pytest.raises(Exception):
+        visit.predictor = visit.predictor.iloc[0:0]
+        visit.is_computed_probe()
+    with pytest.raises(TypeError):
+        visit.reset_predictor()
+        visit.predictor.date = visit.predictor.date.astype(str)
+        visit.predictor.date.iloc[0] = "not a date"
+        visit.is_computed_probe()
+
+    # Test cache saving
+    visit.reset_predictor()
+    visit.save()
+    assert os.path.isfile(CACHE_DIR / "edsteva" / "probes" / "visitprobe.pickle")
+    visit = VisitProbe()
+    with pytest.raises(FileNotFoundError):
+        visit.load("fail.pkl")
+    visit.load()
+    visit.delete()
+    visit.delete("fail.pkl")
+    assert not os.path.isfile(CACHE_DIR / "edsteva" / "probes" / "visitprobe.pickle")
+
+    # Test target saving
+    visit.save(
+        name="TEst",
+    )
+    assert os.path.isfile(CACHE_DIR / "edsteva" / "probes" / "test.pickle")
+    visit.delete()
+    assert not os.path.isfile(CACHE_DIR / "edsteva" / "probes" / "test.pickle")
+    visit.save(
+        path="test.pickle",
+    )
+    assert os.path.isfile("test.pickle")
+
+    visit = VisitProbe()
+    visit.load("test.pickle")
+    predictor = visit.predictor.copy()
+    visit.filter_care_site(care_site_ids="1")
+    assert visit.predictor.care_site_id.str.startswith("1").all()
+    visit.filter_care_site(care_site_ids=["1", "2"], care_site_short_names="Hôpital-2")
+    visit.reset_predictor()
+    assert predictor.equals(visit.predictor)
+    visit.delete()
+    assert not os.path.isfile("test.pickle")
 
 
 @pytest.mark.parametrize("data", [data_step, data_rect])
@@ -133,6 +172,7 @@ def test_compute_visit_probe(data, params):
     visit = VisitProbe(completeness_predictor=params["visit_predictor"])
     visit.compute(
         data=data,
+        care_site_levels=params["care_site_levels"],
         only_impute_per_care_site=params["only_impute_per_care_site"],
         impute_missing_dates=params["impute_missing_dates"],
         start_date=params["start_date"],
@@ -145,34 +185,118 @@ def test_compute_visit_probe(data, params):
         stay_durations=params["stay_durations"],
     )
 
-    if params["test_save"]:
-        # Test Cache saving
-        visit.save()
-        assert os.path.isfile(CACHE_DIR / "edsteva" / "probes" / "visitprobe.pickle")
-        visit = VisitProbe()
-        visit.load()
-        visit.delete()
-        assert not os.path.isfile(
-            CACHE_DIR / "edsteva" / "probes" / "visitprobe.pickle"
+    # Care site levels
+    if params["care_site_levels"]:
+        care_site_levels = []
+        if isinstance(params["care_site_levels"], str):
+            if params["care_site_levels"] in CARE_SITE_LEVEL_NAMES.keys():
+                care_site_levels.append(
+                    CARE_SITE_LEVEL_NAMES[params["care_site_levels"]]
+                )
+            elif params["care_site_levels"] in CARE_SITE_LEVEL_NAMES.values():
+                care_site_levels.append(params["care_site_levels"])
+        if isinstance(params["care_site_levels"], list):
+            for care_site_level in params["care_site_levels"]:
+                if care_site_level in CARE_SITE_LEVEL_NAMES.keys():
+                    care_site_levels.append(CARE_SITE_LEVEL_NAMES[care_site_level])
+                elif care_site_level in CARE_SITE_LEVEL_NAMES.values():
+                    care_site_levels.append(care_site_level)
+        assert set(visit.predictor.care_site_level.unique()).issubset(
+            set(care_site_levels)
         )
 
-        visit.save(
-            path="test.pickle",
-        )
-        assert os.path.isfile("test.pickle")
+    # Date
+    if params["start_date"]:
+        assert (visit.predictor.date >= params["start_date"]).all()
+    if params["end_date"]:
+        assert (visit.predictor.date < params["end_date"]).all()
 
-        visit = VisitProbe()
-        visit.load("test.pickle")
-        predictor = visit.predictor.copy()
-        visit.filter_care_site(care_site_ids="1")
-        assert visit.predictor.care_site_id.str.startswith("1").all()
-        visit.filter_care_site(
-            care_site_ids=["1", "2"], care_site_short_names="Hôpital-2"
-        )
-        visit.reset_predictor()
-        assert predictor.equals(visit.predictor)
-        visit.delete()
-        assert not os.path.isfile("test.pickle")
+    # Stay type
+    if params["stay_types"]:
+        if isinstance(params["stay_types"], dict):
+            assert set(visit.predictor.stay_type.unique()).issubset(
+                set(params["stay_types"].keys())
+            )
+        elif isinstance(params["stay_types"], str):
+            assert set(visit.predictor.stay_type.unique()).issubset(
+                set([params["stay_types"]])
+            )
+        elif isinstance(params["stay_types"], list):
+            assert set(visit.predictor.stay_type.unique()).issubset(
+                set(params["stay_types"])
+            )
+
+    # Care site id
+    if params["care_site_ids"]:
+        if isinstance(params["care_site_ids"], str):
+            assert visit.predictor.care_site_id.str.startswith(
+                params["care_site_ids"]
+            ).all()
+        elif isinstance(params["care_site_ids"], list):
+            assert visit.predictor.care_site_id.str.startswith(
+                tuple(params["care_site_ids"])
+            ).all()
+
+    # Care site name
+    if params["care_site_short_names"]:
+        if isinstance(params["care_site_short_names"], str):
+            assert visit.predictor.care_site_id.str.startswith(
+                params["care_site_short_names"].split("-")[-1]
+            ).all()
+        elif isinstance(params["care_site_short_names"], list):
+            assert visit.predictor.care_site_id.str.startswith(
+                tuple(map(lambda x: x.split("-")[-1], params["care_site_short_names"]))
+            ).all()
+
+    # Care site specialty
+    if params["care_site_specialties"]:
+        care_site_filters = filter_table_by_care_site(
+            table_to_filter=data.care_site,
+            care_site_relationship=visit.care_site_relationship,
+            care_site_specialties=params["care_site_specialties"],
+        ).care_site_id.unique()
+        if is_koalas(data.care_site):
+            care_site_filters = care_site_filters.to_list()
+        assert visit.predictor.care_site_id.isin(care_site_filters).all()
+
+    # Specialty sets
+    if params["specialties_sets"]:
+        if isinstance(params["specialties_sets"], dict):
+            assert set(visit.predictor.specialties_set.unique()).issubset(
+                set(params["specialties_sets"].keys())
+            )
+        elif isinstance(params["specialties_sets"], str):
+            assert set(visit.predictor.specialties_set.unique()).issubset(
+                set([params["specialties_sets"]])
+            )
+        elif isinstance(params["specialties_sets"], list):
+            assert set(visit.predictor.specialties_set.unique()).issubset(
+                set(params["specialties_sets"])
+            )
+
+    # Stay durations
+    if params["stay_durations"]:
+        if isinstance(params["stay_durations"], list):
+            min_duration = params["stay_durations"][0]
+            max_duration = params["stay_durations"][-1]
+            specialties_sets = [
+                "Incomplete stay",
+                "<= {} days".format(min_duration),
+                ">= {} days".format(max_duration),
+            ]
+            n_duration = len(params["stay_durations"])
+            for i in range(0, n_duration - 1):
+                min = params["stay_durations"][i]
+                max = params["stay_durations"][i + 1]
+                specialties_sets.append("{} days - {} days".format(min, max))
+            assert set(visit.predictor.length_of_stay.unique()).issubset(
+                set(specialties_sets)
+            )
+
+    # Viz config
+    assert isinstance(visit.get_viz_config(viz_type="normalized_probe_plot"), dict)
+    with pytest.raises(Exception):
+        visit.get_viz_config(viz_type="unknown_plot")
 
 
 @pytest.mark.parametrize("data", [data_step, data_rect])
@@ -185,6 +309,7 @@ def test_compute_note_probe(data, params):
     note = NoteProbe(completeness_predictor=params["note_predictor"])
     note.compute(
         data=data,
+        care_site_levels=params["care_site_levels"],
         only_impute_per_care_site=params["only_impute_per_care_site"],
         impute_missing_dates=params["impute_missing_dates"],
         start_date=params["start_date"],
@@ -198,6 +323,129 @@ def test_compute_note_probe(data, params):
         note_types=params["note_types"],
     )
 
+    # Care site levels
+    if params["care_site_levels"]:
+        assert set(note.predictor.care_site_level.unique()) == set(["Hôpital"])
+
+    # Date
+    if params["start_date"]:
+        assert (note.predictor.date >= params["start_date"]).all()
+    if params["end_date"]:
+        assert (note.predictor.date < params["end_date"]).all()
+
+    # Stay type
+    if params["stay_types"]:
+        if isinstance(params["stay_types"], dict):
+            assert set(note.predictor.stay_type.unique()).issubset(
+                set(params["stay_types"].keys())
+            )
+        elif isinstance(params["stay_types"], str):
+            assert set(note.predictor.stay_type.unique()).issubset(
+                set([params["stay_types"]])
+            )
+        elif isinstance(params["stay_types"], list):
+            assert set(note.predictor.stay_type.unique()).issubset(
+                set(params["stay_types"])
+            )
+
+    # Care site id
+    if params["care_site_ids"]:
+        if isinstance(params["care_site_ids"], str):
+            assert note.predictor.care_site_id.str.startswith(
+                params["care_site_ids"]
+            ).all()
+        elif isinstance(params["care_site_ids"], list):
+            assert note.predictor.care_site_id.str.startswith(
+                tuple(params["care_site_ids"])
+            ).all()
+
+    # Care site name
+    if params["care_site_short_names"]:
+        if isinstance(params["care_site_short_names"], str):
+            assert note.predictor.care_site_id.str.startswith(
+                params["care_site_short_names"].split("-")[-1]
+            ).all()
+        elif isinstance(params["care_site_short_names"], list):
+            assert note.predictor.care_site_id.str.startswith(
+                tuple(map(lambda x: x.split("-")[-1], params["care_site_short_names"]))
+            ).all()
+
+    # Care site specialty
+    if params["care_site_specialties"]:
+        care_site_filters = filter_table_by_care_site(
+            table_to_filter=data.care_site,
+            care_site_relationship=note.care_site_relationship,
+            care_site_specialties=params["care_site_specialties"],
+        ).care_site_id.unique()
+        if is_koalas(data.care_site):
+            care_site_filters = care_site_filters.to_list()
+        assert note.predictor.care_site_id.isin(care_site_filters).all()
+
+    # Specialty sets
+    if params["specialties_sets"]:
+        if isinstance(params["specialties_sets"], dict):
+            assert set(note.predictor.specialties_set.unique()).issubset(
+                set(params["specialties_sets"].keys())
+            )
+        elif isinstance(params["specialties_sets"], str):
+            assert set(note.predictor.specialties_set.unique()).issubset(
+                set([params["specialties_sets"]])
+            )
+        elif isinstance(params["specialties_sets"], list):
+            assert set(note.predictor.specialties_set.unique()).issubset(
+                set(params["specialties_sets"])
+            )
+
+    # Stay durations
+    if params["stay_durations"]:
+        if isinstance(params["stay_durations"], list):
+            min_duration = params["stay_durations"][0]
+            max_duration = params["stay_durations"][-1]
+            specialties_sets = [
+                "Incomplete stay",
+                "<= {} days".format(min_duration),
+                ">= {} days".format(max_duration),
+            ]
+            n_duration = len(params["stay_durations"])
+            for i in range(0, n_duration - 1):
+                min = params["stay_durations"][i]
+                max = params["stay_durations"][i + 1]
+                specialties_sets.append("{} days - {} days".format(min, max))
+            assert set(note.predictor.length_of_stay.unique()).issubset(
+                set(specialties_sets)
+            )
+
+    # Note type
+    if params["note_types"]:
+        if isinstance(params["note_types"], dict):
+            assert set(note.predictor.note_type.unique()).issubset(
+                set(params["note_types"].keys())
+            )
+        elif isinstance(params["note_types"], str):
+            assert set(note.predictor.note_type.unique()).issubset(
+                set([params["note_types"]])
+            )
+        elif isinstance(params["note_types"], list):
+            assert set(note.predictor.note_type.unique()).issubset(
+                set(params["note_types"])
+            )
+
+    # Viz config
+    assert isinstance(note.get_viz_config(viz_type="normalized_probe_plot"), dict)
+    with pytest.raises(Exception):
+        note.get_viz_config(viz_type="unknown_plot")
+
+
+@pytest.mark.parametrize("data", [data_step])
+def test_condition(data):
+    condition = ConditionProbe()
+    with pytest.raises(AttributeError):
+        condition.compute(data=data, source_systems=["AREN"])
+    with pytest.raises(AttributeError):
+        condition.compute(data=data, source_systems=[])
+    with pytest.raises(AttributeError):
+        condition.compute(data=data, source_systems=456)
+
 
 @pytest.mark.parametrize("data", [data_step, data_rect])
 @pytest.mark.parametrize("params", params)
@@ -209,6 +457,7 @@ def test_compute_condition_probe(data, params):
     condition = ConditionProbe(completeness_predictor=params["condition_predictor"])
     condition.compute(
         data=data,
+        care_site_levels=params["care_site_levels"],
         only_impute_per_care_site=params["only_impute_per_care_site"],
         impute_missing_dates=params["impute_missing_dates"],
         start_date=params["start_date"],
@@ -224,6 +473,154 @@ def test_compute_condition_probe(data, params):
         source_systems=params["source_systems"],
     )
 
+    # Care site levels
+    if params["care_site_levels"]:
+        care_site_levels = []
+        care_site_level_names_condition = CARE_SITE_LEVEL_NAMES.copy()
+        care_site_level_names_condition.pop("UH", None)
+        care_site_level_names_condition.pop("UC", None)
+        if isinstance(params["care_site_levels"], str):
+            if params["care_site_levels"] in care_site_level_names_condition.keys():
+                care_site_levels.append(
+                    care_site_level_names_condition[params["care_site_levels"]]
+                )
+            elif params["care_site_levels"] in care_site_level_names_condition.values():
+                care_site_levels.append(params["care_site_levels"])
+        if isinstance(params["care_site_levels"], list):
+            for care_site_level in params["care_site_levels"]:
+                if care_site_level in care_site_level_names_condition.keys():
+                    care_site_levels.append(
+                        care_site_level_names_condition[care_site_level]
+                    )
+                elif care_site_level in care_site_level_names_condition.values():
+                    care_site_levels.append(care_site_level)
+        assert set(condition.predictor.care_site_level.unique()).issubset(
+            set(care_site_levels)
+        )
+
+    # Date
+    if params["start_date"]:
+        assert (condition.predictor.date >= params["start_date"]).all()
+    if params["end_date"]:
+        assert (condition.predictor.date < params["end_date"]).all()
+
+    # Stay type
+    if params["stay_types"]:
+        if isinstance(params["stay_types"], dict):
+            assert set(condition.predictor.stay_type.unique()).issubset(
+                set(params["stay_types"].keys())
+            )
+        elif isinstance(params["stay_types"], str):
+            assert set(condition.predictor.stay_type.unique()).issubset(
+                set([params["stay_types"]])
+            )
+        elif isinstance(params["stay_types"], list):
+            assert set(condition.predictor.stay_type.unique()).issubset(
+                set(params["stay_types"])
+            )
+
+    # Care site id
+    if params["care_site_ids"]:
+        if isinstance(params["care_site_ids"], str):
+            assert condition.predictor.care_site_id.str.startswith(
+                params["care_site_ids"]
+            ).all()
+        elif isinstance(params["care_site_ids"], list):
+            assert condition.predictor.care_site_id.str.startswith(
+                tuple(params["care_site_ids"])
+            ).all()
+
+    # Care site name
+    if params["care_site_short_names"]:
+        if isinstance(params["care_site_short_names"], str):
+            assert condition.predictor.care_site_id.str.startswith(
+                params["care_site_short_names"].split("-")[-1]
+            ).all()
+        elif isinstance(params["care_site_short_names"], list):
+            assert condition.predictor.care_site_id.str.startswith(
+                tuple(map(lambda x: x.split("-")[-1], params["care_site_short_names"]))
+            ).all()
+
+    # Care site specialty
+    if params["care_site_specialties"]:
+        care_site_filters = filter_table_by_care_site(
+            table_to_filter=data.care_site,
+            care_site_relationship=condition.care_site_relationship,
+            care_site_specialties=params["care_site_specialties"],
+        ).care_site_id.unique()
+        if is_koalas(data.care_site):
+            care_site_filters = care_site_filters.to_list()
+        assert condition.predictor.care_site_id.isin(care_site_filters).all()
+
+    # Specialty sets
+    if params["specialties_sets"]:
+        if isinstance(params["specialties_sets"], dict):
+            assert set(condition.predictor.specialties_set.unique()).issubset(
+                set(params["specialties_sets"].keys())
+            )
+        elif isinstance(params["specialties_sets"], str):
+            assert set(condition.predictor.specialties_set.unique()).issubset(
+                set()[params["specialties_sets"]]
+            )
+        elif isinstance(params["specialties_sets"], list):
+            assert set(condition.predictor.specialties_set.unique()).issubset(
+                set(params["specialties_sets"])
+            )
+
+    # Stay durations
+    if params["stay_durations"]:
+        if isinstance(params["stay_durations"], list):
+            min_duration = params["stay_durations"][0]
+            max_duration = params["stay_durations"][-1]
+            specialties_sets = [
+                "Incomplete stay",
+                "<= {} days".format(min_duration),
+                ">= {} days".format(max_duration),
+            ]
+            n_duration = len(params["stay_durations"])
+            for i in range(0, n_duration - 1):
+                min = params["stay_durations"][i]
+                max = params["stay_durations"][i + 1]
+                specialties_sets.append("{} days - {} days".format(min, max))
+            assert set(condition.predictor.length_of_stay.unique()).issubset(
+                set(specialties_sets)
+            )
+
+    # Diag type
+    if params["diag_types"]:
+        if isinstance(params["diag_types"], dict):
+            assert set(condition.predictor.diag_type.unique()).issubset(
+                set(params["diag_types"].keys())
+            )
+        elif isinstance(params["diag_types"], str):
+            assert set(condition.predictor.diag_type.unique()).issubset(
+                set([params["diag_types"]])
+            )
+        elif isinstance(params["diag_types"], list):
+            assert set(condition.predictor.diag_type.unique()).issubset(
+                set(params["diag_types"])
+            )
+
+    # Condition type
+    if params["condition_types"]:
+        if isinstance(params["condition_types"], dict):
+            assert set(condition.predictor.condition_type.unique()).issubset(
+                set(params["condition_types"].keys())
+            )
+        elif isinstance(params["condition_types"], str):
+            assert set(condition.predictor.condition_type.unique()).issubset(
+                set([params["condition_types"]])
+            )
+        elif isinstance(params["condition_types"], list):
+            assert set(condition.predictor.condition_type.unique()).issubset(
+                set(params["condition_types"])
+            )
+
+    # Viz config
+    assert isinstance(condition.get_viz_config(viz_type="normalized_probe_plot"), dict)
+    with pytest.raises(Exception):
+        condition.get_viz_config(viz_type="unknown_plot")
+
 
 @pytest.mark.parametrize("data", [data_step, data_rect])
 @pytest.mark.parametrize("params", params)
@@ -235,6 +632,7 @@ def test_compute_biology_probe(data, params):
     biology = BiologyProbe(completeness_predictor=params["biology_predictor"])
     biology.compute(
         data=data,
+        care_site_levels=params["care_site_levels"],
         only_impute_per_care_site=params["only_impute_per_care_site"],
         impute_missing_dates=params["impute_missing_dates"],
         start_date=params["start_date"],
@@ -247,3 +645,115 @@ def test_compute_biology_probe(data, params):
         stay_durations=params["stay_durations"],
         concepts_sets=params["concepts_sets"],
     )
+
+    # Care site levels
+    if params["care_site_levels"]:
+        assert set(biology.predictor.care_site_level.unique()) == set(["Hôpital"])
+
+    # Date
+    if params["start_date"]:
+        assert (biology.predictor.date >= params["start_date"]).all()
+    if params["end_date"]:
+        assert (biology.predictor.date < params["end_date"]).all()
+
+    # Stay type
+    if params["stay_types"]:
+        if isinstance(params["stay_types"], dict):
+            assert set(biology.predictor.stay_type.unique()).issubset(
+                set(params["stay_types"].keys())
+            )
+        elif isinstance(params["stay_types"], str):
+            assert set(biology.predictor.stay_type.unique()).issubset(
+                set([params["stay_types"]])
+            )
+        elif isinstance(params["stay_types"], list):
+            assert set(biology.predictor.stay_type.unique()).issubset(
+                set(params["stay_types"])
+            )
+
+    # Care site id
+    if params["care_site_ids"]:
+        if isinstance(params["care_site_ids"], str):
+            assert biology.predictor.care_site_id.str.startswith(
+                params["care_site_ids"]
+            ).all()
+        elif isinstance(params["care_site_ids"], list):
+            assert biology.predictor.care_site_id.str.startswith(
+                tuple(params["care_site_ids"])
+            ).all()
+
+    # Care site name
+    if params["care_site_short_names"]:
+        if isinstance(params["care_site_short_names"], str):
+            assert biology.predictor.care_site_id.str.startswith(
+                params["care_site_short_names"].split("-")[-1]
+            ).all()
+        elif isinstance(params["care_site_short_names"], list):
+            assert biology.predictor.care_site_id.str.startswith(
+                tuple(map(lambda x: x.split("-")[-1], params["care_site_short_names"]))
+            ).all()
+
+    # Care site specialty
+    if params["care_site_specialties"]:
+        care_site_filters = filter_table_by_care_site(
+            table_to_filter=data.care_site,
+            care_site_relationship=biology.care_site_relationship,
+            care_site_specialties=params["care_site_specialties"],
+        ).care_site_id.unique()
+        if is_koalas(data.care_site):
+            care_site_filters = care_site_filters.to_list()
+        assert biology.predictor.care_site_id.isin(care_site_filters).all()
+
+    # Specialty sets
+    if params["specialties_sets"]:
+        if isinstance(params["specialties_sets"], dict):
+            assert set(biology.predictor.specialties_set.unique()).issubset(
+                set(params["specialties_sets"].keys())
+            )
+        elif isinstance(params["specialties_sets"], str):
+            assert set(biology.predictor.specialties_set.unique()).issubset(
+                set([params["specialties_sets"]])
+            )
+        elif isinstance(params["specialties_sets"], list):
+            assert set(biology.predictor.specialties_set.unique()).issubset(
+                set(params["specialties_sets"])
+            )
+
+    # Stay durations
+    if params["stay_durations"]:
+        if isinstance(params["stay_durations"], list):
+            min_duration = params["stay_durations"][0]
+            max_duration = params["stay_durations"][-1]
+            specialties_sets = [
+                "Incomplete stay",
+                "<= {} days".format(min_duration),
+                ">= {} days".format(max_duration),
+            ]
+            n_duration = len(params["stay_durations"])
+            for i in range(0, n_duration - 1):
+                min = params["stay_durations"][i]
+                max = params["stay_durations"][i + 1]
+                specialties_sets.append("{} days - {} days".format(min, max))
+            assert set(biology.predictor.length_of_stay.unique()).issubset(
+                set(specialties_sets)
+            )
+
+    # Concepts sets
+    if params["concepts_sets"]:
+        if isinstance(params["concepts_sets"], dict):
+            assert set(biology.predictor.concepts_set.unique()).issubset(
+                set(params["concepts_sets"].keys())
+            )
+        elif isinstance(params["concepts_sets"], str):
+            assert set(biology.predictor.concepts_set.unique()).issubset(
+                set([params["concepts_sets"]])
+            )
+        elif isinstance(params["concepts_sets"], list):
+            assert set(biology.predictor.concepts_set.unique()).issubset(
+                set(params["concepts_sets"])
+            )
+
+    # Viz config
+    assert isinstance(biology.get_viz_config(viz_type="normalized_probe_plot"), dict)
+    with pytest.raises(Exception):
+        biology.get_viz_config(viz_type="unknown_plot")

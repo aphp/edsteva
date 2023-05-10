@@ -43,7 +43,7 @@ def to(framework: str, obj: DataObject, hdfs_user_path: str = None) -> DataObjec
 def pandas(obj: DataObject, hdfs_user_path: str = None) -> DataObject:
     if get_framework(obj) is _pandas:
         return obj
-    elif hdfs_user_path:
+    elif hdfs_user_path:  # pragma: no cover
         parquet_path = hdfs_user_path + "/object.parquet"
         try:
             obj.to_parquet(parquet_path)
@@ -59,7 +59,7 @@ def pandas(obj: DataObject, hdfs_user_path: str = None) -> DataObject:
         pandas_obj = obj.to_pandas()
     except AttributeError:
         error = True
-    if hdfs_user_path and os.path.exists(parquet_path):
+    if hdfs_user_path and os.path.exists(parquet_path):  # pragma: no cover
         os.remove(parquet_path)
     if error:
         raise ValueError("Could not convert object to pandas.")

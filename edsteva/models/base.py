@@ -3,6 +3,7 @@ from functools import reduce
 from typing import List
 
 import pandas as pd
+from loguru import logger
 
 from edsteva import CACHE_DIR
 from edsteva.metrics import metrics
@@ -31,17 +32,6 @@ class BaseModel(metaclass=ABCMeta):
         Ths list of extra keyword parameters used.
     """
 
-    def __init__(self):
-        self.is_valid_model()
-        self.name = type(self).__name__
-
-    def is_valid_model(self) -> None:
-        """Raises an error if the instantiated Model is not valid"""
-        if not hasattr(self, "_coefs"):
-            raise Exception(
-                "Model must have _coefs attribute. Please review the code of your model"
-            )
-
     def is_computed_estimates(self) -> None:
         """Raises an error if the Probe has not been fitted properly"""
         if hasattr(self, "estimates"):
@@ -53,7 +43,7 @@ class BaseModel(metaclass=ABCMeta):
             else:
                 raise Exception(
                     "The fit process must return a Pandas Dataframe and not {}".format(
-                        type(self.estimates)
+                        type(self.estimates).__name__
                     )
                 )
 
@@ -85,6 +75,7 @@ class BaseModel(metaclass=ABCMeta):
         metric_functions: List[str] = None,
         start_date: str = None,
         end_date: str = None,
+        with_cache: bool = True,
         **kwargs,
     ) -> None:
         """Fit the model to the probe instance
@@ -123,7 +114,9 @@ class BaseModel(metaclass=ABCMeta):
         if isinstance(probe, BaseProbe):
             probe.is_computed_probe()
         else:
-            raise TypeError("Unsupported type {} for probe.".format(type(probe)))
+            raise TypeError(
+                "Unsupported type {} for probe.".format(type(probe).__name__)
+            )
 
         predictor = filter_table_by_date(
             table=probe.predictor,
@@ -155,6 +148,23 @@ class BaseModel(metaclass=ABCMeta):
 
         self.is_computed_estimates()
         self.params = kwargs
+        if with_cache:
+            self.cache_estimates()
+
+    def reset_estimates(
+        self,
+    ) -> None:
+        """Reset the estimates to its initial state"""
+        self.estimates = self._cache_estimates.copy()
+
+    def cache_estimates(
+        self,
+    ) -> None:
+        """Cache the predictor"""
+        self._cache_estimates = self.estimates.copy()
+        logger.info(
+            "Cache the estimates, you can reset the estimates to this state with the method reset_estimates"
+        )
 
     def predict(
         self,
@@ -260,10 +270,7 @@ class BaseModel(metaclass=ABCMeta):
             **EXAMPLE**: `"my_folder/my_file.html"`
         """
         if not path:
-            if hasattr(self, "path"):
-                path = self.path
-            else:
-                path = self._get_path()
+            path = self.path
 
         delete_object(self, path)
 
@@ -283,10 +290,10 @@ class BaseModel(metaclass=ABCMeta):
         metric_functions: List[str] = None,
     ):
         if metric_functions is None:
-            if hasattr(self, "_default_metrics"):
+            if hasattr(self, "_default_metrics") and self._default_metrics:
                 metric_functions = self._default_metrics
             else:
-                metric_functions = []
+                return None
         if isinstance(metric_functions, str):
             metric_functions = [metric_functions]
         metrics_df = []

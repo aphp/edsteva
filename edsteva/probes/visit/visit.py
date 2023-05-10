@@ -36,7 +36,6 @@ class VisitProbe(BaseProbe):
         self,
         completeness_predictor: str = "per_visit_default",
     ):
-        self._completeness_predictor = completeness_predictor
         self._index = [
             "care_site_level",
             "stay_type",
@@ -45,7 +44,10 @@ class VisitProbe(BaseProbe):
             "care_site_specialty",
             "specialties_set",
         ]
-        self._viz_config = {}
+        super().__init__(
+            completeness_predictor=completeness_predictor,
+            index=self._index,
+        )
 
     def compute_process(
         self,
@@ -92,7 +94,7 @@ class VisitProbe(BaseProbe):
         hdfs_user_path : str, optional
             **EXAMPLE**: `"hdfs://bbsedsi/user/<username>"`
         """
-        if specialties_sets is None:
+        if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
@@ -119,3 +121,6 @@ class VisitProbe(BaseProbe):
         else:
             raise ValueError(f"edsteva has no {viz_type} registry !")
         return viz_configs[viz_type].get(_viz_config)(self, **kwargs)
+
+    def available_completeness_predictors(self):
+        return list(completeness_predictors.get_all().keys())

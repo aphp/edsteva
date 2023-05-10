@@ -49,7 +49,6 @@ class BiologyProbe(BaseProbe):
         completeness_predictor: str = "per_measurement_default",
         standard_terminologies: List[str] = ["ANABIO", "LOINC"],
     ):
-        self._completeness_predictor = completeness_predictor
         self._standard_terminologies = standard_terminologies
         self._index = [
             "care_site_level",
@@ -63,7 +62,10 @@ class BiologyProbe(BaseProbe):
             "{}_concept_code".format(terminology)
             for terminology in standard_terminologies
         ]
-        self._viz_config = {}
+        super().__init__(
+            completeness_predictor=completeness_predictor,
+            index=self._index,
+        )
 
     def compute_process(
         self,
@@ -141,9 +143,9 @@ class BiologyProbe(BaseProbe):
         hdfs_user_path : str, optional
             **EXAMPLE**: `"hdfs://bbsedsi/user/<username>"`
         """
-        if specialties_sets is None:
+        if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
-        if concepts_sets is None:
+        if concepts_sets is None and "concepts_set" in self._index:
             self._index.remove("concepts_set")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
@@ -173,3 +175,6 @@ class BiologyProbe(BaseProbe):
         else:
             raise ValueError(f"edsteva has no {viz_type} registry !")
         return viz_configs[viz_type].get(_viz_config)(self, **kwargs)
+
+    def available_completeness_predictors(self):
+        return list(completeness_predictors.get_all().keys())

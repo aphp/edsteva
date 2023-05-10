@@ -8,9 +8,7 @@ from typing import Dict, List, Union
 import altair as alt
 import pandas as pd
 from loguru import logger
-from toolz.curried import pipe
 
-from edsteva import CACHE_DIR
 from edsteva.probes.utils.filter_df import filter_table_by_date
 from edsteva.probes.utils.utils import CARE_SITE_LEVEL_NAMES
 
@@ -341,16 +339,6 @@ def month_diff(x, y):
     end = x.dt.to_period("M").view(dtype="int64")
     start = y.dt.to_period("M").view(dtype="int64")
     return end - start
-
-
-def json_dir(data):
-    os.makedirs(CACHE_DIR / "data_viz", exist_ok=True)
-    return pipe(
-        data,
-        alt.to_json(
-            filename=(CACHE_DIR / "data_viz").__str__() + "/{prefix}-{hash}.{extension}"
-        ),
-    )
 
 
 def save_html(obj: alt.Chart, filename: str):

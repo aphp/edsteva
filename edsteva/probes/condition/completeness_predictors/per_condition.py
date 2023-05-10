@@ -39,6 +39,7 @@ def compute_completeness_predictor_per_condition(
     source_systems: List[str],
     stay_durations: List[float],
     hdfs_user_path: str,
+    **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
@@ -56,7 +57,7 @@ def compute_completeness_predictor_per_condition(
     check_condition_source_systems(source_systems=source_systems)
     if "AREM" in source_systems and not hospital_only(
         care_site_levels=care_site_levels
-    ):
+    ):  # pragma: no cover
         logger.info("AREM claim data are only available at hospital level")
 
     visit_occurrence = prepare_visit_occurrence(
@@ -194,7 +195,7 @@ def get_uf_condition(
     visit_occurrence: DataFrame,
     visit_detail: DataFrame,
     care_site: DataFrame,
-):  # pragma: no cover
+):
     # Add visit information
     visit_detail = visit_detail[visit_detail.visit_detail_type == "RUM"]
     uf_condition = condition_occurrence.merge(
@@ -224,7 +225,7 @@ def get_pole_condition(
     uf_condition: DataFrame,
     care_site: DataFrame,
     care_site_relationship: DataFrame,
-):  # pragma: no cover
+):
     pole_condition = convert_uf_to_pole(
         table=uf_condition.drop(
             columns=["care_site_short_name", "care_site_level", "care_site_specialty"]

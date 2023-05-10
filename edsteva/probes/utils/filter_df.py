@@ -9,7 +9,7 @@ from edsteva.utils.checks import check_columns
 from edsteva.utils.framework import get_framework, to
 from edsteva.utils.typing import DataFrame
 
-from .utils import CARE_SITE_LEVEL_NAMES
+from .utils import CARE_SITE_LEVEL_NAMES, get_child_and_parent_cs
 
 
 def filter_table_by_type(
@@ -36,7 +36,9 @@ def filter_table_by_type(
             table_per_types.append(table_per_type_element)
     else:
         raise TypeError(
-            "{} must be str or dict not {}".format(target_col, type(type_groups))
+            "{} must be str or dict not {}".format(
+                target_col, type(type_groups).__name__
+            )
         )
 
     logger.debug(
@@ -80,7 +82,7 @@ def filter_table_by_date(
 
     table = table.dropna(subset=["date"])
     logger.debug("Droping observations with missing date in table {}.", table_name)
-    table["date"] = table["date"].astype("datetime64")
+    table["date"] = table["date"].astype("datetime64[ns]")
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
 
@@ -107,7 +109,7 @@ def filter_table_by_date(
             table_name,
         )
     # Truncate
-    table["date"] = table["date"].dt.strftime("%Y-%m").astype("datetime64")
+    table["date"] = table["date"].dt.strftime("%Y-%m").astype("datetime64[ns]")
     return table
 
 
@@ -180,107 +182,39 @@ def filter_table_by_care_site(
         if not isinstance(care_site_ids, list):
             care_site_ids = [care_site_ids]
         care_site_filter.append(
-            care_site[care_site["care_site_id"].isin(care_site_ids)][
-                ["care_site_id", "care_site_level"]
-            ]
+            care_site[care_site["care_site_id"].isin(care_site_ids)]
         )
     if care_site_short_names:
         if not isinstance(care_site_short_names, list):
             care_site_short_names = [care_site_short_names]
         care_site_filter.append(
-            care_site[care_site["care_site_short_name"].isin(care_site_short_names)][
-                ["care_site_id", "care_site_level"]
-            ]
+            care_site[care_site["care_site_short_name"].isin(care_site_short_names)]
         )
-    if care_site_specialties:
-        if not isinstance(care_site_specialties, list):
-            care_site_specialties = [care_site_specialties]
-        care_site_filter.append(
-            care_site[care_site["care_site_specialty"].isin(care_site_specialties)][
-                ["care_site_id", "care_site_level"]
-            ]
-        )
+
     if care_site_filter:
         care_site_filter = pd.concat(
             care_site_filter, ignore_index=True
         ).drop_duplicates()
+        extended_care_site_id_to_filter = get_child_and_parent_cs(
+            care_site_sample=care_site_filter,
+            care_site_relationship=care_site_relationship,
+        )
     else:
-        raise Exception(
-            "care_site_ids or care_site_short_names or care_site_specialties must be provided"
-        )
-    extended_care_site_id_to_filter = []
+        extended_care_site_id_to_filter = care_site.copy()
 
-    # Parent care site to get
-    parent_rel = care_site_relationship[
-        ~care_site_relationship.parent_care_site_id.isna()
-    ][
-        [
-            "care_site_id",
-            "parent_care_site_id",
-            "parent_care_site_level",
+    if care_site_specialties:
+        if not isinstance(care_site_specialties, list):
+            care_site_specialties = [care_site_specialties]
+        extended_care_site_id_to_filter = extended_care_site_id_to_filter[
+            extended_care_site_id_to_filter["care_site_specialty"].isin(
+                care_site_specialties
+            )
         ]
-    ]
-    parent_care_site_filter = care_site_filter.copy()
-    while set(parent_care_site_filter.care_site_level.unique()).intersection(
-        CARE_SITE_LEVEL_NAMES.values()
-    ):
-        extended_care_site_id_to_filter.append(
-            parent_care_site_filter[["care_site_id", "care_site_level"]]
-        )
-        parent_care_site_filter = parent_care_site_filter.merge(
-            parent_rel,
-            on="care_site_id",
-        )[
-            [
-                "parent_care_site_id",
-                "parent_care_site_level",
-            ]
-        ].rename(
-            columns={
-                "parent_care_site_id": "care_site_id",
-                "parent_care_site_level": "care_site_level",
-            }
+        extended_care_site_id_to_filter = get_child_and_parent_cs(
+            care_site_sample=extended_care_site_id_to_filter,
+            care_site_relationship=care_site_relationship,
         )
 
-    # Child care site to get
-    child_rel = care_site_relationship[~care_site_relationship.care_site_id.isna()][
-        [
-            "care_site_id",
-            "care_site_level",
-            "parent_care_site_id",
-        ]
-    ].rename(
-        columns={
-            "care_site_id": "child_care_site_id",
-            "care_site_level": "child_care_site_level",
-            "parent_care_site_id": "care_site_id",
-        }
-    )
-    child_care_site_filter = care_site_filter.copy()
-    while set(child_care_site_filter.care_site_level.unique()).intersection(
-        CARE_SITE_LEVEL_NAMES.values()
-    ):
-        extended_care_site_id_to_filter.append(
-            child_care_site_filter[["care_site_id", "care_site_level"]]
-        )
-        child_care_site_filter = child_care_site_filter.merge(
-            child_rel,
-            on="care_site_id",
-        )[
-            [
-                "child_care_site_id",
-                "child_care_site_level",
-            ]
-        ].rename(
-            columns={
-                "child_care_site_id": "care_site_id",
-                "child_care_site_level": "care_site_level",
-            }
-        )
-
-    extended_care_site_id_to_filter = pd.concat(
-        extended_care_site_id_to_filter
-    ).drop_duplicates()
     extended_care_site_id_to_filter = list(
         extended_care_site_id_to_filter[
             (

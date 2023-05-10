@@ -37,6 +37,7 @@ def compute_completeness_predictor_per_note(
     stay_durations: List[float],
     note_types: Union[str, Dict[str, str]],
     hdfs_user_path: str,
+    **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
@@ -79,7 +80,7 @@ def compute_completeness_predictor_per_note(
 
     # UF selection
     if not hospital_only(care_site_levels=care_site_levels):
-        if extra_data:
+        if extra_data:  # pragma: no cover
             note_uf, note_uc, note_uh = get_note_detail(
                 extra_data,
                 note,

@@ -43,7 +43,7 @@ def set_env_variables() -> None:
         if LooseVersion(pyarrow.__version__) >= LooseVersion("0.15"):
             os.environ["ARROW_PRE_0_15_IPC_FORMAT"] = "1"
 
-    if LooseVersion(pyarrow.__version__) >= LooseVersion("2.0.0"):
+    if LooseVersion(pyarrow.__version__) >= LooseVersion("2.0.0"):  # pragma: no cover
         os.environ["PYARROW_IGNORE_TIMEZONE"] = "0"
 
 

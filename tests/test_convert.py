@@ -53,7 +53,7 @@ def test_framework_koalas(example_objects):
         assert converted is obj
 
 
-def test_unconvertible_objects():
+def test_unconvertible_objects(example_objects):
     objects = [1, "coucou", {"a": [1, 2]}, [1, 2, 3], 2.5, ks, pd]
     for obj in objects:
         with pytest.raises(ValueError):
@@ -62,3 +62,6 @@ def test_unconvertible_objects():
     for obj in objects:
         with pytest.raises(ValueError):
             framework.koalas(obj)
+
+    with pytest.raises(ValueError):
+        framework.to("Koala", example_objects["pandas"])

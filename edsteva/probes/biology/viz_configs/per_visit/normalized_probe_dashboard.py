@@ -1,5 +1,3 @@
-from edsteva.probes.biology.viz_configs import normalized_probe_dashboard
-
 from .defaults import (
     chart_style,
     error_line,
@@ -10,7 +8,6 @@ from .defaults import (
 )
 
 
-@normalized_probe_dashboard.register("per_measurement_default")
 def get_normalized_probe_dashboard_config(self):
     horizontal_bar_charts = get_horizontal_bar_charts(
         standard_terminologies=self._standard_terminologies.copy()

@@ -123,7 +123,6 @@ def prepare_measurement(
     measurement = measurement.merge(
         biology_relationship, on="{}_concept_id".format(root_terminology)
     )
-
     if not per_visit:
         measurement = filter_table_by_date(
             table=measurement,
@@ -159,7 +158,7 @@ def prepare_condition_occurrence(
     end_date: datetime = None,
 ):
     condition_occurrence_tables = []
-    if "AREM" in source_systems:
+    if "AREM" in source_systems:  # pragma: no cover
         check_tables(
             data=extra_data,
             required_tables=["visit_occurrence", "condition_occurrence"],
@@ -359,7 +358,7 @@ def prepare_note(
     return note
 
 
-def prepare_note_care_site(extra_data: Data, note: DataFrame):
+def prepare_note_care_site(extra_data: Data, note: DataFrame):  # pragma: no cover
     check_tables(
         data=extra_data,
         required_tables=["note_ref", "care_site_ref"],

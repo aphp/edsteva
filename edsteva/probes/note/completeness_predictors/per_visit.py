@@ -38,6 +38,7 @@ def compute_completeness_predictor_per_visit(
     stay_durations: List[float],
     note_types: Union[str, Dict[str, str]],
     hdfs_user_path: str,
+    **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
@@ -78,7 +79,7 @@ def compute_completeness_predictor_per_visit(
 
     # UF selection
     if not hospital_only(care_site_levels=care_site_levels):
-        if extra_data:
+        if extra_data:  # pragma: no cover
             visit_detail = prepare_visit_detail(data, start_date, end_date)
 
             uf_visit, uc_visit, uh_visit = get_visit_detail(
@@ -153,6 +154,14 @@ def compute_completeness(
         note_predictor["n_visit"] == 0,
         note_predictor["n_visit_with_note"] / note_predictor["n_visit"],
     )
+
+    # Impute missing note type for visit without note
+    if "note_type" in note_predictor.columns:
+        for note_type in note_predictor.note_type.dropna().unique():
+            missing_note = note_predictor[note_predictor.note_type.isna()].copy()
+            missing_note["note_type"] = note_type
+            note_predictor = pd.concat([note_predictor, missing_note])
+        note_predictor = note_predictor[~note_predictor.note_type.isna()]
 
     return note_predictor
 

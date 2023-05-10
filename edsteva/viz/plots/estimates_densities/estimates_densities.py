@@ -159,7 +159,7 @@ def estimates_densities_plot(
             quantitative_estimates.append(estimate_density)
 
         else:
-            estimates[estimate] = estimates[estimate].astype("datetime64[s]")
+            estimates[estimate] = estimates[estimate].astype("datetime64[ns]")
             estimate_density = (
                 (
                     alt.Chart(estimates)

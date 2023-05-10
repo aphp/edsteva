@@ -33,6 +33,7 @@ def compute_completeness_predictor_per_visit(
     specialties_sets: Union[str, Dict[str, str]],
     stay_durations: List[float],
     hdfs_user_path: str,
+    **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 

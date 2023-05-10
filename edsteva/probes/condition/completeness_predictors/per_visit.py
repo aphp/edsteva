@@ -39,6 +39,7 @@ def compute_completeness_predictor_per_visit(
     source_systems: List[str],
     stay_durations: List[float],
     hdfs_user_path: str,
+    **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
@@ -56,7 +57,7 @@ def compute_completeness_predictor_per_visit(
     check_condition_source_systems(source_systems=source_systems)
     if "AREM" in source_systems and not hospital_only(
         care_site_levels=care_site_levels
-    ):
+    ):  # pragma: no cover
         logger.info("AREM claim data are only available at hospital level")
 
     visit_occurrence = prepare_visit_occurrence(
@@ -162,6 +163,23 @@ def compute_completeness(
         condition_predictor["n_visit"] == 0,
         condition_predictor["n_visit_with_condition"] / condition_predictor["n_visit"],
     )
+
+    # Impute missing diag type, condition type and source for visit without condition
+    missing_column = list(
+        set(condition_predictor.columns).intersection(
+            set(["diag_type", "condition_type", "source_system"])
+        )
+    )
+    missing_condition = condition_predictor[
+        condition_predictor.n_visit_with_condition == 0
+    ].copy()
+    condition_predictor = condition_predictor[
+        condition_predictor.n_visit_with_condition > 0
+    ]
+    for partition, _ in condition_predictor.groupby(missing_column):
+        for i in range(len(missing_column)):
+            missing_condition[missing_column[i]] = partition[i]
+        condition_predictor = pd.concat([condition_predictor, missing_condition])
 
     return condition_predictor
 

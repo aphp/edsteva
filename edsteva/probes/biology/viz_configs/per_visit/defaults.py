@@ -20,16 +20,16 @@ vertical_bar_charts = dict(
     y=[
         dict(
             y=alt.Y(
-                "sum(n_measurement):Q",
-                title="Number of measurements",
+                "sum(n_visit):Q",
+                title="Number of administrative records",
                 axis=alt.Axis(format="s"),
             ),
             tooltip=alt.Tooltip(
-                "sum(n_measurement):Q",
+                "sum(n_visit):Q",
                 format=",",
             ),
             sort={
-                "field": "n_measurement",
+                "field": "n_visit",
                 "op": "sum",
                 "order": "descending",
             },
@@ -69,16 +69,16 @@ def get_horizontal_bar_charts(standard_terminologies: List[str]):
         x=[
             dict(
                 x=alt.X(
-                    "sum(n_measurement):Q",
-                    title="Number of measurements",
+                    "sum(n_visit):Q",
+                    title="Number of administrative records",
                     axis=alt.Axis(format="s"),
                 ),
                 tooltip=alt.Tooltip(
-                    "sum(n_measurement):Q",
+                    "sum(n_visit):Q",
                     format=",",
                 ),
                 sort={
-                    "field": "n_measurement",
+                    "field": "n_visit",
                     "op": "sum",
                     "order": "descending",
                 },
@@ -90,16 +90,16 @@ def get_horizontal_bar_charts(standard_terminologies: List[str]):
 main_chart = dict(
     aggregates=[
         dict(
-            sum_measurement="sum(n_measurement)",
+            sum_visit="sum(n_visit)",
             groupby=["value", "date"],
         ),
         dict(
-            max_measurement="max(sum_measurement)",
+            max_visit="max(sum_visit)",
             groupby=["value"],
         ),
     ],
     calculates=[
-        dict(completeness=alt.datum.sum_measurement / alt.datum.max_measurement),
+        dict(completeness=alt.datum.sum_visit / alt.datum.max_visit),
     ],
     encode=dict(
         x=alt.X(
@@ -114,7 +114,7 @@ main_chart = dict(
         ),
         color=alt.Color(
             "value:N",
-            sort={"field": "n_measurement", "op": "sum", "order": "descending"},
+            sort={"field": "n_visit", "op": "sum", "order": "descending"},
             title=None,
         ),
     ),
@@ -127,19 +127,16 @@ main_chart = dict(
 normalized_main_chart = dict(
     aggregates=[
         dict(
-            sum_measurement="sum(n_measurement)",
+            sum_visit="sum(n_visit)",
             groupby=["value", "date"],
         ),
         dict(
-            max_measurement="max(sum_measurement)",
+            max_visit="max(sum_visit)",
             groupby=["value"],
         ),
     ],
     calculates=[
-        dict(
-            normalized_c=(alt.datum.sum_measurement / alt.datum.max_measurement)
-            / alt.datum.c_0
-        )
+        dict(normalized_c=(alt.datum.sum_visit / alt.datum.max_visit) / alt.datum.c_0)
     ],
     legend_title="Mean",
     encode=dict(
@@ -155,7 +152,7 @@ normalized_main_chart = dict(
         ),
         color=alt.Color(
             "value:N",
-            sort={"field": "n_measurement", "op": "sum", "order": "descending"},
+            sort={"field": "n_visit", "op": "sum", "order": "descending"},
             title=None,
         ),
     ),
@@ -173,8 +170,8 @@ normalized_time_line = dict(
             scale=alt.Scale(nice=False),
         ),
         y=alt.Y(
-            "sum(n_measurement):Q",
-            title="Number of measurements",
+            "sum(n_visit):Q",
+            title="Number of administrative records",
             axis=alt.Axis(format="s"),
         ),
     ),
@@ -192,8 +189,8 @@ time_line = dict(
             axis=alt.Axis(tickCount="month", labelAngle=0, grid=True),
         ),
         y=alt.Y(
-            "sum(n_measurement):Q",
-            title="Number of measurements",
+            "sum(n_visit):Q",
+            title="Number of administrative records",
             axis=alt.Axis(format="s"),
         ),
     ),

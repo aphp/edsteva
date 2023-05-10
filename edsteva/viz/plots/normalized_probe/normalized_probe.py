@@ -103,7 +103,7 @@ def normalized_probe_plot(
 
     probe_config = deepcopy(probe.get_viz_config("normalized_probe_plot"))
     model_config = deepcopy(
-        fitted_model.get_viz_config("normalized_probe_dashboard", predictor=predictor)
+        fitted_model.get_viz_config("normalized_probe_plot", predictor=predictor)
     )
     if not probe_line_config:
         probe_line_config = model_config["probe_line"]

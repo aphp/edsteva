@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+import pandas as pd
 from loguru import logger
 
 from edsteva.utils.framework import get_framework
@@ -84,3 +85,93 @@ def concatenate_predictor_by_level(
         )
 
     return get_framework(predictors_to_concat[0]).concat(predictors_to_concat)
+
+
+def get_child_and_parent_cs(
+    care_site_sample: DataFrame, care_site_relationship: DataFrame
+):
+    extended_care_site_id_to_filter = []
+
+    # Parent care site to get
+    parent_rel = care_site_relationship[
+        ~care_site_relationship.parent_care_site_id.isna()
+    ][
+        [
+            "care_site_id",
+            "parent_care_site_id",
+            "parent_care_site_level",
+            "parent_care_site_specialty",
+        ]
+    ]
+    parent_care_site_filter = care_site_sample.copy()
+    while set(parent_care_site_filter.care_site_level.unique()).intersection(
+        CARE_SITE_LEVEL_NAMES.values()
+    ):
+        extended_care_site_id_to_filter.append(
+            parent_care_site_filter[
+                ["care_site_id", "care_site_level", "care_site_specialty"]
+            ]
+        )
+        parent_care_site_filter = parent_care_site_filter.merge(
+            parent_rel,
+            on="care_site_id",
+        )[
+            [
+                "parent_care_site_id",
+                "parent_care_site_level",
+                "parent_care_site_specialty",
+            ]
+        ].rename(
+            columns={
+                "parent_care_site_id": "care_site_id",
+                "parent_care_site_level": "care_site_level",
+                "parent_care_site_specialty": "care_site_specialty",
+            }
+        )
+
+    # Child care site to get
+    child_rel = care_site_relationship[~care_site_relationship.care_site_id.isna()][
+        [
+            "care_site_id",
+            "care_site_level",
+            "care_site_specialty",
+            "parent_care_site_id",
+        ]
+    ].rename(
+        columns={
+            "care_site_id": "child_care_site_id",
+            "care_site_level": "child_care_site_level",
+            "care_site_specialty": "child_care_site_specialty",
+            "parent_care_site_id": "care_site_id",
+        }
+    )
+    child_care_site_filter = care_site_sample.copy()
+    while set(child_care_site_filter.care_site_level.unique()).intersection(
+        CARE_SITE_LEVEL_NAMES.values()
+    ):
+        extended_care_site_id_to_filter.append(
+            child_care_site_filter[
+                ["care_site_id", "care_site_level", "care_site_specialty"]
+            ]
+        )
+        child_care_site_filter = child_care_site_filter.merge(
+            child_rel,
+            on="care_site_id",
+        )[
+            [
+                "child_care_site_id",
+                "child_care_site_level",
+                "child_care_site_specialty",
+            ]
+        ].rename(
+            columns={
+                "child_care_site_id": "care_site_id",
+                "child_care_site_level": "care_site_level",
+                "child_care_site_specialty": "care_site_specialty",
+            }
+        )
+
+    extended_care_site_id_to_filter = pd.concat(
+        extended_care_site_id_to_filter
+    ).drop_duplicates()
+    return extended_care_site_id_to_filter

@@ -81,14 +81,30 @@ def probe_dashboard(
     alt.data_transformers.disable_max_rows()
 
     probe_config = deepcopy(probe.get_viz_config("probe_dashboard"))
+    if fitted_model:
+        model_config = deepcopy(fitted_model.get_viz_config("probe_dashboard"))
+        if not model_line_config:
+            model_line_config = model_config["model_line"]
+        if not probe_line_config:
+            probe_line_config = model_config["probe_line"]
     if not main_chart_config:
         main_chart_config = probe_config["main_chart"]
     if not time_line_config:
         time_line_config = probe_config["time_line"]
     if not vertical_bar_charts_config:
         vertical_bar_charts_config = probe_config["vertical_bar_charts"]
+        if fitted_model:
+            vertical_bar_charts_config["y"] = (
+                vertical_bar_charts_config["y"]
+                + model_config["extra_vertical_bar_charts"]
+            )
     if not horizontal_bar_charts_config:
         horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
+        if fitted_model:
+            horizontal_bar_charts_config["x"] = (
+                horizontal_bar_charts_config["x"]
+                + model_config["extra_horizontal_bar_charts"]
+            )
     if not chart_style:
         chart_style = probe_config["chart_style"]
 
@@ -103,21 +119,6 @@ def probe_dashboard(
     )
 
     if fitted_model:
-        model_config = deepcopy(fitted_model.get_viz_config("probe_dashboard"))
-        if not model_line_config:
-            model_line_config = model_config["model_line"]
-        if not probe_line_config:
-            probe_line_config = model_config["probe_line"]
-        if not vertical_bar_charts_config:
-            vertical_bar_charts_config["y"] = (
-                vertical_bar_charts_config["y"]
-                + model_config["extra_vertical_bar_charts"]
-            )
-        if not horizontal_bar_charts_config:
-            horizontal_bar_charts_config["x"] = (
-                horizontal_bar_charts_config["x"]
-                + model_config["extra_horizontal_bar_charts"]
-            )
         chart = fitted_probe_dashboard(
             predictor=predictor,
             legend_predictor=legend_predictor,

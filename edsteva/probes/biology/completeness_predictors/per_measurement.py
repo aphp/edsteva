@@ -37,6 +37,7 @@ def compute_completeness_predictor_per_measurement(
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
     hdfs_user_path: str,
+    **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
