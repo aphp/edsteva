@@ -76,7 +76,7 @@ def _compute_one_threshold(
 ):
     target = group[[x_col, y_col]].values
     best_loss, best_x0, best_y0 = np.inf, None, None
-    for idx in range(1, len(target)):
+    for idx in range(len(target)):
         x0 = target[idx, 0]
         y_before_x0 = target[:idx, 1]
         y_after_x0 = target[idx:, 1]

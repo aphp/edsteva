@@ -82,7 +82,7 @@ def _compute_one_double_threshold(
     target = group[[x_col, y_col]].values
     best_x0 = best_y0 = best_x1 = None
     best_loss = np.inf
-    for idx in range(1, len(target) - min_rect_month_width):
+    for idx in range(len(target) - min_rect_month_width):
         x0 = target[idx, 0]
         y_before_x0 = target[:idx, 1]
         for jdx in range(idx + min_rect_month_width, len(target)):
