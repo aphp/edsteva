@@ -168,10 +168,11 @@ def compute_completeness(
         biology_predictor.n_visit_with_measurement > 0
     ]
     for partition, _ in biology_predictor.groupby(missing_column):
-        for i in range(len(missing_column)):
-            missing_measurement[missing_column[i]] = partition[i]
+        missing_measurement[missing_column] = partition
         biology_predictor = pd.concat([biology_predictor, missing_measurement])
-
+    biology_predictor = biology_predictor.drop_duplicates(
+        subset=self._index.copy() + ["date"], keep="first"
+    )
     return biology_predictor
 
 

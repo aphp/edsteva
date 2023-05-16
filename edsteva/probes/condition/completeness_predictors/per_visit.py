@@ -99,15 +99,19 @@ def compute_completeness_predictor_per_visit(
         visit_detail = prepare_visit_detail(data, start_date, end_date)
 
         uf_visit = get_uf_visit(
-            condition_occurrence,
-            visit_occurrence,
-            visit_detail,
-            care_site,
+            condition_occurrence=condition_occurrence,
+            visit_occurrence=visit_occurrence,
+            visit_detail=visit_detail,
+            care_site=care_site,
         )
         uf_name = CARE_SITE_LEVEL_NAMES["UF"]
         condition_predictor_by_level[uf_name] = uf_visit
 
-        pole_visit = get_pole_visit(uf_visit, care_site, care_site_relationship)
+        pole_visit = get_pole_visit(
+            uf_visit=uf_visit,
+            care_site=care_site,
+            care_site_relationship=care_site_relationship,
+        )
         pole_name = CARE_SITE_LEVEL_NAMES["Pole"]
         condition_predictor_by_level[pole_name] = pole_visit
 
@@ -177,10 +181,11 @@ def compute_completeness(
         condition_predictor.n_visit_with_condition > 0
     ]
     for partition, _ in condition_predictor.groupby(missing_column):
-        for i in range(len(missing_column)):
-            missing_condition[missing_column[i]] = partition[i]
+        missing_condition[missing_column] = partition
         condition_predictor = pd.concat([condition_predictor, missing_condition])
-
+    condition_predictor = condition_predictor.drop_duplicates(
+        subset=self._index.copy() + ["date"], keep="first"
+    )
     return condition_predictor
 
 
@@ -232,13 +237,13 @@ def get_uf_visit(
         visit_occurrence[["visit_occurrence_id", "stay_type", "length_of_stay"]],
         on="visit_occurrence_id",
     )
-    visit_detail = visit_detail.merge(
+    uf_visit = visit_detail.merge(
         condition_uf,
         on="visit_id",
         how="left",
     ).drop(columns=["visit_occurrence_id"])
 
-    uf_visit = visit_detail.merge(care_site, on="care_site_id")
+    uf_visit = uf_visit.merge(care_site, on="care_site_id")
 
     uf_name = CARE_SITE_LEVEL_NAMES["UF"]
     uf_visit = uf_visit[uf_visit["care_site_level"] == uf_name]
