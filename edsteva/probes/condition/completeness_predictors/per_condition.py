@@ -38,7 +38,6 @@ def compute_completeness_predictor_per_condition(
     condition_types: Union[str, Dict[str, str]],
     source_systems: List[str],
     stay_durations: List[float],
-    hdfs_user_path: str,
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -122,15 +121,12 @@ def compute_completeness_predictor_per_condition(
         care_site_levels=care_site_levels,
     )
 
-    return compute_completeness(
-        self, condition_predictor, hdfs_user_path=hdfs_user_path
-    )
+    return compute_completeness(self, condition_predictor)
 
 
 def compute_completeness(
     self,
     condition_predictor: DataFrame,
-    hdfs_user_path: str,
 ):
     partition_cols = self._index.copy() + ["date"]
 
@@ -143,7 +139,7 @@ def compute_completeness(
         .agg({"condition_occurrence_id": "nunique"})
         .rename(columns={"condition_occurrence_id": "n_condition"})
     )
-    n_condition = to("pandas", n_condition, hdfs_user_path=hdfs_user_path)
+    n_condition = to("pandas", n_condition)
 
     partition_cols = list(set(partition_cols) - {"date"})
     max_n_condition = (

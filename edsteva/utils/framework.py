@@ -3,7 +3,7 @@ from types import ModuleType
 from typing import Optional
 
 import pandas as _pandas
-import pyarrow as pa
+import pyarrow.parquet as pq
 from databricks import koalas as _koalas
 from loguru import logger
 
@@ -31,39 +31,32 @@ def is_koalas(obj: DataObject) -> bool:
     return get_framework(obj) == _koalas
 
 
-def to(framework: str, obj: DataObject, hdfs_user_path: str = None) -> DataObject:
+def to(framework: str, obj: DataObject) -> DataObject:
     if framework == "koalas" or framework is _koalas:
         return koalas(obj)
     elif framework == "pandas" or framework is _pandas:
-        return pandas(obj, hdfs_user_path)
+        return pandas(obj)
     else:
         raise ValueError(f"Unknown framework: {framework}")
 
 
-def pandas(obj: DataObject, hdfs_user_path: str = None) -> DataObject:
+def pandas(obj: DataObject) -> DataObject:
     if get_framework(obj) is _pandas:
         return obj
-    elif hdfs_user_path:  # pragma: no cover
-        parquet_path = hdfs_user_path + "/object.parquet"
-        try:
-            obj.to_parquet(parquet_path)
-            obj = pa.parquet.read_table(parquet_path)
-        except Exception as e:
-            logger.warning(
-                "Cannot convert object to parquet. It will skip this step and convert directly to pandas if possible. /n Following error: {}",
-                e,
-            )
 
+    # Try using pyarrow via HDFS to convert object to pandas as it is way faster.
+    user = os.environ["USER"]
+    parquet_path = f"hdfs://bbsedsi/user/{user}/temp.parquet"
     try:
-        error = False
-        pandas_obj = obj.to_pandas()
-    except AttributeError:
-        error = True
-    if hdfs_user_path and os.path.exists(parquet_path):  # pragma: no cover
-        os.remove(parquet_path)
-    if error:
-        raise ValueError("Could not convert object to pandas.")
+        obj.to_parquet(parquet_path)
+        obj = pq.read_table(parquet_path)
+    except Exception as e:
+        logger.debug(
+            "Cannot convert object to parquet. It will skip this step and convert directly to pandas if possible. /n Following error: {}",
+            e,
+        )
 
+    pandas_obj = obj.to_pandas()
     return pandas_obj
 
 

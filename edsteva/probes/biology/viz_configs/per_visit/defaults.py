@@ -94,12 +94,12 @@ main_chart = dict(
             groupby=["value", "date"],
         ),
         dict(
-            max_visit="max(sum_visit)",
-            groupby=["value"],
+            sum_visit_with_measurement="sum(n_visit_with_measurement)",
+            groupby=["value", "date"],
         ),
     ],
     calculates=[
-        dict(completeness=alt.datum.sum_visit / alt.datum.max_visit),
+        dict(completeness=alt.datum.sum_visit_with_measurement / alt.datum.sum_visit),
     ],
     encode=dict(
         x=alt.X(
@@ -131,12 +131,15 @@ normalized_main_chart = dict(
             groupby=["value", "date"],
         ),
         dict(
-            max_visit="max(sum_visit)",
-            groupby=["value"],
+            sum_visit_with_measurement="sum(n_visit_with_measurement)",
+            groupby=["value", "date"],
         ),
     ],
     calculates=[
-        dict(normalized_c=(alt.datum.sum_visit / alt.datum.max_visit) / alt.datum.c_0)
+        dict(
+            normalized_c=(alt.datum.sum_visit_with_measurement / alt.datum.sum_visit)
+            / alt.datum.c_0
+        )
     ],
     legend_title="Mean",
     encode=dict(

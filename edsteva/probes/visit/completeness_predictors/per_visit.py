@@ -32,7 +32,6 @@ def compute_completeness_predictor_per_visit(
     care_site_specialties: List[str],
     specialties_sets: Union[str, Dict[str, str]],
     stay_durations: List[float],
-    hdfs_user_path: str,
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -110,13 +109,12 @@ def compute_completeness_predictor_per_visit(
         care_site_levels=care_site_levels,
     )
 
-    return compute_completeness(self, visit_predictor, hdfs_user_path)
+    return compute_completeness(self, visit_predictor)
 
 
 def compute_completeness(
     self,
     visit_predictor: DataFrame,
-    hdfs_user_path: str,
 ):
     partition_cols = self._index.copy() + ["date"]
 
@@ -130,7 +128,7 @@ def compute_completeness(
         .rename(columns={"visit_id": "n_visit"})
     )
 
-    n_visit = to("pandas", n_visit, hdfs_user_path=hdfs_user_path)
+    n_visit = to("pandas", n_visit)
 
     partition_cols = list(set(partition_cols) - {"date"})
     max_n_visit = (

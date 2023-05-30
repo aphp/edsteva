@@ -25,7 +25,9 @@ def filter_table_by_type(
         table_per_types = []
         for type_name, type_value in type_groups.items():
             table_per_type_element = table[
-                table[source_col].str.contains(
+                table[source_col]
+                .astype(str)
+                .str.contains(
                     type_value,
                     case=False,
                     regex=True,

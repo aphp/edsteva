@@ -69,7 +69,6 @@ class ConditionProbe(BaseProbe):
         condition_types: Union[str, Dict[str, str]] = None,
         source_systems: List[str] = ["ORBIS"],
         stay_durations: List[float] = None,
-        hdfs_user_path: str = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -104,8 +103,6 @@ class ConditionProbe(BaseProbe):
             **EXAMPLE**: `["AREM", "ORBIS"]`
         stay_durations : List[float], optional
             **EXAMPLE**: `[1, 30]`
-        hdfs_user_path : str, optional
-            **EXAMPLE**: `"hdfs://bbsedsi/user/<username>"`
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
@@ -128,7 +125,6 @@ class ConditionProbe(BaseProbe):
             stay_durations=stay_durations,
             condition_types=condition_types,
             source_systems=source_systems,
-            hdfs_user_path=hdfs_user_path,
             **kwargs,
         )
 

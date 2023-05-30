@@ -69,7 +69,6 @@ class NoteProbe(BaseProbe):
             "Ordonnance": "ordo",
             "CRH": "crh",
         },
-        hdfs_user_path: str = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -104,8 +103,6 @@ class NoteProbe(BaseProbe):
             **EXAMPLE**: `[1, 30]`
         note_types : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"CRH": "crh", "Urgence": "urge"}`
-        hdfs_user_path : str, optional
-            **EXAMPLE**: `"hdfs://bbsedsi/user/<username>"`
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
@@ -126,7 +123,6 @@ class NoteProbe(BaseProbe):
             specialties_sets=specialties_sets,
             note_types=note_types,
             stay_durations=stay_durations,
-            hdfs_user_path=hdfs_user_path,
             **kwargs,
         )
 

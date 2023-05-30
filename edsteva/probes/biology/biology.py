@@ -78,13 +78,14 @@ class BiologyProbe(BaseProbe):
         care_site_ids: List[int],
         care_site_short_names: List[str] = None,
         care_site_specialties: List[str] = None,
+        concept_codes: List[str] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
         concepts_sets: Union[str, Dict[str, str]] = {
             "Leucocytes": "A0174|K3232|H6740|E4358|C9784|C8824|E6953",
             "Plaquettes": "E4812|C0326|A1636|A0230|H6751|A1598|G7728|G7727|G7833|A2538|A2539|J4463",
             "Créatinine": "E3180|G1974|J1002|A7813|A0094|G1975|J1172|G7834|F9409|F9410|C0697|H4038|F2621",
             "Potassium": "A1656|C8757|C8758|A2380|E2073|L5014|F2618|E2337|J1178|A3819|J1181",
-            "Sodium": "A1772|C8759|C8760|A0262|J1177|F8162|L5013|F2617|K9086|J1180 ",
+            "Sodium": "A1772|C8759|C8760|A0262|J1177|F8162|L5013|F2617|K9086|J1180",
             "Chlorure": "B5597|F2359|A0079|J1179|F2619|J1182|F2358|A0079|J1179|F2619|J1182",
             "Glucose": "A1245|E7961|C8796|H7753|A8029|H7749|A0141|H7323|J7401|F2622|B9553|C7236|E7312|G9557|A7338|H7324|C0565|E9889|A8424|F6235|F5659|F2406",
             "Bicarbonate": "A0422|H9622|C6408|F4161",
@@ -103,7 +104,6 @@ class BiologyProbe(BaseProbe):
             ("GLIMS_ANABIO", "ANABIO_ITM", "Mapped from"),
             ("ANABIO_ITM", "LOINC_ITM", "Maps to"),
         ],
-        hdfs_user_path: str = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -140,13 +140,16 @@ class BiologyProbe(BaseProbe):
         mapping : List[Tuple[str, str, str]], optional
             List of values to filter in the column `relationship_id` in order to map between 2 terminologies.
             **EXAMPLE**: `[("ANALYSES_LABORATOIRE", "GLIMS_ANABIO", "Maps to")]`
-        hdfs_user_path : str, optional
-            **EXAMPLE**: `"hdfs://bbsedsi/user/<username>"`
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
         if concepts_sets is None and "concepts_set" in self._index:
             self._index.remove("concepts_set")
+        else:
+            for terminology in self._standard_terminologies:
+                if "{}_concept_code".format(terminology) in self._index:
+                    self._index.remove("{}_concept_code".format(terminology))
+
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -158,12 +161,12 @@ class BiologyProbe(BaseProbe):
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
             care_site_specialties=care_site_specialties,
+            concept_codes=concept_codes,
             specialties_sets=specialties_sets,
             concepts_sets=concepts_sets,
             stay_durations=stay_durations,
             source_terminologies=source_terminologies,
             mapping=mapping,
-            hdfs_user_path=hdfs_user_path,
             **kwargs,
         )
 

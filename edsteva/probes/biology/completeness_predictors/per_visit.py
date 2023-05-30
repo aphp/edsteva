@@ -31,12 +31,12 @@ def compute_completeness_predictor_per_visit(
     care_site_ids: List[int],
     care_site_short_names: List[str],
     care_site_specialties: List[str],
+    concept_codes: List[str],
     specialties_sets: Union[str, Dict[str, str]],
     concepts_sets: Union[str, Dict[str, str]],
     stay_durations: List[float],
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
-    hdfs_user_path: str,
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -75,6 +75,7 @@ def compute_completeness_predictor_per_visit(
     measurement = prepare_measurement(
         data=data,
         biology_relationship=biology_relationship,
+        concept_codes=concept_codes,
         concepts_sets=concepts_sets,
         root_terminology=root_terminology,
         standard_terminologies=standard_terminologies,
@@ -91,10 +92,10 @@ def compute_completeness_predictor_per_visit(
     )
 
     hospital_visit = get_hospital_visit(
+        self,
         measurement=measurement,
         visit_occurrence=visit_occurrence,
         care_site=care_site,
-        standard_terminologies=standard_terminologies,
     )
     hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
     biology_predictor_by_level = {hospital_name: hospital_visit}
@@ -110,13 +111,12 @@ def compute_completeness_predictor_per_visit(
         care_site_levels=care_site_levels,
     )
 
-    return compute_completeness(self, biology_predictor, hdfs_user_path)
+    return compute_completeness(self, biology_predictor)
 
 
 def compute_completeness(
     self,
     biology_predictor: DataFrame,
-    hdfs_user_path: str = None,
 ):
     partition_cols = self._index.copy() + ["date"]
     n_visit_with_measurement = (
@@ -150,7 +150,7 @@ def compute_completeness(
         on=partition_cols,
     )
 
-    biology_predictor = to("pandas", biology_predictor, hdfs_user_path=hdfs_user_path)
+    biology_predictor = to("pandas", biology_predictor)
 
     biology_predictor["c"] = biology_predictor["n_visit"].where(
         biology_predictor["n_visit"] == 0,
@@ -177,24 +177,14 @@ def compute_completeness(
 
 
 def get_hospital_visit(
+    self,
     measurement: DataFrame,
     visit_occurrence: DataFrame,
     care_site: DataFrame,
-    standard_terminologies: List[str],
 ):
     hospital_measurement = measurement[
         set(measurement.columns).intersection(
-            set(
-                ["visit_occurrence_id", "concepts_set"]
-                + [
-                    "{}_concept_code".format(terminology)
-                    for terminology in standard_terminologies
-                ]
-                + [
-                    "{}_concept_name".format(terminology)
-                    for terminology in standard_terminologies
-                ]
-            )
+            set(["visit_occurrence_id"] + self._index)
         )
     ].drop_duplicates()
     hospital_measurement["has_measurement"] = True

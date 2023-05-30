@@ -62,7 +62,6 @@ class VisitProbe(BaseProbe):
         care_site_specialties: List[str] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
         stay_durations: List[float] = None,
-        hdfs_user_path: str = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -91,8 +90,6 @@ class VisitProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
         stay_durations : List[float], optional
             **EXAMPLE**: `[1, 30]`
-        hdfs_user_path : str, optional
-            **EXAMPLE**: `"hdfs://bbsedsi/user/<username>"`
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
@@ -109,7 +106,6 @@ class VisitProbe(BaseProbe):
             care_site_specialties=care_site_specialties,
             specialties_sets=specialties_sets,
             stay_durations=stay_durations,
-            hdfs_user_path=hdfs_user_path,
             **kwargs,
         )
 

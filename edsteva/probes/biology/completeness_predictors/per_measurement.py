@@ -31,12 +31,12 @@ def compute_completeness_predictor_per_measurement(
     care_site_ids: List[int],
     care_site_short_names: List[str],
     care_site_specialties: List[str],
+    concept_codes: List[str],
     specialties_sets: Union[str, Dict[str, str]],
     concepts_sets: Union[str, Dict[str, str]],
     stay_durations: List[float],
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
-    hdfs_user_path: str,
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -68,6 +68,7 @@ def compute_completeness_predictor_per_measurement(
     measurement = prepare_measurement(
         data=data,
         biology_relationship=biology_relationship,
+        concept_codes=concept_codes,
         concepts_sets=concepts_sets,
         start_date=start_date,
         end_date=end_date,
@@ -112,13 +113,12 @@ def compute_completeness_predictor_per_measurement(
         care_site_levels=care_site_levels,
     )
 
-    return compute_completeness(self, biology_predictor, hdfs_user_path)
+    return compute_completeness(self, biology_predictor)
 
 
 def compute_completeness(
     self,
     biology_predictor: DataFrame,
-    hdfs_user_path: str = None,
 ):
     partition_cols = self._index.copy() + ["date"]
     n_measurement = (
@@ -131,7 +131,7 @@ def compute_completeness(
         .rename(columns={"measurement_id": "n_measurement"})
     )
 
-    n_measurement = to("pandas", n_measurement, hdfs_user_path=hdfs_user_path)
+    n_measurement = to("pandas", n_measurement)
     partition_cols = list(set(partition_cols) - {"date"})
     q_99_measurement = (
         n_measurement.groupby(

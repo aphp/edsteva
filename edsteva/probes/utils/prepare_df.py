@@ -76,6 +76,7 @@ def prepare_visit_occurrence(
 def prepare_measurement(
     data: Data,
     biology_relationship: pd.DataFrame,
+    concept_codes: List[str],
     concepts_sets: Union[str, Dict[str, str]],
     root_terminology: str,
     standard_terminologies: List[str],
@@ -130,6 +131,18 @@ def prepare_measurement(
             start_date=start_date,
             end_date=end_date,
         )
+
+    if concept_codes:
+        measurement_by_terminology = []
+        for standard_terminology in standard_terminologies:
+            measurement_by_terminology.append(
+                measurement[
+                    measurement["{}_concept_code".format(standard_terminology)].isin(
+                        concept_codes
+                    )
+                ]
+            )
+        measurement = get_framework(measurement).concat(measurement_by_terminology)
 
     if concepts_sets:
         measurement_by_terminology = []
