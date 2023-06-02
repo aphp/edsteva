@@ -92,7 +92,7 @@ horizontal_bar_charts = dict(
         dict(
             x=alt.Y(
                 "sum(n_visit):Q",
-                title="Number of administrative",
+                title="Number of administrative records",
                 axis=alt.Axis(format="s"),
             ),
             tooltip=alt.Tooltip(

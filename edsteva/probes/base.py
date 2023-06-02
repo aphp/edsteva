@@ -312,7 +312,7 @@ class BaseProbe(metaclass=ABCMeta):
         logger.info("Use probe.reset_predictor() to get back the initial predictor")
 
     def add_names_columns(self, df: DataFrame):
-        if hasattr(self, "care_site_relationship"):
+        if hasattr(self, "care_site_relationship") and "care_site_id" in df.columns:
             df = df.merge(
                 self.care_site_relationship[
                     ["care_site_id", "care_site_short_name"]
@@ -329,13 +329,14 @@ class BaseProbe(metaclass=ABCMeta):
                 "{}_concept_name".format(terminology)
                 for terminology in self._standard_terminologies
             ]
-            df = df.merge(
-                self.biology_relationship[
-                    concept_codes + concept_names
-                ].drop_duplicates(),
-                on=concept_codes,
-                how="left",
-            )
+            if set(concept_codes).issubset(df.columns):
+                df = df.merge(
+                    self.biology_relationship[
+                        concept_codes + concept_names
+                    ].drop_duplicates(),
+                    on=concept_codes,
+                    how="left",
+                )
         return df.reset_index(drop=True)
 
     def load(self, path=None) -> None:

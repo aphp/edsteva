@@ -56,8 +56,11 @@ def pandas(obj: DataObject) -> DataObject:
             e,
         )
 
-    pandas_obj = obj.to_pandas()
-    return pandas_obj
+    try:
+        return obj.to_pandas()
+    except AttributeError:
+        pass
+    raise ValueError("Could not convert object to pandas.")
 
 
 def koalas(obj: DataObject) -> DataObject:

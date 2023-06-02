@@ -9,6 +9,7 @@ site/
 .nfs*
 venv/
 .venv/
+.vscode/
 
 # PyBuilder
 target/
