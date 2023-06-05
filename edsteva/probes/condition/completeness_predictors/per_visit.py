@@ -15,6 +15,7 @@ from edsteva.probes.utils.utils import (
     CARE_SITE_LEVEL_NAMES,
     concatenate_predictor_by_level,
     hospital_only,
+    impute_missing_columns,
 )
 from edsteva.utils.checks import check_condition_source_systems, check_tables
 from edsteva.utils.framework import is_koalas, to
@@ -163,23 +164,13 @@ def compute_completeness(
     )
 
     # Impute missing diag type, condition type and source for visit without condition
-    missing_column = list(
-        set(condition_predictor.columns).intersection(
-            set(["diag_type", "condition_type", "source_system"])
-        )
+    condition_predictor = impute_missing_columns(
+        predictor=condition_predictor,
+        target_column="n_visit_with_condition",
+        missing_columns=["diag_type", "condition_type", "source_system"],
+        index=self._index.copy(),
     )
-    missing_condition = condition_predictor[
-        condition_predictor.n_visit_with_condition == 0
-    ].copy()
-    condition_predictor = condition_predictor[
-        condition_predictor.n_visit_with_condition > 0
-    ]
-    for partition, _ in condition_predictor.groupby(missing_column):
-        missing_condition[missing_column] = partition
-        condition_predictor = pd.concat([condition_predictor, missing_condition])
-    condition_predictor = condition_predictor.drop_duplicates(
-        subset=self._index.copy() + ["date"], keep="first"
-    )
+
     return condition_predictor
 
 

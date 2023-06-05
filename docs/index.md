@@ -441,16 +441,16 @@ The working example above describes the canonical usage workflow. However, you w
 
     === "VisitProbe"
 
-        The [``VisitProbe``][edsteva.probes.visit.VisitProbe] computes $c_{visit}(t)$ the availability of administrative data related to visits for each care site and each stay type according to time:
+        The [``VisitProbe``][edsteva.probes.visit.visit.VisitProbe] computes $c_{visit}(t)$ the availability of administrative data related to visits for each care site and each stay type according to time:
 
         $$
-        c_{visit}(t) = \frac{n_{visit}(t)}{n_{99}}
+        c(t) = \frac{n_{visit}(t)}{n_{max}}
         $$
 
-        Where $n_{visit}(t)$ is the number of visits, $n_{99}$ is the $99^{th}$ percentile of visits and $t$ is the month.
+        Where $n_{visit}(t)$ is the number of administrative stays, $t$ is the month and $n_{max} = \max_{t}(n_{visit}(t))$.
 
         !!!info ""
-            If the $99^{th}$ percentile of visits $n_{99}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+            If the monthly maximum visit $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
 
         ```python
         from edsteva.probes import VisitProbe
@@ -459,7 +459,6 @@ The working example above describes the canonical usage workflow. However, you w
         visit.compute(
             data,
             stay_types={
-                "All": ".*",
                 "Urg": "urgence",
                 "Hospit": "hospitalisés",
                 "Urg_Hospit": "urgence|hospitalisés",
@@ -471,100 +470,278 @@ The working example above describes the canonical usage workflow. However, you w
         | care_site_level          | care_site_id | care_site_short_name | stay_type    | date       | n_visit | c     |
         | :----------------------- | :----------- | :------------------- | :----------- | :--------- | :------ | :---- |
         | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 2019-05-01 | 233.0   | 0.841 |
-        | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'All'        | 2021-04-01 | 393.0   | 0.640 |
+        | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 2021-04-01 | 393.0   | 0.640 |
         | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 2011-03-01 | 204.0   | 0.497 |
-        | Pôle/DMU                 | 8312027648   | Care site 2          | 'All'        | 2018-08-01 | 22.0    | 0.274 |
+        | Pôle/DMU                 | 8312027648   | Care site 2          | 'Urg'        | 2018-08-01 | 22.0    | 0.274 |
         | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 2022-02-01 | 9746.0  | 0.769 |
 
     === "NoteProbe"
 
-        The [``NoteProbe``][edsteva.probes.note.NoteProbe] computes $c_{note}(t)$ the availability of clinical documents linked to patients' administrative visit for each care site, stay type and note type according to time:
+        The [``NoteProbe``][edsteva.probes.note.note.NoteProbe] computes $c_{note}(t)$ the availability of clinical documents:
 
-        $$
-        c_{note}(t) = \frac{n_{with\,doc}(t)}{n_{visit}(t)}
-        $$
+        === "per_visit_default"
 
-        Where $n_{visit}(t)$ is the number of visits, $n_{with\,doc}$ the number of visits having at least one document and $t$ is the month.
+            The [``per_visit_default``][edsteva.probes.note.completeness_predictors.per_visit] algorithm computes $c_(t)$ the availability of clinical documents linked to patients' administrative stays:
 
-        !!!info ""
-            If the number of visits $n_{visit}(t)$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+            $$
+            c(t) = \frac{n_{with\,doc}(t)}{n_{visit}(t)}
+            $$
 
-        ```python
-        from edsteva.probes import NoteProbe
+            Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,doc}$ the number of visits having at least one document and $t$ is the month.
 
-        note = Note()
-        note.compute(
-            data,
-            stay_types={
-                "All": ".*",
-                "Urg": "urgence",
-                "Hospit": "hospitalisés",
-                "Urg_Hospit": "urgence|hospitalisés",
-            },
-            note_types={
-                "All": ".*",
-                "CRH": "crh",
-                "Ordonnance": "ordo",
-                "CR Passage Urgences": "urge",
-            },
-        )
-        note.predictor.head()
-        ```
+            !!!info ""
+                If the number of visits $n_{visit}(t)$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
 
-        | care_site_level          | care_site_id | care_site_short_name | stay_type    | note_type             | date       | n_visit | c      |
-        | :----------------------- | :----------- | :------------------- | :----------- | :-------------------- | :--------- | :------ | :----- |
-        | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 'All'                 | 2019-05-01 | 233.0   | '0.841 |
-        | Unité Fonctionnelle (UF) | 8653815660   | Care site 1          | 'All'        | 'CRH'                 | 2011-04-01 | 393.0   | 0.640  |
-        | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 'CRH'                 | 2021-03-01 | 204.0   | 0.497  |
-        | Pôle/DMU                 | 8312056379   | Care site 2          | 'All'        | 'Ordonnance'          | 2018-08-01 | 22.0    | 0.274  |
-        | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 'CR Passage Urgences' | 2022-02-01 | 9746.0  | 0.769  |
+            ```python
+            from edsteva.probes import NoteProbe
+
+            note = Note(completeness_predictor="per_visit_default")
+            note.compute(
+                data,
+                stay_types={
+                    "Urg": "urgence",
+                    "Hospit": "hospitalisés",
+                    "Urg_Hospit": "urgence|hospitalisés",
+                },
+                note_types={
+                    "All": ".*",
+                    "CRH": "crh",
+                    "Ordonnance": "ordo",
+                    "CR Passage Urgences": "urge",
+                },
+            )
+            note.predictor.head()
+            ```
+
+            | care_site_level          | care_site_id | care_site_short_name | stay_type    | note_type             | date       | n_visit | n_visit_with_note | c     |
+            | :----------------------- | :----------- | :------------------- | :----------- | :-------------------- | :--------- | :------ | :---------------- | :---- |
+            | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 'All'                 | 2019-05-01 | 233.0   | 196.0             | 0.841 |
+            | Unité Fonctionnelle (UF) | 8653815660   | Care site 1          | 'Hospit'     | 'CRH'                 | 2011-04-01 | 393.0   | 252.0             | 0.640 |
+            | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 'CRH'                 | 2021-03-01 | 204.0   | 101.0             | 0.497 |
+            | Pôle/DMU                 | 8312056379   | Care site 2          | 'Urg'        | 'Ordonnance'          | 2018-08-01 | 22.0    | 6.0               | 0.274 |
+            | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 'CR Passage Urgences' | 2022-02-01 | 9746.0  | 7495.0            | 0.769 |
+
+        === "per_note_default"
+
+            The [``per_note_default``][edsteva.probes.note.completeness_predictors.per_note] algorithm computes $c_(t)$ the availability of clinical documents as follow:
+
+            $$
+            c(t) = \frac{n_{note}(t)}{n_{max}}
+            $$
+
+            Where $n_{note}(t)$ is the number of clinical documents, $t$ is the month and $n_{max} = \max_{t}(n_{note}(t))$.
+
+            !!!info ""
+                If the monthly maximum number of notes $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+
+            ```python
+            from edsteva.probes import NoteProbe
+
+            note = Note(completeness_predictor="per_note_default")
+            note.compute(
+                data,
+                stay_types={
+                    "Urg": "urgence",
+                    "Hospit": "hospitalisés",
+                    "Urg_Hospit": "urgence|hospitalisés",
+                },
+                note_types={
+                    "All": ".*",
+                    "CRH": "crh",
+                    "Ordonnance": "ordo",
+                    "CR Passage Urgences": "urge",
+                },
+            )
+            note.predictor.head()
+            ```
+
+            | care_site_level          | care_site_id | care_site_short_name | stay_type    | note_type             | date       | n_note | c     |
+            | :----------------------- | :----------- | :------------------- | :----------- | :-------------------- | :--------- | :----- | :---- |
+            | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 'All'                 | 2019-05-01 | 233.0  | 0.841 |
+            | Unité Fonctionnelle (UF) | 8653815660   | Care site 1          | 'Hospit'     | 'CRH'                 | 2011-04-01 | 393.0  | 0.640 |
+            | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 'CRH'                 | 2021-03-01 | 204.0  | 0.497 |
+            | Pôle/DMU                 | 8312056379   | Care site 2          | 'Urg'        | 'Ordonnance'          | 2018-08-01 | 22.0   | 0.274 |
+            | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 'CR Passage Urgences' | 2022-02-01 | 9746.0 | 0.769 |
 
     === "ConditionProbe"
 
-        The [``ConditionProbe``][edsteva.probes.condition.ConditionProbe] computes $c_{condition}(t)$ the availability of claim data in patients' administrative visit for each care site, stay type, diag type and condition type according to time:
+        The [``ConditionProbe``][edsteva.probes.condition.condition.ConditionProbe] computes $c_{condition}(t)$ the availability of claim data:
 
-        $$
-        c_{condition}(t) = \frac{n_{with\,condition}(t)}{n_{visit}(t)}
-        $$
+        === "per_visit_default"
 
-        Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,condition}$ the number of stays having at least one claim code (e.g. ICD-10) recorded and $t$ is the month.
+            The [``per_visit_default``][edsteva.probes.condition.completeness_predictors.per_visit] algorithm computes $c_(t)$ the availability of claim data linked to patients' administrative stays:
 
-        !!!info ""
-            If the number of visits $n_{visit}(t)$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+            $$
+            c(t) = \frac{n_{with\,condition}(t)}{n_{visit}(t)}
+            $$
 
-        !!!Warning "Care site level"
-            AREM claim data are only available at hospital level.
+            Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,condition}$ the number of stays having at least one claim code (e.g. ICD-10) recorded and $t$ is the month.
 
-        ```python
-        from edsteva.probes import ConditionProbe
+            !!!info ""
+                If the number of visits $n_{visit}(t)$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
 
-        condition = ConditionProbe()
-        condition.compute(
-            data,
-            stay_types={
-                "All": ".*",
-                "Hospit": "hospitalisés",
-            },
-            diag_types={
-                "All": ".*",
-                "DP/DR": "DP|DR",
-            },
-            condition_types={
-                "All": ".*",
-                "Pulmonary_embolism": "I26",
-            },
-            source_systems=["AREM", "ORBIS"],
-        )
-        condition.predictor.head()
-        ```
+            !!!Warning "Care site level"
+                AREM claim data are only available at hospital level.
 
-        | care_site_level          | care_site_id | care_site_short_name | stay_type | diag_type | condition_type       | source_systems | date       | n_visit | c     |
-        | :----------------------- | :----------- | :------------------- | :-------- | :-------- | :------------------- | :------------- | :--------- | :------ | :---- |
-        | Hôpital                  | 8312057527   | Care site 1          | 'All'     | 'All'     | 'Pulmonary_embolism' | AREM           | 2019-05-01 | 233.0   | 0.841 |
-        | Hôpital                  | 8312057527   | Care site 1          | 'All'     | 'DP/DR'   | 'Pulmonary_embolism' | AREM           | 2021-04-01 | 393.0   | 0.640 |
-        | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2011-03-01 | 204.0   | 0.497 |
-        | Unité Fonctionnelle (UF) | 8312027648   | Care site 2          | 'All'     | 'All'     | 'All'                | ORBIS          | 2018-08-01 | 22.0    | 0.274 |
-        | Pôle/DMU                 | 8312022130   | Care site 3          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | ORBIS          | 2022-02-01 | 9746.0  | 0.769 |
+            ```python
+            from edsteva.probes import ConditionProbe
+
+            condition = ConditionProbe(completeness_predictor="per_visit_default")
+            condition.compute(
+                data,
+                stay_types={
+                    "Hospit": "hospitalisés",
+                },
+                diag_types={
+                    "All": ".*",
+                    "DP/DR": "DP|DR",
+                },
+                condition_types={
+                    "All": ".*",
+                    "Pulmonary_embolism": "I26",
+                },
+                source_systems=["AREM", "ORBIS"],
+            )
+            condition.predictor.head()
+            ```
+
+            | care_site_level          | care_site_id | care_site_short_name | stay_type | diag_type | condition_type       | source_systems | date       | n_visit | n_visit_with_condition | c     |
+            | :----------------------- | :----------- | :------------------- | :-------- | :-------- | :------------------- | :------------- | :--------- | :------ | :--------------------- | :---- |
+            | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2019-05-01 | 233.0   | 196.0                  | 0.841 |
+            | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | AREM           | 2021-04-01 | 393.0   | 252.0                  | 0.640 |
+            | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2011-03-01 | 204.0   | 101.0                  | 0.497 |
+            | Unité Fonctionnelle (UF) | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'All'                | ORBIS          | 2018-08-01 | 22.0    | 6.0                    | 0.274 |
+            | Pôle/DMU                 | 8312022130   | Care site 3          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | ORBIS          | 2022-02-01 | 9746.0  | 7495.0                 | 0.769 |
+
+        === "per_condition_default"
+
+            The [``per_condition_default``][edsteva.probes.condition.completeness_predictors.per_condition] algorithm computes $c_(t)$ the availability of claim data as follow:
+
+            $$
+            c(t) = \frac{n_{condition}(t)}{n_{max}}
+            $$
+
+            Where $n_{condition}(t)$ is the number of claim codes (e.g. ICD-10) recorded, $t$ is the month and $n_{max} = \max_{t}(n_{condition}(t))$.
+
+            !!!info ""
+                If the monthly maximum number of conditions recorded $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+
+            ```python
+            from edsteva.probes import ConditionProbe
+
+            condition = ConditionProbe(completeness_predictor="per_condition_default")
+            condition.compute(
+                data,
+                stay_types={
+                    "All": ".*",
+                    "Hospit": "hospitalisés",
+                },
+                diag_types={
+                    "All": ".*",
+                    "DP/DR": "DP|DR",
+                },
+                condition_types={
+                    "All": ".*",
+                    "Pulmonary_embolism": "I26",
+                },
+                source_systems=["AREM", "ORBIS"],
+            )
+            condition.predictor.head()
+            ```
+
+            | care_site_level          | care_site_id | care_site_short_name | stay_type | diag_type | condition_type       | source_systems | date       | n_condition | c     |
+            | :----------------------- | :----------- | :------------------- | :-------- | :-------- | :------------------- | :------------- | :--------- | :---------- | :---- |
+            | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2019-05-01 | 233.0       | 0.841 |
+            | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | AREM           | 2021-04-01 | 393.0       | 0.640 |
+            | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2011-03-01 | 204.0       | 0.497 |
+            | Unité Fonctionnelle (UF) | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'All'                | ORBIS          | 2018-08-01 | 22.0        | 0.274 |
+            | Pôle/DMU                 | 8312022130   | Care site 3          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | ORBIS          | 2022-02-01 | 9746.0      | 0.769 |
+
+    === "BiologyProbe"
+
+        The [``BiologyProbe``][edsteva.probes.biology.biology.BiologyProbe] computes $c_(t)$ the availability of laboratory data:
+
+        === "per_visit_default"
+
+            The [``per_visit_default``][edsteva.probes.biology.completeness_predictors.per_visit] algorithm computes $c_(t)$ the availability of laboratory data linked to patients' administrative stays:
+
+            $$
+            c(t) = \frac{n_{with\,biology}(t)}{n_{visit}(t)}
+            $$
+
+            Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,biology}$ the number of stays having at least one biological measurement recorded and $t$ is the month.
+
+            !!!info ""
+                If the number of visits $n_{visit}(t)$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+
+            !!!Warning "Care site level"
+                Laboratory data are only available at hospital level.
+
+            ```python
+            from edsteva.probes import BiologyProbe
+
+            biology = BiologyProbe(completeness_predictor="per_visit_default")
+            biology.compute(
+                data,
+                stay_types={
+                    "Hospit": "hospitalisés",
+                },
+                concepts_sets={
+                    "Créatinine": "E3180|G1974|J1002|A7813|A0094|G1975|J1172|G7834|F9409|F9410|C0697|H4038|F2621",
+                    "Leucocytes": "A0174|K3232|H6740|E4358|C9784|C8824|E6953",
+                },
+            )
+            biology.predictor.head()
+            ```
+
+            | care_site_level | care_site_id | care_site_short_name | stay_type | concepts_sets | date       | n_visit | n_visit_with_measurement | c     |
+            | :-------------- | :----------- | :------------------- | :-------- | :------------ | :--------- | :------ | :----------------------- | :---- |
+            | Hôpital         | 8312057527   | Care site 1          | 'Hospit'  | 'Créatinine'  | 2019-05-01 | 233.0   | 196.0                    | 0.841 |
+            | Hôpital         | 8312057527   | Care site 1          | 'Hospit'  | 'Leucocytes'  | 2021-04-01 | 393.0   | 252.0                    | 0.640 |
+            | Hôpital         | 8312027648   | Care site 2          | 'Hospit'  | 'Créatinine'  | 2011-03-01 | 204.0   | 101.0                    | 0.497 |
+            | Hôpital         | 8312027648   | Care site 2          | 'Hospit'  | 'Leucocytes'  | 2018-08-01 | 22.0    | 6.0                      | 0.274 |
+            | Hôpital         | 8312022130   | Care site 3          | 'Hospit'  | 'Leucocytes'  | 2022-02-01 | 9746.0  | 7495.0                   | 0.769 |
+
+        === "per_measurement_default"
+
+            The [``per_measurement_default``][edsteva.probes.biology.completeness_predictors.per_measurement] algorithm computes $c_(t)$ the availability of biological measurements:
+
+            $$
+            c(t) = \frac{n_{biology}(t)}{n_{max}}
+            $$
+
+            Where $n_{biology}(t)$ is the number of biological measurements, $t$ is the month and $n_{max} = \max_{t}(n_{biology}(t))$.
+
+            !!!info ""
+                If the monthly maximum number of biological measurements $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+
+            !!!Warning "Care site level"
+                Laboratory data are only available at hospital level.
+
+            ```python
+            from edsteva.probes import BiologyProbe
+
+            biology = BiologyProbe(completeness_predictor="per_measurement_default")
+            biology.compute(
+                data,
+                stay_types={
+                    "Hospit": "hospitalisés",
+                },
+                concepts_sets={
+                    "Créatinine": "E3180|G1974|J1002|A7813|A0094|G1975|J1172|G7834|F9409|F9410|C0697|H4038|F2621",
+                    "Leucocytes": "A0174|K3232|H6740|E4358|C9784|C8824|E6953",
+                },
+            )
+            biology.predictor.head()
+            ```
+
+            | care_site_level          | care_site_id | care_site_short_name | stay_type | concepts_sets | date       | n_measurement | c     |
+            | :----------------------- | :----------- | :------------------- | :-------- | :------------ | :--------- | :------------ | :---- |
+            | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'Créatinine'  | 2019-05-01 | 233.0         | 0.841 |
+            | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'Leucocytes'  | 2021-04-01 | 393.0         | 0.640 |
+            | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'Créatinine'  | 2011-03-01 | 204.0         | 0.497 |
+            | Unité Fonctionnelle (UF) | 8312027648   | Care site 2          | 'Hospit'  | 'Leucocytes'  | 2018-08-01 | 22.0          | 0.274 |
+            | Pôle/DMU                 | 8312022130   | Care site 3          | 'Hospit'  | 'Leucocytes'  | 2022-02-01 | 9746.0        | 0.769 |
 
 === "Model"
 

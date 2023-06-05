@@ -41,7 +41,7 @@ def compute_completeness_predictor_per_measurement(
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 
-    The ``per_visit`` algorithm computes $c_(t)$ the availability of biological measurements:
+    The ``per_measurement`` algorithm computes $c_(t)$ the availability of biological measurements:
 
     $$
     c(t) = \frac{n_{biology}(t)}{n_{max}}

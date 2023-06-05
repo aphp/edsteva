@@ -21,6 +21,21 @@ VISIT_DETAIL_TYPE = {
 }
 
 
+def impute_missing_columns(
+    predictor: DataFrame,
+    target_column: str,
+    missing_columns: List[str],
+    index: List[str],
+):
+    missing_columns = list(set(predictor.columns).intersection(set(missing_columns)))
+    missing_predictor = predictor[predictor[target_column] == 0].copy()
+    full_predictor = predictor[predictor[target_column] > 0]
+    for partition, _ in full_predictor.groupby(missing_columns):
+        missing_predictor[missing_columns] = partition
+        full_predictor = pd.concat([full_predictor, missing_predictor])
+    return full_predictor.drop_duplicates(subset=index + ["date"], keep="first")
+
+
 def hospital_only(care_site_levels: List[str]):
     if not isinstance(care_site_levels, list):
         care_site_levels = [care_site_levels]

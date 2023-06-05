@@ -16,6 +16,7 @@ from edsteva.probes.utils.utils import (
     CARE_SITE_LEVEL_NAMES,
     concatenate_predictor_by_level,
     hospital_only,
+    impute_missing_columns,
 )
 from edsteva.utils.checks import check_tables
 from edsteva.utils.framework import is_koalas, to
@@ -154,12 +155,12 @@ def compute_completeness(
     )
 
     # Impute missing note type for visit without note
-    if "note_type" in note_predictor.columns:
-        for note_type in note_predictor.note_type.dropna().unique():
-            missing_note = note_predictor[note_predictor.note_type.isna()].copy()
-            missing_note["note_type"] = note_type
-            note_predictor = pd.concat([note_predictor, missing_note])
-        note_predictor = note_predictor[~note_predictor.note_type.isna()]
+    note_predictor = impute_missing_columns(
+        predictor=note_predictor,
+        target_column="n_visit_with_note",
+        missing_columns=["note_type"],
+        index=self._index.copy(),
+    )
 
     return note_predictor
 
