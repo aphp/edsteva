@@ -28,12 +28,15 @@ def impute_missing_columns(
     index: List[str],
 ):
     missing_columns = list(set(predictor.columns).intersection(set(missing_columns)))
-    missing_predictor = predictor[predictor[target_column] == 0].copy()
-    full_predictor = predictor[predictor[target_column] > 0]
-    for partition, _ in full_predictor.groupby(missing_columns):
-        missing_predictor[missing_columns] = partition
-        full_predictor = pd.concat([full_predictor, missing_predictor])
-    return full_predictor.drop_duplicates(subset=index + ["date"], keep="first")
+    if missing_columns:
+        missing_predictor = predictor[predictor[target_column] == 0].copy()
+        full_predictor = predictor[predictor[target_column] > 0]
+        for partition, _ in full_predictor.groupby(missing_columns):
+            missing_predictor[missing_columns] = partition
+            full_predictor = pd.concat([full_predictor, missing_predictor])
+        return full_predictor.drop_duplicates(subset=index + ["date"], keep="first")
+    else:
+        return predictor
 
 
 def hospital_only(care_site_levels: List[str]):
