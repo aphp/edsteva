@@ -99,59 +99,23 @@ class BaseProbe(metaclass=ABCMeta):
                 "Predictor has not been computed, please use the compute method as follow: Predictor.compute()"
             )
 
-    def impute_missing_date(
-        self,
-        only_impute_per_care_site: bool = False,
-    ) -> pd.DataFrame:
-        """Impute missing date with 0 on the predictor of a probe.
-
-        Parameters
-        ----------
-        only_impute_per_care_site : bool, optional
-            If True it will only impute missing date between the first and the last observation of each care site.
-            If False it will impute missing data on the entire study period whatever the care site
-        """
-        # Check if probe has been computed.
-        self.is_computed_probe()
-
-        # Set start_date to the beginning of the month.
-        date_index = pd.date_range(
-            start=self.start_date,
-            end=self.end_date,
-            freq="MS",
-            closed="left",
+    def filter_date_per_care_site(self, target_column: str):
+        filtered_predictor = self.predictor.copy()
+        predictor_activity = self.predictor[self.predictor[target_column] > 0].copy()
+        predictor_activity = (
+            predictor_activity.groupby("care_site_id")
+            .agg({"date": ["min", "max"]})
+            .droplevel(axis="columns", level=0)
+            .reset_index()
         )
-        date_index = pd.DataFrame({"date": date_index})
-
-        # Precompute the mapping:
-        # {'Hôpital-1': {'min': Timestamp('2010-06-01'), 'max': Timestamp('2019-11-01')}
-        if only_impute_per_care_site:
-            site_to_min_max_ds = (
-                self.predictor.groupby(["care_site_id"])["date"]
-                .agg([min, max])
-                .to_dict("index")
-            )
-
-        partition_cols = self._index.copy()
-        groups = []
-        for partition, group in self.predictor.groupby(partition_cols):
-            group_with_dates = date_index.merge(group, on="date", how="left")
-
-            # Filter on each care site timeframe.
-            if only_impute_per_care_site:
-                care_site_id = group["care_site_id"].iloc[0]
-                ds_min = site_to_min_max_ds[care_site_id]["min"]
-                ds_max = site_to_min_max_ds[care_site_id]["max"]
-                group = group.loc[(group["date"] >= ds_min) & (group["date"] <= ds_max)]
-
-            # Fill specific partition values.
-            for key, val in zip(partition_cols, partition):
-                group_with_dates[key] = val
-            # Fill remaining NaN from counts values with 0.
-            group_with_dates.fillna(0, inplace=True)
-            groups.append(group_with_dates)
-
-        self.predictor = pd.concat(groups)
+        filtered_predictor = filtered_predictor.merge(
+            predictor_activity, on="care_site_id"
+        )
+        filtered_predictor = filtered_predictor[
+            (filtered_predictor["date"] >= filtered_predictor["min"])
+            & (filtered_predictor["date"] <= filtered_predictor["max"])
+        ].drop(columns=["min", "max"])
+        self.predictor = filtered_predictor
 
     @abstractmethod
     def compute_process(
@@ -175,8 +139,6 @@ class BaseProbe(metaclass=ABCMeta):
         care_site_levels: List[str] = None,
         stay_types: Union[str, Dict[str, str]] = None,
         care_site_ids: List[int] = None,
-        impute_missing_dates: bool = True,
-        only_impute_per_care_site: bool = False,
         with_cache: bool = True,
         **kwargs,
     ) -> None:
@@ -243,7 +205,8 @@ class BaseProbe(metaclass=ABCMeta):
         self.validate_input_data(data=data)
         self._reset_index()
         care_site_relationship = prepare_care_site_relationship(data=data)
-
+        self.start_date = pd.to_datetime(start_date) if start_date else None
+        self.end_date = pd.to_datetime(end_date) if end_date else None
         self.predictor = self.compute_process(
             data=data,
             care_site_relationship=care_site_relationship,
@@ -255,18 +218,6 @@ class BaseProbe(metaclass=ABCMeta):
             **kwargs,
         )
         self.is_computed_probe()
-
-        self.start_date = (
-            pd.to_datetime(start_date) if start_date else self.predictor["date"].min()
-        )
-        self.end_date = (
-            pd.to_datetime(end_date) if end_date else self.predictor["date"].max()
-        )
-
-        if impute_missing_dates:
-            self.impute_missing_date(
-                only_impute_per_care_site=only_impute_per_care_site,
-            )
         self.care_site_relationship = care_site_relationship
         self.predictor = self.add_names_columns(self.predictor)
         if with_cache:

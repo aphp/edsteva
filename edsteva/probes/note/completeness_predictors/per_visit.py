@@ -16,7 +16,7 @@ from edsteva.probes.utils.utils import (
     CARE_SITE_LEVEL_NAMES,
     concatenate_predictor_by_level,
     hospital_only,
-    impute_missing_columns,
+    impute_missing_dates,
 )
 from edsteva.utils.checks import check_tables
 from edsteva.utils.framework import is_koalas, to
@@ -119,8 +119,8 @@ def compute_completeness(
     self,
     note_predictor: DataFrame,
 ):
+    # Visit with note
     partition_cols = self._index.copy() + ["date"]
-
     n_visit_with_note = (
         note_predictor.groupby(
             partition_cols,
@@ -130,8 +130,18 @@ def compute_completeness(
         .agg({"has_note": "count"})
         .rename(columns={"has_note": "n_visit_with_note"})
     )
+    n_visit_with_note = to("pandas", n_visit_with_note)
+    note_columns = ["note_type"]
+    n_visit_with_note = n_visit_with_note.dropna(subset=note_columns)
+    n_visit_with_note = impute_missing_dates(
+        start_date=self.start_date,
+        end_date=self.end_date,
+        predictor=n_visit_with_note,
+        partition_cols=partition_cols,
+    )
 
-    partition_cols = list(set(partition_cols) - {"note_type"})
+    # Visit total
+    partition_cols = list(set(partition_cols) - set(note_columns))
     n_visit = (
         note_predictor.groupby(
             partition_cols,
@@ -141,25 +151,22 @@ def compute_completeness(
         .agg({"visit_id": "nunique"})
         .rename(columns={"visit_id": "n_visit"})
     )
-
+    n_visit = to("pandas", n_visit)
+    n_visit = impute_missing_dates(
+        start_date=self.start_date,
+        end_date=self.end_date,
+        predictor=n_visit,
+        partition_cols=partition_cols,
+    )
     note_predictor = n_visit_with_note.merge(
         n_visit,
         on=partition_cols,
     )
 
-    note_predictor = to("pandas", note_predictor)
-
+    # Compute completeness
     note_predictor["c"] = note_predictor["n_visit"].where(
         note_predictor["n_visit"] == 0,
         note_predictor["n_visit_with_note"] / note_predictor["n_visit"],
-    )
-
-    # Impute missing note type for visit without note
-    note_predictor = impute_missing_columns(
-        predictor=note_predictor,
-        target_column="n_visit_with_note",
-        missing_columns=["note_type"],
-        index=self._index.copy(),
     )
 
     return note_predictor

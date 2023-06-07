@@ -14,6 +14,7 @@ from edsteva.probes.utils.utils import (
     CARE_SITE_LEVEL_NAMES,
     concatenate_predictor_by_level,
     hospital_only,
+    impute_missing_dates,
 )
 from edsteva.utils.checks import check_tables
 from edsteva.utils.framework import is_koalas, to
@@ -130,10 +131,16 @@ def compute_completeness(
         .agg({"measurement_id": "nunique"})
         .rename(columns={"measurement_id": "n_measurement"})
     )
-
     n_measurement = to("pandas", n_measurement)
+    n_measurement = impute_missing_dates(
+        start_date=self.start_date,
+        end_date=self.end_date,
+        predictor=n_measurement,
+        partition_cols=partition_cols,
+    )
+
     partition_cols = list(set(partition_cols) - {"date"})
-    q_99_measurement = (
+    max_measurement = (
         n_measurement.groupby(
             partition_cols,
             as_index=False,
@@ -144,7 +151,7 @@ def compute_completeness(
     )
 
     biology_predictor = n_measurement.merge(
-        q_99_measurement,
+        max_measurement,
         on=partition_cols,
     )
 

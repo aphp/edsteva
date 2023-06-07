@@ -15,7 +15,7 @@ from edsteva.probes.utils.utils import (
     CARE_SITE_LEVEL_NAMES,
     concatenate_predictor_by_level,
     hospital_only,
-    impute_missing_columns,
+    impute_missing_dates,
 )
 from edsteva.utils.checks import check_condition_source_systems, check_tables
 from edsteva.utils.framework import is_koalas, to
@@ -137,9 +137,16 @@ def compute_completeness(
         .agg({"has_condition": "count"})
         .rename(columns={"has_condition": "n_visit_with_condition"})
     )
-    partition_cols = list(
-        set(partition_cols) - {"diag_type", "condition_type", "source_system"}
+    n_visit_with_condition = to("pandas", n_visit_with_condition)
+    condition_columns = ["diag_type", "condition_type", "source_system"]
+    n_visit_with_condition = n_visit_with_condition.dropna(subset=condition_columns)
+    n_visit_with_condition = impute_missing_dates(
+        start_date=self.start_date,
+        end_date=self.end_date,
+        predictor=n_visit_with_condition,
+        partition_cols=partition_cols,
     )
+    partition_cols = list(set(partition_cols) - set(condition_columns))
 
     n_visit = (
         condition_predictor.groupby(
@@ -150,25 +157,22 @@ def compute_completeness(
         .agg({"visit_id": "nunique"})
         .rename(columns={"visit_id": "n_visit"})
     )
+    n_visit = to("pandas", n_visit)
+    n_visit = impute_missing_dates(
+        start_date=self.start_date,
+        end_date=self.end_date,
+        predictor=n_visit,
+        partition_cols=partition_cols,
+    )
 
     condition_predictor = n_visit_with_condition.merge(
         n_visit,
         on=partition_cols,
     )
 
-    condition_predictor = to("pandas", condition_predictor)
-
     condition_predictor["c"] = condition_predictor["n_visit"].where(
         condition_predictor["n_visit"] == 0,
         condition_predictor["n_visit_with_condition"] / condition_predictor["n_visit"],
-    )
-
-    # Impute missing diag type, condition type and source for visit without condition
-    condition_predictor = impute_missing_columns(
-        predictor=condition_predictor,
-        target_column="n_visit_with_condition",
-        missing_columns=["diag_type", "condition_type", "source_system"],
-        index=self._index.copy(),
     )
 
     return condition_predictor

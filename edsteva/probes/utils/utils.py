@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict, List
 
 import pandas as pd
@@ -21,22 +22,34 @@ VISIT_DETAIL_TYPE = {
 }
 
 
-def impute_missing_columns(
+def impute_missing_dates(
+    start_date: datetime,
+    end_date: datetime,
     predictor: DataFrame,
-    target_column: str,
-    missing_columns: List[str],
-    index: List[str],
+    partition_cols: List[str],
 ):
-    missing_columns = list(set(predictor.columns).intersection(set(missing_columns)))
-    if missing_columns:
-        missing_predictor = predictor[predictor[target_column] == 0].copy()
-        full_predictor = predictor[predictor[target_column] > 0]
-        for partition, _ in full_predictor.groupby(missing_columns):
-            missing_predictor[missing_columns] = partition
-            full_predictor = pd.concat([full_predictor, missing_predictor])
-        return full_predictor.drop_duplicates(subset=index + ["date"], keep="first")
-    else:
-        return predictor
+    if not start_date:
+        start_date = predictor["date"].min()
+    if not end_date:
+        end_date = predictor["date"].max()
+    date_index = pd.date_range(
+        start=start_date,
+        end=end_date,
+        freq="MS",
+        closed="left",
+    )
+    date_index = pd.DataFrame({"date": date_index})
+    all_partitions = (
+        predictor[list(set(partition_cols) - {"date"})]
+        .drop_duplicates()
+        .merge(date_index, how="cross")
+    )
+    filled_predictor = all_partitions.merge(
+        predictor,
+        on=partition_cols,
+        how="left",
+    ).fillna(0)
+    return filled_predictor
 
 
 def hospital_only(care_site_levels: List[str]):

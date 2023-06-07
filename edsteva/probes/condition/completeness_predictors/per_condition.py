@@ -15,6 +15,7 @@ from edsteva.probes.utils.utils import (
     CARE_SITE_LEVEL_NAMES,
     concatenate_predictor_by_level,
     hospital_only,
+    impute_missing_dates,
 )
 from edsteva.utils.checks import check_condition_source_systems, check_tables
 from edsteva.utils.framework import is_koalas, to
@@ -140,6 +141,12 @@ def compute_completeness(
         .rename(columns={"condition_occurrence_id": "n_condition"})
     )
     n_condition = to("pandas", n_condition)
+    n_condition = impute_missing_dates(
+        start_date=self.start_date,
+        end_date=self.end_date,
+        predictor=n_condition,
+        partition_cols=partition_cols,
+    )
 
     partition_cols = list(set(partition_cols) - {"date"})
     max_n_condition = (
@@ -157,7 +164,6 @@ def compute_completeness(
         on=partition_cols,
     )
 
-    condition_predictor = to("pandas", condition_predictor)
     condition_predictor["c"] = condition_predictor["max_n_condition"].where(
         condition_predictor["max_n_condition"] == 0,
         condition_predictor["n_condition"] / condition_predictor["max_n_condition"],

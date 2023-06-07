@@ -14,7 +14,7 @@ from edsteva.probes.utils.utils import (
     CARE_SITE_LEVEL_NAMES,
     concatenate_predictor_by_level,
     hospital_only,
-    impute_missing_columns,
+    impute_missing_dates,
 )
 from edsteva.utils.checks import check_tables
 from edsteva.utils.framework import is_koalas, to
@@ -119,6 +119,7 @@ def compute_completeness(
     self,
     biology_predictor: DataFrame,
 ):
+    # Visit with measurement
     partition_cols = self._index.copy() + ["date"]
     n_visit_with_measurement = (
         biology_predictor.groupby(
@@ -129,13 +130,20 @@ def compute_completeness(
         .agg({"has_measurement": "count"})
         .rename(columns={"has_measurement": "n_visit_with_measurement"})
     )
-    biology_columns = set(
-        ["concepts_set"]
-        + [
-            "{}_concept_code".format(terminology)
-            for terminology in self._standard_terminologies
-        ]
+    n_visit_with_measurement = to("pandas", n_visit_with_measurement)
+    biology_columns = ["concepts_set"] + [
+        "{}_concept_code".format(terminology)
+        for terminology in self._standard_terminologies
+    ]
+    n_visit_with_measurement = n_visit_with_measurement.dropna(subset=biology_columns)
+    n_visit_with_measurement = impute_missing_dates(
+        start_date=self.start_date,
+        end_date=self.end_date,
+        predictor=n_visit_with_measurement,
+        partition_cols=partition_cols,
     )
+
+    # Visit total
     partition_cols = list(set(partition_cols) - set(biology_columns))
     n_visit = (
         biology_predictor.groupby(
@@ -146,24 +154,28 @@ def compute_completeness(
         .agg({"visit_id": "nunique"})
         .rename(columns={"visit_id": "n_visit"})
     )
+    n_visit = impute_missing_dates(
+        start_date=self.start_date,
+        end_date=self.end_date,
+        predictor=n_visit,
+        partition_cols=partition_cols,
+    )
+    n_visit = to("pandas", n_visit)
+    n_visit = impute_missing_dates(
+        start_date=self.start_date,
+        end_date=self.end_date,
+        predictor=n_visit,
+        partition_cols=partition_cols,
+    )
+
     biology_predictor = n_visit_with_measurement.merge(
         n_visit,
         on=partition_cols,
     )
 
-    biology_predictor = to("pandas", biology_predictor)
-
     biology_predictor["c"] = biology_predictor["n_visit"].where(
         biology_predictor["n_visit"] == 0,
         biology_predictor["n_visit_with_measurement"] / biology_predictor["n_visit"],
-    )
-
-    # Impute missing columns for visit without measurement
-    biology_predictor = impute_missing_columns(
-        predictor=biology_predictor,
-        target_column="n_visit_with_measurement",
-        missing_columns=biology_columns,
-        index=self._index.copy(),
     )
 
     return biology_predictor

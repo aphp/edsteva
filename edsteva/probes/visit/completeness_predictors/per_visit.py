@@ -14,6 +14,7 @@ from edsteva.probes.utils.utils import (
     VISIT_DETAIL_TYPE,
     concatenate_predictor_by_level,
     hospital_only,
+    impute_missing_dates,
 )
 from edsteva.utils.framework import is_koalas, to
 from edsteva.utils.typing import Data, DataFrame
@@ -127,8 +128,13 @@ def compute_completeness(
         .agg({"visit_id": "nunique"})
         .rename(columns={"visit_id": "n_visit"})
     )
-
     n_visit = to("pandas", n_visit)
+    n_visit = impute_missing_dates(
+        start_date=self.start_date,
+        end_date=self.end_date,
+        predictor=n_visit,
+        partition_cols=partition_cols,
+    )
 
     partition_cols = list(set(partition_cols) - {"date"})
     max_n_visit = (
