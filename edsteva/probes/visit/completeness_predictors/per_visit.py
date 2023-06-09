@@ -238,18 +238,25 @@ def get_pole_visit(
     care_site: DataFrame,
     care_site_relationship: DataFrame,
 ):
+    care_site_cols = list(
+        set(
+            [
+                "care_site_short_name",
+                "care_site_level",
+                "care_site_specialty",
+                "specialties_set",
+            ]
+        ).intersection(uf_visit.columns)
+    )
     pole_visit = convert_uf_to_pole(
-        table=uf_visit.drop(
-            columns=["care_site_short_name", "care_site_level", "care_site_specialty"]
-        ),
+        table=uf_visit.drop(columns=care_site_cols),
         table_name="uf_visit",
         care_site_relationship=care_site_relationship,
     )
 
     pole_visit = pole_visit.merge(care_site, on="care_site_id")
-    pole_visit = pole_visit[
-        pole_visit["care_site_level"] == CARE_SITE_LEVEL_NAMES["Pole"]
-    ]
+    pole_name = CARE_SITE_LEVEL_NAMES["Pole"]
+    pole_visit = pole_visit[pole_visit["care_site_level"] == pole_name]
     if is_koalas(pole_visit):
         pole_visit = pole_visit.spark.cache()
 

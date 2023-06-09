@@ -166,7 +166,7 @@ def get_hospital_note(
     visit_occurrence: DataFrame,
     care_site: DataFrame,
 ):
-    note_hospital = note.merge(visit_occurrence, on="visit_occurrence_id", how="left")
+    note_hospital = note.merge(visit_occurrence, on="visit_occurrence_id")
     note_hospital = note_hospital.drop(columns="visit_occurrence_id")
     note_hospital = note_hospital.merge(care_site, on="care_site_id")
     if is_koalas(note_hospital):
@@ -184,9 +184,7 @@ def get_note_detail(
     note_detail = prepare_note_care_site(extra_data=extra_data, note=note)
     note_detail = note_detail.merge(care_site, on="care_site_id")
     note_detail = note_detail.merge(
-        visit_occurrence.drop(columns="care_site_id"),
-        on="visit_occurrence_id",
-        how="left",
+        visit_occurrence.drop(columns="care_site_id"), on="visit_occurrence_id"
     ).drop(columns="visit_occurrence_id")
 
     uf_name = CARE_SITE_LEVEL_NAMES["UF"]
@@ -208,10 +206,18 @@ def get_pole_note(
     care_site: DataFrame,
     care_site_relationship: DataFrame,
 ):  # pragma: no cover
+    care_site_cols = list(
+        set(
+            [
+                "care_site_short_name",
+                "care_site_level",
+                "care_site_specialty",
+                "specialties_set",
+            ]
+        ).intersection(note_uf.columns)
+    )
     note_pole = convert_uf_to_pole(
-        table=note_uf.drop(
-            columns=["care_site_short_name", "care_site_level", "care_site_specialty"]
-        ),
+        table=note_uf.drop(columns=care_site_cols),
         table_name="note_uf",
         care_site_relationship=care_site_relationship,
     )

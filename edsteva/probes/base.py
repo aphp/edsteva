@@ -31,7 +31,7 @@ class BaseProbe(metaclass=ABCMeta):
     care_site_relationship: pd.DataFrame
         Available with the [``compute()``][edsteva.probes.base.BaseProbe.compute] method
 
-        It describes the care site structure (cf. [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_care_site_relationship])
+        It describes the care site structure (cf. [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship])
     """
 
     _schema = ["care_site_level", "care_site_id", "date", "c"]
@@ -148,7 +148,7 @@ class BaseProbe(metaclass=ABCMeta):
         Here are the following computation steps:
 
         - check if input data is valid with [``validate_input_data()``][edsteva.probes.base.BaseProbe.validate_input_data] method
-        - query care site relationship table with [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_care_site_relationship]
+        - query care site relationship table with [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship]
         - compute predictor with [``compute_process()``][edsteva.probes.base.BaseProbe.compute_process] method
         - check if predictor is valid with [``is_computed_probe()``][edsteva.probes.base.BaseProbe.is_computed_probe] method
 

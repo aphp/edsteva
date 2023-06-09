@@ -32,6 +32,17 @@ class BaseModel(metaclass=ABCMeta):
         Ths list of extra keyword parameters used.
     """
 
+    def __init__(
+        self,
+        algo: str,
+        coefs: List[str],
+        default_metrics: List[str],
+    ):
+        self._algo = algo
+        self._coefs = coefs
+        self._default_metrics = default_metrics
+        self._viz_config = {}
+
     def is_computed_estimates(self) -> None:
         """Raises an error if the Probe has not been fitted properly"""
         if hasattr(self, "estimates"):

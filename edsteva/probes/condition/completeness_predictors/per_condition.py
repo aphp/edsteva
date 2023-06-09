@@ -181,11 +181,9 @@ def get_hospital_condition(
     hospital_condition = condition_occurrence.merge(
         visit_occurrence,
         on="visit_occurrence_id",
-        how="left",
     )
     hospital_condition = hospital_condition.drop(columns="visit_occurrence_id")
     hospital_condition = hospital_condition.merge(care_site, on="care_site_id")
-
     if is_koalas(hospital_condition):
         hospital_condition = hospital_condition.spark.cache()
 
@@ -203,7 +201,6 @@ def get_uf_condition(
     uf_condition = condition_occurrence.merge(
         visit_occurrence.drop(columns="care_site_id"),
         on="visit_occurrence_id",
-        how="left",
     ).rename(columns={"visit_detail_id": "visit_id"})
 
     # Add care_site information
@@ -228,10 +225,18 @@ def get_pole_condition(
     care_site: DataFrame,
     care_site_relationship: DataFrame,
 ):
+    care_site_cols = list(
+        set(
+            [
+                "care_site_short_name",
+                "care_site_level",
+                "care_site_specialty",
+                "specialties_set",
+            ]
+        ).intersection(uf_condition.columns)
+    )
     pole_condition = convert_uf_to_pole(
-        table=uf_condition.drop(
-            columns=["care_site_short_name", "care_site_level", "care_site_specialty"]
-        ),
+        table=uf_condition.drop(columns=care_site_cols),
         table_name="uf_condition",
         care_site_relationship=care_site_relationship,
     )

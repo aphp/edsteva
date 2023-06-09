@@ -26,7 +26,7 @@ def probe_only_dashboard(
     time_line_config: Dict[str, str],
     chart_style: Dict[str, float],
 ):
-    """Script to be used by [``predictor_dashboard()``][edsteva.viz.dashboards.predictor_dashboard.wrapper]
+    """Script to be used by [``predictor_dashboard()``][edsteva.viz.dashboards.probe.wrapper]
 
     Parameters
     ----------

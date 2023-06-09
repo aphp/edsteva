@@ -13,7 +13,7 @@ def probe_line(
     y_axis_title: str,
     main_chart_config: Dict[str, float],
 ):
-    """Script to be used by [``plot_probe()``][edsteva.viz.plots.plot_probe.wrapper]
+    """Script to be used by [``plot_probe()``][edsteva.viz.plots.probe.wrapper]
 
     Parameters
     ----------
@@ -21,10 +21,6 @@ def probe_line(
         $c(t)$ computed in the Probe
     indexes : List[str]
         Variable from which data is grouped
-    legend_predictor: str, optional,
-        Label name for the predictor legend.
-    legend_model: str, optional,
-        Label name for the model legend.
     x_axis_title: str, optional,
         Label name for the x axis.
     y_axis_title: str, optional,

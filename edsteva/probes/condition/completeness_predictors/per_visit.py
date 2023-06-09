@@ -127,6 +127,7 @@ def compute_completeness(
     self,
     condition_predictor: DataFrame,
 ):
+    # Visit with diagnosis
     partition_cols = self._index.copy() + ["date"]
     n_visit_with_condition = (
         condition_predictor.groupby(
@@ -138,16 +139,19 @@ def compute_completeness(
         .rename(columns={"has_condition": "n_visit_with_condition"})
     )
     n_visit_with_condition = to("pandas", n_visit_with_condition)
-    condition_columns = ["diag_type", "condition_type", "source_system"]
-    n_visit_with_condition = n_visit_with_condition.dropna(subset=condition_columns)
+    n_visit_with_condition = n_visit_with_condition[
+        n_visit_with_condition.n_visit_with_condition > 0
+    ]
     n_visit_with_condition = impute_missing_dates(
         start_date=self.start_date,
         end_date=self.end_date,
         predictor=n_visit_with_condition,
         partition_cols=partition_cols,
     )
-    partition_cols = list(set(partition_cols) - set(condition_columns))
 
+    # Visit total
+    condition_columns = ["diag_type", "condition_type", "source_system"]
+    partition_cols = list(set(partition_cols) - set(condition_columns))
     n_visit = (
         condition_predictor.groupby(
             partition_cols,
@@ -248,19 +252,25 @@ def get_pole_visit(
     care_site: DataFrame,
     care_site_relationship: DataFrame,
 ):  # pragma: no cover
+    care_site_cols = list(
+        set(
+            [
+                "care_site_short_name",
+                "care_site_level",
+                "care_site_specialty",
+                "specialties_set",
+            ]
+        ).intersection(uf_visit.columns)
+    )
     pole_visit = convert_uf_to_pole(
-        table=uf_visit.drop(
-            columns=["care_site_short_name", "care_site_level", "care_site_specialty"]
-        ),
+        table=uf_visit.drop(columns=care_site_cols),
         table_name="uf_visit",
         care_site_relationship=care_site_relationship,
     )
 
     pole_visit = pole_visit.merge(care_site, on="care_site_id")
-
     pole_name = CARE_SITE_LEVEL_NAMES["Pole"]
     pole_visit = pole_visit[pole_visit["care_site_level"] == pole_name]
-
     if is_koalas(pole_visit):
         pole_visit = pole_visit.spark.cache()
 

@@ -84,7 +84,7 @@ def compute_completeness_predictor_per_measurement(
         end_date=None,
         stay_types=stay_types,
         stay_durations=stay_durations,
-    )
+    ).drop(columns=["visit_occurrence_source_value", "date"])
 
     care_site = prepare_care_site(
         data=data,
@@ -170,7 +170,8 @@ def get_hospital_measurements(
     care_site: DataFrame,
 ):
     hospital_measurement = measurement.merge(
-        visit_occurrence.drop(columns="date"), on="visit_occurrence_id"
+        visit_occurrence,
+        on="visit_occurrence_id",
     )
     hospital_measurement = hospital_measurement.merge(care_site, on="care_site_id")
 

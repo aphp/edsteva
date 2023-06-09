@@ -28,6 +28,7 @@ def impute_missing_dates(
     predictor: DataFrame,
     partition_cols: List[str],
 ):
+    # Generate all available dates
     if not start_date:
         start_date = predictor["date"].min()
     if not end_date:
@@ -39,6 +40,8 @@ def impute_missing_dates(
         closed="left",
     )
     date_index = pd.DataFrame({"date": date_index})
+
+    # Generate all available partitions
     all_partitions = (
         predictor[list(set(partition_cols) - {"date"})]
         .drop_duplicates()
@@ -48,7 +51,7 @@ def impute_missing_dates(
         predictor,
         on=partition_cols,
         how="left",
-    ).fillna(0)
+    ).fillna({col: 0 for col in set(predictor.columns) - set(partition_cols)})
     return filled_predictor
 
 

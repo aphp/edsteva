@@ -19,12 +19,6 @@ class StepFunction(BaseModel):
     - the characteristic time $t_0$ estimates the time after which the data is available
     - the characteristic value $c_0$ estimates the stabilized routine completeness
 
-    Parameters
-    ----------
-    algo: str
-        Algorithm used to compute the estimates
-        **EXAMPLE**: ``"loss_minimization"``
-
     Attributes
     ----------
     _algo: List[str]
@@ -64,10 +58,20 @@ class StepFunction(BaseModel):
         self,
         algo: str = "loss_minimization",
     ):
-        self._algo = algo
-        self._coefs = ["t_0", "c_0"]
-        self._default_metrics = ["error_after_t0"]
-        self._viz_config = {}
+        """Initialisation of the StepFunction Model.
+
+        Parameters
+        ----------
+        algo : Callable, optional
+            Algorithm used for the coefficients estimation ($t_0$ and $c_0$)
+        """
+        coefs = ["t_0", "c_0"]
+        default_metrics = ["error_after_t0"]
+        super().__init__(
+            algo=algo,
+            coefs=coefs,
+            default_metrics=default_metrics,
+        )
 
     def fit_process(
         self,
@@ -83,10 +87,7 @@ class StepFunction(BaseModel):
             Target variable to be fitted
         index : List[str], optional
             Variable from which data is grouped
-
             **EXAMPLE**: `["care_site_level", "stay_type", "note_type", "care_site_id"]`
-        algo : Callable, optional
-            Algorithm used for the coefficients estimation ($t_0$ and $c_0$)
         """
 
         estimates = algos.get(self._algo)(predictor=predictor, index=index, **kwargs)

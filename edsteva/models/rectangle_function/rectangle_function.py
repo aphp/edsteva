@@ -20,12 +20,6 @@ class RectangleFunction(BaseModel):
     - the characteristic time $t_1$ estimates the time after which the data is not available anymore.
     - the characteristic value $c_0$ estimates the completeness between $t_0$ and $t_1$.
 
-    Parameters
-    ----------
-    algo: str
-        Algorithm used to compute the estimates
-        **EXAMPLE**: ``"loss_minimization"``
-
     Attributes
     ----------
     _algo: List[str]
@@ -65,10 +59,20 @@ class RectangleFunction(BaseModel):
         self,
         algo: str = "loss_minimization",
     ):
-        self._algo = algo
-        self._coefs = ["t_0", "c_0", "t_1"]
-        self._default_metrics = ["error_between_t0_t1"]
-        self._viz_config = {}
+        """Initialisation of the RectangleFunction Model.
+
+        Parameters
+        ----------
+        algo : Callable, optional
+            Algorithm used for the coefficients estimation ($t_0$, $t_1$ and $c_0$)
+        """
+        coefs = ["t_0", "c_0", "t_1"]
+        default_metrics = ["error_between_t0_t1"]
+        super().__init__(
+            algo=algo,
+            coefs=coefs,
+            default_metrics=default_metrics,
+        )
 
     def fit_process(
         self,
@@ -84,10 +88,7 @@ class RectangleFunction(BaseModel):
             Target variable to be fitted
         index : List[str], optional
             Variable from which data is grouped
-
             **EXAMPLE**: `["care_site_level", "stay_type", "note_type", "care_site_id"]`
-        algo : Callable, optional
-            Algorithm used for the coefficients estimation ($t_0$ and $c_0$)
         """
         estimates = algos.get(self._algo)(predictor=predictor, index=index, **kwargs)
 

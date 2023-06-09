@@ -22,7 +22,7 @@ def fitted_probe_line(
     model_line_config: Dict[str, str],
     probe_line_config: Dict[str, str],
 ):
-    r"""Script to be used by [``plot_probe()``][edsteva.viz.plots.plot_probe.wrapper]
+    r"""Script to be used by [``plot_probe()``][edsteva.viz.plots.probe.wrapper]
 
     Parameters
     ----------

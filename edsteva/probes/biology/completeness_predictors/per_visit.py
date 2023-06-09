@@ -131,11 +131,9 @@ def compute_completeness(
         .rename(columns={"has_measurement": "n_visit_with_measurement"})
     )
     n_visit_with_measurement = to("pandas", n_visit_with_measurement)
-    biology_columns = ["concepts_set"] + [
-        "{}_concept_code".format(terminology)
-        for terminology in self._standard_terminologies
+    n_visit_with_measurement = n_visit_with_measurement[
+        n_visit_with_measurement.n_visit_with_measurement > 0
     ]
-    n_visit_with_measurement = n_visit_with_measurement.dropna(subset=biology_columns)
     n_visit_with_measurement = impute_missing_dates(
         start_date=self.start_date,
         end_date=self.end_date,
@@ -144,6 +142,10 @@ def compute_completeness(
     )
 
     # Visit total
+    biology_columns = ["concepts_set"] + [
+        "{}_concept_code".format(terminology)
+        for terminology in self._standard_terminologies
+    ]
     partition_cols = list(set(partition_cols) - set(biology_columns))
     n_visit = (
         biology_predictor.groupby(
@@ -153,12 +155,6 @@ def compute_completeness(
         )
         .agg({"visit_id": "nunique"})
         .rename(columns={"visit_id": "n_visit"})
-    )
-    n_visit = impute_missing_dates(
-        start_date=self.start_date,
-        end_date=self.end_date,
-        predictor=n_visit,
-        partition_cols=partition_cols,
     )
     n_visit = to("pandas", n_visit)
     n_visit = impute_missing_dates(

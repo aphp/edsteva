@@ -11,7 +11,7 @@ from edsteva.utils.typing import Data
 
 class ConditionProbe(BaseProbe):
     r"""
-    The [``ConditionProbe``][edsteva.probes.condition.ConditionProbe] computes $c(t)$ the availability of claim data:
+    The [``ConditionProbe``][edsteva.probes.condition.condition.ConditionProbe] computes $c(t)$ the availability of claim data:
 
     Parameters
     ----------

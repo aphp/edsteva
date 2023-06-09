@@ -32,7 +32,7 @@ def fitted_probe_dashboard(
     time_line_config: Dict[str, str],
     chart_style: Dict[str, float],
 ):
-    r"""Script to be used by [``predictor_dashboard()``][edsteva.viz.dashboards.predictor_dashboard.wrapper]
+    r"""Script to be used by [``predictor_dashboard()``][edsteva.viz.dashboards.probe.wrapper]
 
     Parameters
     ----------
@@ -53,8 +53,6 @@ def fitted_probe_dashboard(
         Configuration used to construct the top main chart.
     model_line_config: Dict[str, str], optional
         Configuration used to construct the model line.
-    error_line_config: Dict[str, str], optional
-        Configuration used to construct the error line.
     probe_line_config: Dict[str, str], optional
         Configuration used to construct the probe line.
     vertical_bar_charts_config: Dict[str, str], optional

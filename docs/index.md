@@ -161,14 +161,15 @@ As detailled in [the dedicated section][loading-data], EDS-TeVa is expecting to 
 !!! info "Probe"
     A [Probe][probe] is a python class designed to compute a completeness predictor $c(t)$ that characterizes data availability of a target variable over time $t$.
 
-In this example, $c(t)$ predicts the availability of administrative records relative to visits. It is defined for each care site and stay type as the number of visits $n_{visit}(t)$ per month $t$, normalized by the $99^{th}$ percentile of visits $n_{99}$ computed over the entire study period:
+In this example, $c(t)$ predicts the availability of administrative records relative to visits. It is defined for each care site and stay type as the number of visits $n_{visit}(t)$ per month $t$, normalized by the maximum number of records per month $n_{max} = \max_{t}(n_{visit}(t))$ computed over the entire study period:
 
 $$
-c(t) = \frac{n_{visit}(t)}{n_{99}}
+c(t) = \frac{n_{visit}(t)}{n_{max}}
 $$
+
 
 !!!info ""
-    If the $99^{th}$ percentile of visits $n_{99}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+    If the maximum number of records per month $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
 
 The [VisitProbe][available-probes] is already available by default in the library:
 
@@ -246,7 +247,7 @@ predictor_dashboard(
 Interactive dashboard is available [here](assets/charts/interactive_visit.html)
 ##### Static plot
 
-If you need a static plot for a report, a paper or anything else, you can use the [`plot_probe()`][edsteva.viz.plots.plot_probe.wrapper] function. It returns the top plot of the dashboard without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
+If you need a static plot for a report, a paper or anything else, you can use the [`plot_probe()`][edsteva.viz.plots.probe.wrapper] function. It returns the top plot of the dashboard without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
 
 ```python
 from edsteva.viz.plots import plot_probe
@@ -339,7 +340,7 @@ predictor_dashboard(
 Interactive dashboard is available [here](assets/charts/interactive_fitted_visit.html).
 ##### Static plot
 
-If you need a static plot for a report, a paper or anything else, you can use the [`plot_probe()`][edsteva.viz.plots.plot_probe.wrapper] function. It returns the top plot of the dashboard without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
+If you need a static plot for a report, a paper or anything else, you can use the [`plot_probe()`][edsteva.viz.plots.probe.wrapper] function. It returns the top plot of the dashboard without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
 
 ```python
 from edsteva.viz.plots import plot_probe
@@ -441,39 +442,41 @@ The working example above describes the canonical usage workflow. However, you w
 
     === "VisitProbe"
 
-        The [``VisitProbe``][edsteva.probes.visit.visit.VisitProbe] computes $c_{visit}(t)$ the availability of administrative data related to visits for each care site and each stay type according to time:
+        The [``VisitProbe``][edsteva.probes.visit.visit.VisitProbe] computes $c_{visit}(t)$ the availability of administrative stays:
 
-        $$
-        c(t) = \frac{n_{visit}(t)}{n_{max}}
-        $$
+        === "per_visit_default"
 
-        Where $n_{visit}(t)$ is the number of administrative stays, $t$ is the month and $n_{max} = \max_{t}(n_{visit}(t))$.
+            $$
+            c(t) = \frac{n_{visit}(t)}{n_{max}}
+            $$
 
-        !!!info ""
-            If the monthly maximum visit $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+            Where $n_{visit}(t)$ is the number of administrative stays, $t$ is the month and $n_{max} = \max_{t}(n_{visit}(t))$.
 
-        ```python
-        from edsteva.probes import VisitProbe
+            !!!info ""
+                If the maximum number of records per month $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
 
-        visit = VisitProbe()
-        visit.compute(
-            data,
-            stay_types={
-                "Urg": "urgence",
-                "Hospit": "hospitalisés",
-                "Urg_Hospit": "urgence|hospitalisés",
-            },
-        )
-        visit.predictor.head()
-        ```
+            ```python
+            from edsteva.probes import VisitProbe
 
-        | care_site_level          | care_site_id | care_site_short_name | stay_type    | date       | n_visit | c     |
-        | :----------------------- | :----------- | :------------------- | :----------- | :--------- | :------ | :---- |
-        | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 2019-05-01 | 233.0   | 0.841 |
-        | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 2021-04-01 | 393.0   | 0.640 |
-        | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 2011-03-01 | 204.0   | 0.497 |
-        | Pôle/DMU                 | 8312027648   | Care site 2          | 'Urg'        | 2018-08-01 | 22.0    | 0.274 |
-        | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 2022-02-01 | 9746.0  | 0.769 |
+            visit = VisitProbe()
+            visit.compute(
+                data,
+                stay_types={
+                    "Urg": "urgence",
+                    "Hospit": "hospitalisés",
+                    "Urg_Hospit": "urgence|hospitalisés",
+                },
+            )
+            visit.predictor.head()
+            ```
+
+            | care_site_level          | care_site_id | care_site_short_name | stay_type    | date       | n_visit | c     |
+            | :----------------------- | :----------- | :------------------- | :----------- | :--------- | :------ | :---- |
+            | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 2019-05-01 | 233.0   | 0.841 |
+            | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 2021-04-01 | 393.0   | 0.640 |
+            | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 2011-03-01 | 204.0   | 0.497 |
+            | Pôle/DMU                 | 8312027648   | Care site 2          | 'Urg'        | 2018-08-01 | 22.0    | 0.274 |
+            | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 2022-02-01 | 9746.0  | 0.769 |
 
     === "NoteProbe"
 
@@ -532,7 +535,7 @@ The working example above describes the canonical usage workflow. However, you w
             Where $n_{note}(t)$ is the number of clinical documents, $t$ is the month and $n_{max} = \max_{t}(n_{note}(t))$.
 
             !!!info ""
-                If the monthly maximum number of notes $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+                If the maximum number of recorded notes per month $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
 
             ```python
             from edsteva.probes import NoteProbe
@@ -624,7 +627,7 @@ The working example above describes the canonical usage workflow. However, you w
             Where $n_{condition}(t)$ is the number of claim codes (e.g. ICD-10) recorded, $t$ is the month and $n_{max} = \max_{t}(n_{condition}(t))$.
 
             !!!info ""
-                If the monthly maximum number of conditions recorded $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+                If the maximum number of recorded diagnosis per month $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
 
             ```python
             from edsteva.probes import ConditionProbe
@@ -713,7 +716,7 @@ The working example above describes the canonical usage workflow. However, you w
             Where $n_{biology}(t)$ is the number of biological measurements, $t$ is the month and $n_{max} = \max_{t}(n_{biology}(t))$.
 
             !!!info ""
-                If the monthly maximum number of biological measurements $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
+                If the maximum number of recorded biological measurements per month $n_{max}$ is equal to 0, we consider that the completeness predictor $c(t)$ is also equal to 0.
 
             !!!Warning "Care site level"
                 Laboratory data are only available at hospital level.
@@ -918,7 +921,7 @@ The working example above describes the canonical usage workflow. However, you w
 
         === "predictor_dashboard()"
 
-            The [``predictor_dashboard()``][edsteva.viz.dashboards.predictor_dashboard.wrapper] returns:
+            The [``predictor_dashboard()``][edsteva.viz.dashboards.probe.wrapper] returns:
 
             - On the top, the aggregated variable is the average completeness predictor $c(t)$ over time $t$ with the prediction $\hat{c}(t)$ if the [fitted Model][model] is specified.
             - On the bottom, the interactive filters are all the columns included in the [Probe][probe] (such as time, care site, number of visits...etc.).
@@ -936,7 +939,7 @@ The working example above describes the canonical usage workflow. However, you w
 
         === "estimates_dashboard()"
 
-            The [``estimates_dashboard()``][edsteva.viz.dashboards.estimates_dashboard] returns a representation of the overall deviation from the [Model][model]:
+            The [``estimates_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe] returns a representation of the overall deviation from the [Model][model]:
 
             - On the top, the aggregated variable is a normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
             - On the bottom, the interactive filters are all the columns included in the [Probe][probe] (such as time, care site, number of visits...etc.) with all the [Model coefficients][model-coefficients] and [metrics][metrics] included in the [Model][model].
@@ -961,7 +964,7 @@ The working example above describes the canonical usage workflow. However, you w
 
         === "plot_probe()"
 
-            The [``plot_probe()``][edsteva.viz.plots.plot_probe.wrapper] returns the top plot of the [``predictor_dashboard()``][edsteva.viz.dashboards.predictor_dashboard.wrapper]: the normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
+            The [``plot_probe()``][edsteva.viz.plots.probe.wrapper] returns the top plot of the [``predictor_dashboard()``][edsteva.viz.dashboards.probe.wrapper]: the normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
 
             ```python
             from edsteva.viz.plots import plot_probe
@@ -983,7 +986,7 @@ The working example above describes the canonical usage workflow. However, you w
 
         === "plot_normalized_probe()"
 
-            The [``plot_normalized_probe()``][edsteva.viz.plots.normalized_probe] returns the top plot of the [``estimates_dashboard()``][edsteva.viz.dashboards.estimates_dashboard]. Consequently, you have to specify the filters in the inputs of the function.
+            The [``plot_normalized_probe()``][edsteva.viz.plots.normalized_probe] returns the top plot of the [``estimates_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe]. Consequently, you have to specify the filters in the inputs of the function.
 
             ```python
             from edsteva.viz.plots import plot_normalized_probe

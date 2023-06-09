@@ -131,8 +131,7 @@ def compute_completeness(
         .rename(columns={"has_note": "n_visit_with_note"})
     )
     n_visit_with_note = to("pandas", n_visit_with_note)
-    note_columns = ["note_type"]
-    n_visit_with_note = n_visit_with_note.dropna(subset=note_columns)
+    n_visit_with_note = n_visit_with_note[n_visit_with_note.n_visit_with_note > 0]
     n_visit_with_note = impute_missing_dates(
         start_date=self.start_date,
         end_date=self.end_date,
@@ -141,6 +140,7 @@ def compute_completeness(
     )
 
     # Visit total
+    note_columns = ["note_type"]
     partition_cols = list(set(partition_cols) - set(note_columns))
     n_visit = (
         note_predictor.groupby(
@@ -235,19 +235,25 @@ def get_pole_visit(
     care_site: DataFrame,
     care_site_relationship: DataFrame,
 ):  # pragma: no cover
+    care_site_cols = list(
+        set(
+            [
+                "care_site_short_name",
+                "care_site_level",
+                "care_site_specialty",
+                "specialties_set",
+            ]
+        ).intersection(uf_visit.columns)
+    )
     pole_visit = convert_uf_to_pole(
-        table=uf_visit.drop(
-            columns=["care_site_short_name", "care_site_level", "care_site_specialty"]
-        ),
+        table=uf_visit.drop(columns=care_site_cols),
         table_name="uf_visit",
         care_site_relationship=care_site_relationship,
     )
 
     pole_visit = pole_visit.merge(care_site, on="care_site_id")
-
     pole_name = CARE_SITE_LEVEL_NAMES["Pole"]
     pole_visit = pole_visit[pole_visit["care_site_level"] == pole_name]
-
     if is_koalas(pole_visit):
         pole_visit = pole_visit.spark.cache()
 

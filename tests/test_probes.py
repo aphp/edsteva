@@ -26,8 +26,6 @@ params = [
         note_predictor="per_visit_default",
         condition_predictor="per_visit_default",
         biology_predictor="per_visit_default",
-        only_impute_per_care_site=True,
-        impute_missing_dates=True,
         care_site_levels=["Pole", "UF", "UC", "UH"],
         care_site_short_names=None,
         care_site_ids=None,
@@ -57,8 +55,6 @@ params = [
         note_predictor="per_note_default",
         condition_predictor="per_condition_default",
         biology_predictor="per_measurement_default",
-        only_impute_per_care_site=False,
-        impute_missing_dates=True,
         care_site_levels=["Hospital", "Pole", "UF"],
         care_site_ids="1",
         care_site_short_names="Hôpital-1",
@@ -82,8 +78,6 @@ params = [
         note_predictor="per_visit_default",
         condition_predictor="per_visit_default",
         biology_predictor="per_visit_default",
-        only_impute_per_care_site=False,
-        impute_missing_dates=False,
         care_site_levels="Hôpital",
         care_site_ids=["1", "2"],
         care_site_short_names=["Hôpital-1", "Hôpital-2"],
@@ -177,8 +171,6 @@ def test_compute_visit_probe(data, params):
     visit.compute(
         data=data,
         care_site_levels=params["care_site_levels"],
-        only_impute_per_care_site=params["only_impute_per_care_site"],
-        impute_missing_dates=params["impute_missing_dates"],
         start_date=params["start_date"],
         end_date=params["end_date"],
         stay_types=params["stay_types"],
@@ -314,8 +306,6 @@ def test_compute_note_probe(data, params):
     note.compute(
         data=data,
         care_site_levels=params["care_site_levels"],
-        only_impute_per_care_site=params["only_impute_per_care_site"],
-        impute_missing_dates=params["impute_missing_dates"],
         start_date=params["start_date"],
         end_date=params["end_date"],
         stay_types=params["stay_types"],
@@ -462,8 +452,6 @@ def test_compute_condition_probe(data, params):
     condition.compute(
         data=data,
         care_site_levels=params["care_site_levels"],
-        only_impute_per_care_site=params["only_impute_per_care_site"],
-        impute_missing_dates=params["impute_missing_dates"],
         start_date=params["start_date"],
         end_date=params["end_date"],
         stay_types=params["stay_types"],
@@ -576,7 +564,7 @@ def test_compute_condition_probe(data, params):
         if isinstance(params["stay_durations"], list):
             min_duration = params["stay_durations"][0]
             max_duration = params["stay_durations"][-1]
-            specialties_sets = [
+            length_of_stays = [
                 "Incomplete stay",
                 "<= {} days".format(min_duration),
                 ">= {} days".format(max_duration),
@@ -585,9 +573,9 @@ def test_compute_condition_probe(data, params):
             for i in range(0, n_duration - 1):
                 min = params["stay_durations"][i]
                 max = params["stay_durations"][i + 1]
-                specialties_sets.append("{} days - {} days".format(min, max))
+                length_of_stays.append("{} days - {} days".format(min, max))
             assert set(condition.predictor.length_of_stay.unique()).issubset(
-                set(specialties_sets)
+                set(length_of_stays)
             )
 
     # Diag type
@@ -637,8 +625,6 @@ def test_compute_biology_probe(data, params):
     biology.compute(
         data=data,
         care_site_levels=params["care_site_levels"],
-        only_impute_per_care_site=params["only_impute_per_care_site"],
-        impute_missing_dates=params["impute_missing_dates"],
         start_date=params["start_date"],
         end_date=params["end_date"],
         stay_types=params["stay_types"],
@@ -728,7 +714,7 @@ def test_compute_biology_probe(data, params):
         if isinstance(params["stay_durations"], list):
             min_duration = params["stay_durations"][0]
             max_duration = params["stay_durations"][-1]
-            specialties_sets = [
+            length_of_stays = [
                 "Incomplete stay",
                 "<= {} days".format(min_duration),
                 ">= {} days".format(max_duration),
@@ -737,9 +723,9 @@ def test_compute_biology_probe(data, params):
             for i in range(0, n_duration - 1):
                 min = params["stay_durations"][i]
                 max = params["stay_durations"][i + 1]
-                specialties_sets.append("{} days - {} days".format(min, max))
+                length_of_stays.append("{} days - {} days".format(min, max))
             assert set(biology.predictor.length_of_stay.unique()).issubset(
-                set(specialties_sets)
+                set(length_of_stays)
             )
 
     # Concepts sets

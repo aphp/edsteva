@@ -128,7 +128,7 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
         care_site_specialties : List[str], optional
             **EXAMPLE**: `["CARDIOLOGIE", "CHIRURGIE"]`
-        concepts_codes : List[str], optional
+        concept_codes : List[str], optional
             **EXAMPLE**: ['E3180', 'G1974', 'J1002', 'A7813', 'A0094', 'G1975', 'J1172', 'G7834', 'F9409', 'F9410', 'C0697', 'H4038']`
         specialties_sets : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
