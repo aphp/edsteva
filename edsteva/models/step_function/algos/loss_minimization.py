@@ -49,7 +49,7 @@ def loss_minimization(
         The loss function $\mathcal{L}$
     """
     check_columns(df=predictor, required_columns=index + [x_col, y_col])
-
+    predictor = predictor.sort_values(x_col)
     cols = index + [x_col, y_col]
     iter = predictor[cols].groupby(index)
     results = []

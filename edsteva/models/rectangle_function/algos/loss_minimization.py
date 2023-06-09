@@ -52,6 +52,7 @@ def loss_minimization(
         Min number of months between $t_0$ and $t_1$.
     """
     check_columns(df=predictor, required_columns=index + [x_col, y_col])
+    predictor = predictor.sort_values(x_col)
     cols = index + [x_col, y_col]
     iter = predictor[cols].groupby(index)
     results = []
