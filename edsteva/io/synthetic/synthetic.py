@@ -67,6 +67,14 @@ OTHER_VISIT_COLUMNS = dict(
         ("Actif", 0.999),
         ("supprimé", 0.001),
     ],
+    stay_source_value=[
+        ("MCO", 0.9),
+        ("Psychiatrie", 0.05),
+        ("SSR", 0.02),
+        ("SLD", 0.03),
+    ],
+    person_id=[(str(i), 0.01) for i in range(100)],
+    provenance_source_value=[("service d'urgence", 0.8), ("non renseigné", 0.2)],
 )
 
 OTHER_CONDITION_COLUMNS = dict(

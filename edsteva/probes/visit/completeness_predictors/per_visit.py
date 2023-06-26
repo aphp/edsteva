@@ -6,6 +6,7 @@ import pandas as pd
 from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
+    prepare_person,
     prepare_visit_detail,
     prepare_visit_occurrence,
 )
@@ -31,8 +32,12 @@ def compute_completeness_predictor_per_visit(
     care_site_ids: List[int],
     care_site_short_names: List[str],
     care_site_specialties: List[str],
+    care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     stay_durations: List[float],
+    age_list: List[int],
+    provenance_source: Union[str, Dict[str, str]],
+    pmsi_type: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -46,12 +51,19 @@ def compute_completeness_predictor_per_visit(
     Where $n_{visit}(t)$ is the number of administrative stays, $t$ is the month and $n_{max} = \max_{t}(n_{visit}(t))$.
     """
     self._metrics = ["c", "n_visit"]
+
+    person = prepare_person(data) if age_list else None
+
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         start_date=start_date,
         end_date=end_date,
         stay_types=stay_types,
         stay_durations=stay_durations,
+        pmsi_type=pmsi_type,
+        provenance_source=provenance_source,
+        person=person,
+        age_list=age_list,
     )
 
     care_site = prepare_care_site(
@@ -61,6 +73,7 @@ def compute_completeness_predictor_per_visit(
         care_site_specialties=care_site_specialties,
         care_site_relationship=care_site_relationship,
         specialties_sets=specialties_sets,
+        care_sites_sets=care_sites_sets,
     )
 
     hospital_visit = get_hospital_visit(
@@ -245,6 +258,7 @@ def get_pole_visit(
                 "care_site_level",
                 "care_site_specialty",
                 "specialties_set",
+                "care_sites_set",
             ]
         ).intersection(uf_visit.columns)
     )
@@ -253,7 +267,6 @@ def get_pole_visit(
         table_name="uf_visit",
         care_site_relationship=care_site_relationship,
     )
-
     pole_visit = pole_visit.merge(care_site, on="care_site_id")
     pole_name = CARE_SITE_LEVEL_NAMES["Pole"]
     pole_visit = pole_visit[pole_visit["care_site_level"] == pole_name]

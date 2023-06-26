@@ -232,6 +232,31 @@ def filter_table_by_care_site(
     ]
 
 
+def filter_table_by_age(visit_occurrence: pd.DataFrame, age_list: List[int]):
+    age_list.sort()
+
+    visit_occurrence["age"] = (
+        visit_occurrence["date"] - visit_occurrence["birth_datetime"]
+    ) / (np.timedelta64(timedelta(days=1)) * 356)
+
+    visit_occurrence["age_range"] = "Unkown"
+    visit_occurrence.loc[
+        visit_occurrence.age <= age_list[0], "age_range"
+    ] = f"age <= {age_list[0]}"
+
+    for age_min, age_max in zip(age_list[:-1], age_list[1:]):
+        in_range = (visit_occurrence.age > age_min) & (visit_occurrence.age <= age_max)
+        visit_occurrence.loc[in_range, "age_range"] = f"{age_min} < age <= {age_max}"
+
+    visit_occurrence.loc[
+        visit_occurrence.age > age_list[-1], "age_range"
+    ] = f"age > {age_list[-1]}"
+
+    visit_occurrence = visit_occurrence.drop(columns="age")
+
+    return visit_occurrence
+
+
 def convert_uf_to_pole(
     table: DataFrame,
     table_name: str,

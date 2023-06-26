@@ -8,6 +8,7 @@ from edsteva.probes.utils.prepare_df import (
     prepare_biology_relationship,
     prepare_care_site,
     prepare_measurement,
+    prepare_person,
     prepare_visit_occurrence,
 )
 from edsteva.probes.utils.utils import (
@@ -33,11 +34,15 @@ def compute_completeness_predictor_per_measurement(
     care_site_short_names: List[str],
     care_site_specialties: List[str],
     concept_codes: List[str],
+    care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     concepts_sets: Union[str, Dict[str, str]],
     stay_durations: List[float],
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
+    age_list: List[int],
+    provenance_source: Union[str, Dict[str, str]],
+    pmsi_type: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -53,7 +58,12 @@ def compute_completeness_predictor_per_measurement(
     self._metrics = ["c", "n_measurement"]
     check_tables(
         data=data,
-        required_tables=["measurement", "concept", "concept_relationship"],
+        required_tables=[
+            "measurement",
+            "concept",
+            "concept_relationship",
+            "visit_occurrence",
+        ],
     )
     standard_terminologies = self._standard_terminologies
     biology_relationship = prepare_biology_relationship(
@@ -65,6 +75,8 @@ def compute_completeness_predictor_per_measurement(
 
     self.biology_relationship = biology_relationship
     root_terminology = mapping[0][0]
+
+    person = prepare_person(data) if age_list else None
 
     measurement = prepare_measurement(
         data=data,
@@ -84,6 +96,10 @@ def compute_completeness_predictor_per_measurement(
         end_date=None,
         stay_types=stay_types,
         stay_durations=stay_durations,
+        provenance_source=provenance_source,
+        pmsi_type=pmsi_type,
+        person=person,
+        age_list=age_list,
     ).drop(columns=["visit_occurrence_source_value", "date"])
 
     care_site = prepare_care_site(
@@ -91,6 +107,7 @@ def compute_completeness_predictor_per_measurement(
         care_site_ids=care_site_ids,
         care_site_short_names=care_site_short_names,
         care_site_specialties=care_site_specialties,
+        care_sites_sets=care_sites_sets,
         specialties_sets=specialties_sets,
         care_site_relationship=care_site_relationship,
     )

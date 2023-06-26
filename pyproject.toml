@@ -36,6 +36,7 @@ pgpasslib = "^1.1.0"
 psycopg2-binary = "^2.9.3"
 pyarrow = ">=0.15, <0.17.0"
 catalogue = "^2.0.8"
+tqdm = "^4.65.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"

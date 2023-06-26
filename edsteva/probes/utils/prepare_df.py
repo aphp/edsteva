@@ -9,6 +9,7 @@ from edsteva.utils.framework import get_framework, is_koalas, to
 from edsteva.utils.typing import Data, DataFrame
 
 from .filter_df import (
+    filter_table_by_age,
     filter_table_by_care_site,
     filter_table_by_date,
     filter_table_by_stay_duration,
@@ -21,8 +22,12 @@ def prepare_visit_occurrence(
     data: Data,
     stay_types: Union[str, Dict[str, str]],
     stay_durations: List[float],
+    pmsi_type: Union[str, Dict[str, str]],
+    provenance_source: Union[str, Dict[str, str]],
     start_date: datetime = None,
     end_date: datetime = None,
+    person: DataFrame = None,
+    age_list: List[int] = None,
 ):
     required_columns = [
         "visit_occurrence_id",
@@ -31,14 +36,34 @@ def prepare_visit_occurrence(
         "visit_end_datetime",
         "care_site_id",
         "row_status_source_value",
+        "stay_source_value",
         "visit_occurrence_source_value",
+        "provenance_source_value",
+        "person_id",
     ]
+
     check_columns(
         data.visit_occurrence,
         required_columns=required_columns,
         df_name="visit_occurrence",
     )
     visit_occurrence = data.visit_occurrence[required_columns]
+
+    visit_occurrence = filter_table_by_type(
+        table=visit_occurrence,
+        table_name="visit_occurrence",
+        type_groups=pmsi_type,
+        source_col="stay_source_value",
+        target_col="pmsi_type",
+    )
+
+    visit_occurrence = filter_table_by_type(
+        table=visit_occurrence,
+        table_name="visit_occurrence",
+        type_groups=provenance_source,
+        source_col="provenance_source_value",
+        target_col="provenance_source",
+    )
 
     visit_occurrence = filter_table_by_stay_duration(
         visit_occurrence=visit_occurrence, stay_durations=stay_durations
@@ -68,6 +93,15 @@ def prepare_visit_occurrence(
             type_groups=stay_types,
             source_col="stay_type",
             target_col="stay_type",
+        )
+
+    if age_list:
+        visit_occurrence = visit_occurrence.merge(
+            person, left_on="person_id", right_on="person_id"
+        )
+        visit_occurrence = filter_table_by_age(
+            visit_occurrence=visit_occurrence,
+            age_list=age_list,
         )
 
     return visit_occurrence
@@ -288,6 +322,7 @@ def prepare_care_site(
     care_site_short_names: Union[str, List[str]],
     care_site_specialties: Union[str, List[str]],
     specialties_sets: Union[str, Dict[str, str]],
+    care_sites_sets: Union[str, Dict[str, str]],
     care_site_relationship: pd.DataFrame,
 ):
     care_site = data.care_site[
@@ -311,6 +346,16 @@ def prepare_care_site(
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
             care_site_specialties=care_site_specialties,
+        )
+
+    # Add care_sites_set
+    if care_sites_sets:
+        care_site = filter_table_by_type(
+            table=care_site,
+            table_name="care_site",
+            type_groups=care_sites_sets,
+            source_col="care_site_short_name",
+            target_col="care_sites_set",
         )
 
     # Add specialties_set
@@ -633,3 +678,24 @@ def prepare_biology_relationship(
             "GLIMS",
         )
     return biology_relationship
+
+
+def prepare_person(
+    data: Data,
+):
+    check_tables(
+        data=data,
+        required_tables=["person"],
+    )
+
+    person_columns = ["person_id", "birth_datetime"]
+
+    check_columns(
+        data.person,
+        required_columns=person_columns,
+        df_name="person",
+    )
+
+    person = data.person[person_columns]
+
+    return person

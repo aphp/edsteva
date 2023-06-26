@@ -12,6 +12,7 @@ def loss_minimization(
     index: List[str],
     x_col: str = "date",
     y_col: str = "c",
+    n_col: str = "n_visit",
     loss_function: Callable = l2_loss,
 ) -> pd.DataFrame:
     r"""Computes the threshold $t_0$ of a predictor $c(t)$ by minimizing the following loss function:
@@ -45,12 +46,14 @@ def loss_minimization(
         Column name for the time variable $t$
     y_col : str, optional
         Column name  for the completeness variable $c(t)$
+    n_col : str, optional
+        Column name  for the number of visits.
     loss_function : Callable, optional
         The loss function $\mathcal{L}$
     """
-    check_columns(df=predictor, required_columns=index + [x_col, y_col])
+    check_columns(df=predictor, required_columns=index + [x_col, y_col, n_col])
     predictor = predictor.sort_values(x_col)
-    cols = index + [x_col, y_col]
+    cols = index + [x_col, y_col, n_col]
     iter = predictor[cols].groupby(index)
     results = []
     for partition, group in iter:
@@ -63,6 +66,8 @@ def loss_minimization(
         )
         row["t_0"] = t_0
         row["c_0"] = c_0
+        row["visit_median"] = group[[n_col]][group[[n_col]] > 0].quantile(0.5).values[0]
+        row["visit_max"] = group[[n_col]][group[[n_col]] > 0].max().values[0]
         results.append(row)
 
     return pd.DataFrame(results)

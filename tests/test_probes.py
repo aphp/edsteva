@@ -31,6 +31,7 @@ params = [
         care_site_ids=None,
         care_site_specialties="PSYCHIATRIE",
         specialties_sets=None,
+        care_sites_sets={"All": ".*"},
         stay_durations=[1, 30],
         note_types={"ALL": ".*"},
         stay_types=None,
@@ -60,6 +61,7 @@ params = [
         care_site_short_names="Hôpital-1",
         care_site_specialties=None,
         specialties_sets={"All": ".*"},
+        care_sites_sets=None,
         concepts_codes=["A0009", "A0209", "A3109"],
         stay_durations=[1],
         note_types="CRH",
@@ -83,6 +85,7 @@ params = [
         care_site_short_names=["Hôpital-1", "Hôpital-2"],
         care_site_specialties=["REA ADULTE", "PSYCHIATRIE"],
         specialties_sets=None,
+        care_sites_sets=None,
         stay_durations=None,
         stay_types={"ALL": ".*", "HC": "hospitalisés", "Urg": "urgences"},
         note_types={"ALL": ".*", "CRH": "CRH", "Urg": "urg"},
@@ -177,6 +180,7 @@ def test_compute_visit_probe(data, params):
         care_site_ids=params["care_site_ids"],
         care_site_short_names=params["care_site_short_names"],
         care_site_specialties=params["care_site_specialties"],
+        care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
         stay_durations=params["stay_durations"],
     )
@@ -222,8 +226,23 @@ def test_compute_visit_probe(data, params):
                 set(params["stay_types"])
             )
 
+    # Care sites set
+    if params["care_sites_sets"]:
+        if isinstance(params["care_sites_sets"], dict):
+            assert set(visit.predictor.care_sites_set.unique()).issubset(
+                set(params["care_sites_sets"].keys())
+            )
+        elif isinstance(params["care_sites_sets"], str):
+            assert set(visit.predictor.care_sites_set.unique()).issubset(
+                set([params["care_sites_sets"]])
+            )
+        elif isinstance(params["care_sites_sets"], list):
+            assert set(visit.predictor.care_sites_set.unique()).issubset(
+                set(params["care_sites_sets"])
+            )
+
     # Care site id
-    if params["care_site_ids"]:
+    if params["care_site_ids"] and not params["care_sites_sets"]:
         if isinstance(params["care_site_ids"], str):
             assert visit.predictor.care_site_id.str.startswith(
                 params["care_site_ids"]
@@ -244,17 +263,6 @@ def test_compute_visit_probe(data, params):
                 tuple(map(lambda x: x.split("-")[-1], params["care_site_short_names"]))
             ).all()
 
-    # Care site specialty
-    if params["care_site_specialties"]:
-        care_site_filters = filter_table_by_care_site(
-            table_to_filter=data.care_site,
-            care_site_relationship=visit.care_site_relationship,
-            care_site_specialties=params["care_site_specialties"],
-        ).care_site_id.unique()
-        if is_koalas(data.care_site):
-            care_site_filters = care_site_filters.to_list()
-        assert visit.predictor.care_site_id.isin(care_site_filters).all()
-
     # Specialty sets
     if params["specialties_sets"]:
         if isinstance(params["specialties_sets"], dict):
@@ -269,6 +277,17 @@ def test_compute_visit_probe(data, params):
             assert set(visit.predictor.specialties_set.unique()).issubset(
                 set(params["specialties_sets"])
             )
+
+    # Care site specialty
+    if params["care_site_specialties"]:
+        care_site_filters = filter_table_by_care_site(
+            table_to_filter=data.care_site,
+            care_site_relationship=visit.care_site_relationship,
+            care_site_specialties=params["care_site_specialties"],
+        ).care_site_id.unique()
+        if is_koalas(data.care_site):
+            care_site_filters = care_site_filters.to_list()
+        assert visit.predictor.care_site_id.isin(care_site_filters).all()
 
     # Stay durations
     if params["stay_durations"]:
@@ -312,6 +331,7 @@ def test_compute_note_probe(data, params):
         care_site_ids=params["care_site_ids"],
         care_site_short_names=params["care_site_short_names"],
         care_site_specialties=params["care_site_specialties"],
+        care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
         stay_durations=params["stay_durations"],
         note_types=params["note_types"],
@@ -342,6 +362,21 @@ def test_compute_note_probe(data, params):
                 set(params["stay_types"])
             )
 
+    # Care sites set
+    if params["care_sites_sets"]:
+        if isinstance(params["care_sites_sets"], dict):
+            assert set(note.predictor.care_sites_set.unique()).issubset(
+                set(params["care_sites_sets"].keys())
+            )
+        elif isinstance(params["care_sites_sets"], str):
+            assert set(note.predictor.care_sites_set.unique()).issubset(
+                set([params["care_sites_sets"]])
+            )
+        elif isinstance(params["care_sites_sets"], list):
+            assert set(note.predictor.care_sites_set.unique()).issubset(
+                set(params["care_sites_sets"])
+            )
+
     # Care site id
     if params["care_site_ids"]:
         if isinstance(params["care_site_ids"], str):
@@ -364,17 +399,6 @@ def test_compute_note_probe(data, params):
                 tuple(map(lambda x: x.split("-")[-1], params["care_site_short_names"]))
             ).all()
 
-    # Care site specialty
-    if params["care_site_specialties"]:
-        care_site_filters = filter_table_by_care_site(
-            table_to_filter=data.care_site,
-            care_site_relationship=note.care_site_relationship,
-            care_site_specialties=params["care_site_specialties"],
-        ).care_site_id.unique()
-        if is_koalas(data.care_site):
-            care_site_filters = care_site_filters.to_list()
-        assert note.predictor.care_site_id.isin(care_site_filters).all()
-
     # Specialty sets
     if params["specialties_sets"]:
         if isinstance(params["specialties_sets"], dict):
@@ -389,6 +413,17 @@ def test_compute_note_probe(data, params):
             assert set(note.predictor.specialties_set.unique()).issubset(
                 set(params["specialties_sets"])
             )
+
+    # Care site specialty
+    if params["care_site_specialties"]:
+        care_site_filters = filter_table_by_care_site(
+            table_to_filter=data.care_site,
+            care_site_relationship=note.care_site_relationship,
+            care_site_specialties=params["care_site_specialties"],
+        ).care_site_id.unique()
+        if is_koalas(data.care_site):
+            care_site_filters = care_site_filters.to_list()
+        assert note.predictor.care_site_id.isin(care_site_filters).all()
 
     # Stay durations
     if params["stay_durations"]:
@@ -458,6 +493,7 @@ def test_compute_condition_probe(data, params):
         care_site_ids=params["care_site_ids"],
         care_site_short_names=params["care_site_short_names"],
         care_site_specialties=params["care_site_specialties"],
+        care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
         stay_durations=params["stay_durations"],
         diag_types=params["diag_types"],
@@ -511,6 +547,21 @@ def test_compute_condition_probe(data, params):
                 set(params["stay_types"])
             )
 
+    # Care sites set
+    if params["care_sites_sets"]:
+        if isinstance(params["care_sites_sets"], dict):
+            assert set(condition.predictor.care_sites_set.unique()).issubset(
+                set(params["care_sites_sets"].keys())
+            )
+        elif isinstance(params["care_sites_sets"], str):
+            assert set(condition.predictor.care_sites_set.unique()).issubset(
+                set([params["care_sites_sets"]])
+            )
+        elif isinstance(params["care_sites_sets"], list):
+            assert set(condition.predictor.care_sites_set.unique()).issubset(
+                set(params["care_sites_sets"])
+            )
+
     # Care site id
     if params["care_site_ids"]:
         if isinstance(params["care_site_ids"], str):
@@ -533,17 +584,6 @@ def test_compute_condition_probe(data, params):
                 tuple(map(lambda x: x.split("-")[-1], params["care_site_short_names"]))
             ).all()
 
-    # Care site specialty
-    if params["care_site_specialties"]:
-        care_site_filters = filter_table_by_care_site(
-            table_to_filter=data.care_site,
-            care_site_relationship=condition.care_site_relationship,
-            care_site_specialties=params["care_site_specialties"],
-        ).care_site_id.unique()
-        if is_koalas(data.care_site):
-            care_site_filters = care_site_filters.to_list()
-        assert condition.predictor.care_site_id.isin(care_site_filters).all()
-
     # Specialty sets
     if params["specialties_sets"]:
         if isinstance(params["specialties_sets"], dict):
@@ -558,6 +598,17 @@ def test_compute_condition_probe(data, params):
             assert set(condition.predictor.specialties_set.unique()).issubset(
                 set(params["specialties_sets"])
             )
+
+    # Care site specialty
+    if params["care_site_specialties"]:
+        care_site_filters = filter_table_by_care_site(
+            table_to_filter=data.care_site,
+            care_site_relationship=condition.care_site_relationship,
+            care_site_specialties=params["care_site_specialties"],
+        ).care_site_id.unique()
+        if is_koalas(data.care_site):
+            care_site_filters = care_site_filters.to_list()
+        assert condition.predictor.care_site_id.isin(care_site_filters).all()
 
     # Stay durations
     if params["stay_durations"]:
@@ -631,6 +682,7 @@ def test_compute_biology_probe(data, params):
         care_site_ids=params["care_site_ids"],
         care_site_short_names=params["care_site_short_names"],
         care_site_specialties=params["care_site_specialties"],
+        care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
         stay_durations=params["stay_durations"],
         concepts_sets=params["concepts_sets"],
@@ -661,6 +713,21 @@ def test_compute_biology_probe(data, params):
                 set(params["stay_types"])
             )
 
+    # Care sites set
+    if params["care_sites_sets"]:
+        if isinstance(params["care_sites_sets"], dict):
+            assert set(biology.predictor.care_sites_set.unique()).issubset(
+                set(params["care_sites_sets"].keys())
+            )
+        elif isinstance(params["care_sites_sets"], str):
+            assert set(biology.predictor.care_sites_set.unique()).issubset(
+                set([params["care_sites_sets"]])
+            )
+        elif isinstance(params["care_sites_sets"], list):
+            assert set(biology.predictor.care_sites_set.unique()).issubset(
+                set(params["care_sites_sets"])
+            )
+
     # Care site id
     if params["care_site_ids"]:
         if isinstance(params["care_site_ids"], str):
@@ -683,17 +750,6 @@ def test_compute_biology_probe(data, params):
                 tuple(map(lambda x: x.split("-")[-1], params["care_site_short_names"]))
             ).all()
 
-    # Care site specialty
-    if params["care_site_specialties"]:
-        care_site_filters = filter_table_by_care_site(
-            table_to_filter=data.care_site,
-            care_site_relationship=biology.care_site_relationship,
-            care_site_specialties=params["care_site_specialties"],
-        ).care_site_id.unique()
-        if is_koalas(data.care_site):
-            care_site_filters = care_site_filters.to_list()
-        assert biology.predictor.care_site_id.isin(care_site_filters).all()
-
     # Specialty sets
     if params["specialties_sets"]:
         if isinstance(params["specialties_sets"], dict):
@@ -708,6 +764,17 @@ def test_compute_biology_probe(data, params):
             assert set(biology.predictor.specialties_set.unique()).issubset(
                 set(params["specialties_sets"])
             )
+
+    # Care site specialty
+    if params["care_site_specialties"]:
+        care_site_filters = filter_table_by_care_site(
+            table_to_filter=data.care_site,
+            care_site_relationship=biology.care_site_relationship,
+            care_site_specialties=params["care_site_specialties"],
+        ).care_site_id.unique()
+        if is_koalas(data.care_site):
+            care_site_filters = care_site_filters.to_list()
+        assert biology.predictor.care_site_id.isin(care_site_filters).all()
 
     # Stay durations
     if params["stay_durations"]:

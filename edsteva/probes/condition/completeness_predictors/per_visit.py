@@ -8,6 +8,7 @@ from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
     prepare_condition_occurrence,
+    prepare_person,
     prepare_visit_detail,
     prepare_visit_occurrence,
 )
@@ -34,11 +35,15 @@ def compute_completeness_predictor_per_visit(
     extra_data: Data,
     care_site_short_names: List[str],
     care_site_specialties: List[str],
+    care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     diag_types: Union[str, Dict[str, str]],
     condition_types: Union[str, Dict[str, str]],
     source_systems: List[str],
     stay_durations: List[float],
+    age_list: List[int],
+    provenance_source: Union[str, Dict[str, str]],
+    pmsi_type: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -60,12 +65,18 @@ def compute_completeness_predictor_per_visit(
     ):  # pragma: no cover
         logger.info("AREM claim data are only available at hospital level")
 
+    person = prepare_person(data) if age_list else None
+
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         start_date=start_date,
         end_date=end_date,
         stay_types=stay_types,
         stay_durations=stay_durations,
+        provenance_source=provenance_source,
+        pmsi_type=pmsi_type,
+        person=person,
+        age_list=age_list,
     )
 
     condition_occurrence = prepare_condition_occurrence(
@@ -83,6 +94,7 @@ def compute_completeness_predictor_per_visit(
         care_site_short_names=care_site_short_names,
         care_site_relationship=care_site_relationship,
         care_site_specialties=care_site_specialties,
+        care_sites_sets=care_sites_sets,
         specialties_sets=specialties_sets,
     )
 
@@ -259,6 +271,7 @@ def get_pole_visit(
                 "care_site_level",
                 "care_site_specialty",
                 "specialties_set",
+                "care_sites_set",
             ]
         ).intersection(uf_visit.columns)
     )

@@ -55,9 +55,13 @@ class BiologyProbe(BaseProbe):
             "concepts_set",
             "stay_type",
             "length_of_stay",
+            "age_range",
             "care_site_id",
             "care_site_specialty",
+            "care_sites_set",
             "specialties_set",
+            "pmsi_type",
+            "provenance_source",
         ] + [
             "{}_concept_code".format(terminology)
             for terminology in standard_terminologies
@@ -79,6 +83,7 @@ class BiologyProbe(BaseProbe):
         care_site_short_names: List[str] = None,
         care_site_specialties: List[str] = None,
         concept_codes: List[str] = None,
+        care_sites_sets: Union[str, Dict[str, str]] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
         concepts_sets: Union[str, Dict[str, str]] = {
             "Leucocytes": "A0174|K3232|H6740|E4358|C9784|C8824|E6953",
@@ -104,6 +109,9 @@ class BiologyProbe(BaseProbe):
             ("GLIMS_ANABIO", "ANABIO_ITM", "Mapped from"),
             ("ANABIO_ITM", "LOINC_ITM", "Maps to"),
         ],
+        provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
+        pmsi_type: Union[str, Dict[str, str]] = {"MCO": "MCO"},
+        age_list: List[int] = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -130,6 +138,8 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `["CARDIOLOGIE", "CHIRURGIE"]`
         concept_codes : List[str], optional
             **EXAMPLE**: ['E3180', 'G1974', 'J1002', 'A7813', 'A0094', 'G1975', 'J1172', 'G7834', 'F9409', 'F9410', 'C0697', 'H4038']`
+        care_sites_sets : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All AP-HP": ".*"}` or `{"All AP-HP": ".*", "Pediatrics": r"debre|trousseau|necker"}`
         specialties_sets : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
         concepts_sets : Union[str, Dict[str, str]], optional
@@ -142,16 +152,25 @@ class BiologyProbe(BaseProbe):
         mapping : List[Tuple[str, str, str]], optional
             List of values to filter in the column `relationship_id` in order to map between 2 terminologies.
             **EXAMPLE**: `[("ANALYSES_LABORATOIRE", "GLIMS_ANABIO", "Maps to")]`
+        pmsi_type : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", MCO_PSY" : "MCO|Psychiatrie","MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
+        provenance_source : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
+        age_list : List[int], optional
+            **EXAMPLE**: `[18, 64]`
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
+        if care_sites_sets is None and "care_sites_set" in self._index:
+            self._index.remove("care_sites_set")
+        if age_list is None and "age_range" in self._index:
+            self._index.remove("age_range")
         if concepts_sets is None and "concepts_set" in self._index:
             self._index.remove("concepts_set")
         else:
             for terminology in self._standard_terminologies:
                 if "{}_concept_code".format(terminology) in self._index:
                     self._index.remove("{}_concept_code".format(terminology))
-
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -164,11 +183,15 @@ class BiologyProbe(BaseProbe):
             care_site_short_names=care_site_short_names,
             care_site_specialties=care_site_specialties,
             concept_codes=concept_codes,
+            care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             concepts_sets=concepts_sets,
             stay_durations=stay_durations,
             source_terminologies=source_terminologies,
             mapping=mapping,
+            provenance_source=provenance_source,
+            pmsi_type=pmsi_type,
+            age_list=age_list,
             **kwargs,
         )
 
