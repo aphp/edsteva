@@ -31,6 +31,7 @@ def compute_completeness_predictor_per_visit(
     care_site_ids: List[int],
     care_site_short_names: List[str],
     care_site_specialties: List[str],
+    care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     stay_durations: List[float],
     **kwargs
@@ -61,6 +62,7 @@ def compute_completeness_predictor_per_visit(
         care_site_specialties=care_site_specialties,
         care_site_relationship=care_site_relationship,
         specialties_sets=specialties_sets,
+        care_sites_sets=care_sites_sets,
     )
 
     hospital_visit = get_hospital_visit(
@@ -245,6 +247,7 @@ def get_pole_visit(
                 "care_site_level",
                 "care_site_specialty",
                 "specialties_set",
+                "care_sites_set",
             ]
         ).intersection(uf_visit.columns)
     )
@@ -253,7 +256,6 @@ def get_pole_visit(
         table_name="uf_visit",
         care_site_relationship=care_site_relationship,
     )
-
     pole_visit = pole_visit.merge(care_site, on="care_site_id")
     pole_name = CARE_SITE_LEVEL_NAMES["Pole"]
     pole_visit = pole_visit[pole_visit["care_site_level"] == pole_name]

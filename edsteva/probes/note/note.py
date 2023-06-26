@@ -43,6 +43,7 @@ class NoteProbe(BaseProbe):
             "note_type",
             "care_site_id",
             "care_site_specialty",
+            "care_sites_set",
             "specialties_set",
         ]
         super().__init__(
@@ -61,6 +62,7 @@ class NoteProbe(BaseProbe):
         care_site_ids: List[int],
         care_site_short_names: List[str] = None,
         care_site_specialties: List[str] = None,
+        care_sites_sets: Union[str, Dict[str, str]] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
         extra_data: Data = None,
         stay_durations: List[float] = None,
@@ -95,6 +97,8 @@ class NoteProbe(BaseProbe):
             **EXAMPLE**: `[8312056386, 8312027648]`
         care_site_specialties : List[str], optional
             **EXAMPLE**: `["CARDIOLOGIE", "CHIRURGIE"]`
+        care_sites_sets : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All AP-HP": ".*"}` or `{"All AP-HP": ".*", "Pediatrics": r"debre|trousseau|necker"}`
         specialties_sets : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
         extra_data : Data
@@ -106,6 +110,8 @@ class NoteProbe(BaseProbe):
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
+        if care_sites_sets is None and "care_sites_set" in self._index:
+            self._index.remove("care_sites_set")
         if note_types is None and "note_type" in self._index:
             self._index.remove("note_type")
         return completeness_predictors.get(self._completeness_predictor)(
@@ -120,6 +126,7 @@ class NoteProbe(BaseProbe):
             extra_data=extra_data,
             care_site_short_names=care_site_short_names,
             care_site_specialties=care_site_specialties,
+            care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             note_types=note_types,
             stay_durations=stay_durations,

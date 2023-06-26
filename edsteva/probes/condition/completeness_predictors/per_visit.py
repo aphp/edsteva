@@ -34,6 +34,7 @@ def compute_completeness_predictor_per_visit(
     extra_data: Data,
     care_site_short_names: List[str],
     care_site_specialties: List[str],
+    care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     diag_types: Union[str, Dict[str, str]],
     condition_types: Union[str, Dict[str, str]],
@@ -83,6 +84,7 @@ def compute_completeness_predictor_per_visit(
         care_site_short_names=care_site_short_names,
         care_site_relationship=care_site_relationship,
         care_site_specialties=care_site_specialties,
+        care_sites_sets=care_sites_sets,
         specialties_sets=specialties_sets,
     )
 
@@ -259,6 +261,7 @@ def get_pole_visit(
                 "care_site_level",
                 "care_site_specialty",
                 "specialties_set",
+                "care_sites_set",
             ]
         ).intersection(uf_visit.columns)
     )

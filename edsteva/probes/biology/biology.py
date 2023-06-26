@@ -57,6 +57,7 @@ class BiologyProbe(BaseProbe):
             "length_of_stay",
             "care_site_id",
             "care_site_specialty",
+            "care_sites_set",
             "specialties_set",
         ] + [
             "{}_concept_code".format(terminology)
@@ -79,6 +80,7 @@ class BiologyProbe(BaseProbe):
         care_site_short_names: List[str] = None,
         care_site_specialties: List[str] = None,
         concept_codes: List[str] = None,
+        care_sites_sets: Union[str, Dict[str, str]] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
         concepts_sets: Union[str, Dict[str, str]] = {
             "Leucocytes": "A0174|K3232|H6740|E4358|C9784|C8824|E6953",
@@ -130,6 +132,8 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `["CARDIOLOGIE", "CHIRURGIE"]`
         concept_codes : List[str], optional
             **EXAMPLE**: ['E3180', 'G1974', 'J1002', 'A7813', 'A0094', 'G1975', 'J1172', 'G7834', 'F9409', 'F9410', 'C0697', 'H4038']`
+        care_sites_sets : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All AP-HP": ".*"}` or `{"All AP-HP": ".*", "Pediatrics": r"debre|trousseau|necker"}`
         specialties_sets : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
         concepts_sets : Union[str, Dict[str, str]], optional
@@ -145,6 +149,8 @@ class BiologyProbe(BaseProbe):
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
+        if care_sites_sets is None and "care_sites_set" in self._index:
+            self._index.remove("care_sites_set")
         if concepts_sets is None and "concepts_set" in self._index:
             self._index.remove("concepts_set")
         else:
@@ -164,6 +170,7 @@ class BiologyProbe(BaseProbe):
             care_site_short_names=care_site_short_names,
             care_site_specialties=care_site_specialties,
             concept_codes=concept_codes,
+            care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             concepts_sets=concepts_sets,
             stay_durations=stay_durations,

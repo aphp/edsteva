@@ -45,6 +45,7 @@ class ConditionProbe(BaseProbe):
             "source_system",
             "care_site_id",
             "care_site_specialty",
+            "care_sites_set",
             "specialties_set",
         ]
         super().__init__(
@@ -65,6 +66,7 @@ class ConditionProbe(BaseProbe):
         care_site_short_names: List[str] = None,
         care_site_specialties: List[str] = None,
         diag_types: Union[str, Dict[str, str]] = None,
+        care_sites_sets: Union[str, Dict[str, str]] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
         condition_types: Union[str, Dict[str, str]] = None,
         source_systems: List[str] = ["ORBIS"],
@@ -95,6 +97,8 @@ class ConditionProbe(BaseProbe):
             **EXAMPLE**: `["CARDIOLOGIE", "CHIRURGIE"]`
         diag_types : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "DP\DR": "DP|DR"}` or `"DP"`
+        care_sites_sets : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All AP-HP": ".*"}` or `{"All AP-HP": ".*", "Pediatrics": r"debre|trousseau|necker"}`
         specialties_sets : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
         condition_types : Union[str, Dict[str, str]], optional
@@ -106,6 +110,8 @@ class ConditionProbe(BaseProbe):
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
+        if care_sites_sets is None and "care_sites_set" in self._index:
+            self._index.remove("care_sites_set")
         if condition_types is None and "condition_type" in self._index:
             self._index.remove("condition_type")
         return completeness_predictors.get(self._completeness_predictor)(
@@ -120,6 +126,7 @@ class ConditionProbe(BaseProbe):
             extra_data=extra_data,
             care_site_short_names=care_site_short_names,
             care_site_specialties=care_site_specialties,
+            care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             diag_types=diag_types,
             stay_durations=stay_durations,

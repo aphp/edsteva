@@ -288,6 +288,7 @@ def prepare_care_site(
     care_site_short_names: Union[str, List[str]],
     care_site_specialties: Union[str, List[str]],
     specialties_sets: Union[str, Dict[str, str]],
+    care_sites_sets: Union[str, Dict[str, str]],
     care_site_relationship: pd.DataFrame,
 ):
     care_site = data.care_site[
@@ -311,6 +312,16 @@ def prepare_care_site(
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
             care_site_specialties=care_site_specialties,
+        )
+
+    # Add care_sites_set
+    if care_sites_sets:
+        care_site = filter_table_by_type(
+            table=care_site,
+            table_name="care_site",
+            type_groups=care_sites_sets,
+            source_col="care_site_short_name",
+            target_col="care_sites_set",
         )
 
     # Add specialties_set

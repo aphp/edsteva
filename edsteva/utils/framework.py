@@ -47,7 +47,7 @@ def pandas(obj: DataObject) -> DataObject:
     # Try using pyarrow via HDFS to convert object to pandas as it is way faster.
     user = os.environ["USER"]
     parquet_path = f"hdfs://bbsedsi/user/{user}/temp.parquet"
-    try:
+    try:  # pragma: no cover
         obj.to_parquet(parquet_path)
         obj = pq.read_table(parquet_path)
     except Exception as e:
