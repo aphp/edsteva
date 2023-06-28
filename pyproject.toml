@@ -111,7 +111,7 @@ safe_licenses = [
   "Eclipse Public License 2.0 (EPL-2.0)",
   "GNU Library or Lesser General Public License (LGPL)",
 ]
-unsafe_packages  = ["ypy-websocket", "y-py"]
+unsafe_packages  = ["ypy-websocket"]
 ignore_packages = ["pgpasslib"]
 
 [build-system]
