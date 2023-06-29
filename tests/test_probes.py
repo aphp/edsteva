@@ -32,7 +32,7 @@ params = [
         care_site_specialties="PSYCHIATRIE",
         specialties_sets=None,
         care_sites_sets={"All": ".*"},
-        stay_durations=[1, 30],
+        length_of_stays=[1, 30],
         note_types={"ALL": ".*"},
         stay_types=None,
         diag_types=None,
@@ -63,7 +63,7 @@ params = [
         specialties_sets={"All": ".*"},
         care_sites_sets=None,
         concepts_codes=["A0009", "A0209", "A3109"],
-        stay_durations=[1],
+        length_of_stays=[1],
         note_types="CRH",
         stay_types="hospitalisés",
         diag_types="DP",
@@ -86,7 +86,7 @@ params = [
         care_site_specialties=["REA ADULTE", "PSYCHIATRIE"],
         specialties_sets=None,
         care_sites_sets=None,
-        stay_durations=None,
+        length_of_stays=None,
         stay_types={"ALL": ".*", "HC": "hospitalisés", "Urg": "urgences"},
         note_types={"ALL": ".*", "CRH": "CRH", "Urg": "urg"},
         diag_types={"ALL": ".*", "DP/DR": "DP|DR"},
@@ -182,7 +182,7 @@ def test_compute_visit_probe(data, params):
         care_site_specialties=params["care_site_specialties"],
         care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
-        stay_durations=params["stay_durations"],
+        length_of_stays=params["length_of_stays"],
     )
 
     # Care site levels
@@ -290,19 +290,19 @@ def test_compute_visit_probe(data, params):
         assert visit.predictor.care_site_id.isin(care_site_filters).all()
 
     # Stay durations
-    if params["stay_durations"]:
-        if isinstance(params["stay_durations"], list):
-            min_duration = params["stay_durations"][0]
-            max_duration = params["stay_durations"][-1]
+    if params["length_of_stays"]:
+        if isinstance(params["length_of_stays"], list):
+            min_duration = params["length_of_stays"][0]
+            max_duration = params["length_of_stays"][-1]
             specialties_sets = [
                 "Incomplete stay",
                 "<= {} days".format(min_duration),
                 ">= {} days".format(max_duration),
             ]
-            n_duration = len(params["stay_durations"])
+            n_duration = len(params["length_of_stays"])
             for i in range(0, n_duration - 1):
-                min = params["stay_durations"][i]
-                max = params["stay_durations"][i + 1]
+                min = params["length_of_stays"][i]
+                max = params["length_of_stays"][i + 1]
                 specialties_sets.append("{} days - {} days".format(min, max))
             assert set(visit.predictor.length_of_stay.unique()).issubset(
                 set(specialties_sets)
@@ -333,7 +333,7 @@ def test_compute_note_probe(data, params):
         care_site_specialties=params["care_site_specialties"],
         care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
-        stay_durations=params["stay_durations"],
+        length_of_stays=params["length_of_stays"],
         note_types=params["note_types"],
     )
 
@@ -426,19 +426,19 @@ def test_compute_note_probe(data, params):
         assert note.predictor.care_site_id.isin(care_site_filters).all()
 
     # Stay durations
-    if params["stay_durations"]:
-        if isinstance(params["stay_durations"], list):
-            min_duration = params["stay_durations"][0]
-            max_duration = params["stay_durations"][-1]
+    if params["length_of_stays"]:
+        if isinstance(params["length_of_stays"], list):
+            min_duration = params["length_of_stays"][0]
+            max_duration = params["length_of_stays"][-1]
             specialties_sets = [
                 "Incomplete stay",
                 "<= {} days".format(min_duration),
                 ">= {} days".format(max_duration),
             ]
-            n_duration = len(params["stay_durations"])
+            n_duration = len(params["length_of_stays"])
             for i in range(0, n_duration - 1):
-                min = params["stay_durations"][i]
-                max = params["stay_durations"][i + 1]
+                min = params["length_of_stays"][i]
+                max = params["length_of_stays"][i + 1]
                 specialties_sets.append("{} days - {} days".format(min, max))
             assert set(note.predictor.length_of_stay.unique()).issubset(
                 set(specialties_sets)
@@ -495,7 +495,7 @@ def test_compute_condition_probe(data, params):
         care_site_specialties=params["care_site_specialties"],
         care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
-        stay_durations=params["stay_durations"],
+        length_of_stays=params["length_of_stays"],
         diag_types=params["diag_types"],
         condition_types=params["condition_types"],
         source_systems=params["source_systems"],
@@ -611,19 +611,19 @@ def test_compute_condition_probe(data, params):
         assert condition.predictor.care_site_id.isin(care_site_filters).all()
 
     # Stay durations
-    if params["stay_durations"]:
-        if isinstance(params["stay_durations"], list):
-            min_duration = params["stay_durations"][0]
-            max_duration = params["stay_durations"][-1]
+    if params["length_of_stays"]:
+        if isinstance(params["length_of_stays"], list):
+            min_duration = params["length_of_stays"][0]
+            max_duration = params["length_of_stays"][-1]
             length_of_stays = [
                 "Incomplete stay",
                 "<= {} days".format(min_duration),
                 ">= {} days".format(max_duration),
             ]
-            n_duration = len(params["stay_durations"])
+            n_duration = len(params["length_of_stays"])
             for i in range(0, n_duration - 1):
-                min = params["stay_durations"][i]
-                max = params["stay_durations"][i + 1]
+                min = params["length_of_stays"][i]
+                max = params["length_of_stays"][i + 1]
                 length_of_stays.append("{} days - {} days".format(min, max))
             assert set(condition.predictor.length_of_stay.unique()).issubset(
                 set(length_of_stays)
@@ -684,7 +684,7 @@ def test_compute_biology_probe(data, params):
         care_site_specialties=params["care_site_specialties"],
         care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
-        stay_durations=params["stay_durations"],
+        length_of_stays=params["length_of_stays"],
         concepts_sets=params["concepts_sets"],
     )
 
@@ -777,19 +777,19 @@ def test_compute_biology_probe(data, params):
         assert biology.predictor.care_site_id.isin(care_site_filters).all()
 
     # Stay durations
-    if params["stay_durations"]:
-        if isinstance(params["stay_durations"], list):
-            min_duration = params["stay_durations"][0]
-            max_duration = params["stay_durations"][-1]
+    if params["length_of_stays"]:
+        if isinstance(params["length_of_stays"], list):
+            min_duration = params["length_of_stays"][0]
+            max_duration = params["length_of_stays"][-1]
             length_of_stays = [
                 "Incomplete stay",
                 "<= {} days".format(min_duration),
                 ">= {} days".format(max_duration),
             ]
-            n_duration = len(params["stay_durations"])
+            n_duration = len(params["length_of_stays"])
             for i in range(0, n_duration - 1):
-                min = params["stay_durations"][i]
-                max = params["stay_durations"][i + 1]
+                min = params["length_of_stays"][i]
+                max = params["length_of_stays"][i + 1]
                 length_of_stays.append("{} days - {} days".format(min, max))
             assert set(biology.predictor.length_of_stay.unique()).issubset(
                 set(length_of_stays)

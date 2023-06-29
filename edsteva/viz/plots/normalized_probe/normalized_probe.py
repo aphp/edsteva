@@ -42,6 +42,7 @@ def normalized_probe_plot(
     estimates_selections: Dict[str, str] = None,
     estimates_filters: Dict[str, str] = None,
     chart_style: Dict[str, float] = None,
+    remove_care_site_id: bool = True,
     **kwargs,
 ):
     r"""Displays a chart with the aggregated normalized completeness predictor $\frac{c(\Delta t)}{c_0}$ over normalized time $\Delta t = t - t_0$. It represents the overall deviation from the Model.
@@ -93,12 +94,17 @@ def normalized_probe_plot(
     chart_style: Dict[str, float], optional
         If not None, configuration used to configure the chart style.
         **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
+    remove_care_site_id: bool, optional
+        If False, it will display care site id and care site name, else only care site name.
     """
 
     predictor = probe.predictor.copy()
     estimates = fitted_model.estimates.copy()
 
-    indexes = list(set(predictor.columns).difference(["date"] + probe._metrics))
+    cols_to_remove = ["date"] + probe._metrics
+    if remove_care_site_id:
+        cols_to_remove.append("care_site_id")
+    indexes = list(set(predictor.columns).difference(cols_to_remove))
     predictor = predictor.merge(estimates, on=probe._index)
 
     probe_config = deepcopy(probe.get_viz_config("normalized_probe_plot"))
@@ -152,11 +158,12 @@ def normalized_probe_plot(
     indexes = [
         {"field": variable, "title": variable.replace("_", " ").capitalize()}
         for variable in indexes
-        if len(predictor[variable].unique()) >= 2
+        if variable in predictor.columns and len(predictor[variable].unique()) >= 2
     ]
 
     index_selection, index_fields = create_groupby_selection(
         indexes=indexes,
+        predictor=predictor,
     )
     base = alt.Chart(predictor)
     base = add_estimates_filters(
@@ -182,10 +189,10 @@ def normalized_probe_plot(
     )
     main_chart = probe_line + error_line + model_line
     if index_selection:
-        main_chart = main_chart.add_selection(index_selection)
+        main_chart = main_chart.add_params(index_selection)
 
     for estimate_selection in estimates_selections:
-        main_chart = main_chart.add_selection(estimate_selection)
+        main_chart = main_chart.add_params(estimate_selection)
 
     main_chart = configure_style(chart=main_chart, chart_style=chart_style)
 

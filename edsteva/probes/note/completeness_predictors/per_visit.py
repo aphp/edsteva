@@ -37,7 +37,7 @@ def compute_completeness_predictor_per_visit(
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     extra_data: Data,
-    stay_durations: List[float],
+    length_of_stays: List[float],
     note_types: Union[str, Dict[str, str]],
     **kwargs
 ):
@@ -60,7 +60,7 @@ def compute_completeness_predictor_per_visit(
         start_date=start_date,
         end_date=end_date,
         stay_types=stay_types,
-        stay_durations=stay_durations,
+        length_of_stays=length_of_stays,
     )
 
     care_site = prepare_care_site(
@@ -200,7 +200,11 @@ def get_visit_detail(
     care_site: DataFrame,
 ):  # pragma: no cover
     visit_detail = visit_detail.merge(
-        visit_occurrence[["visit_occurrence_id", "stay_type", "length_of_stay"]],
+        visit_occurrence[
+            visit_occurrence.columns.intersection(
+                set(["visit_occurrence_id", "length_of_stay", "stay_type"])
+            )
+        ],
         on="visit_occurrence_id",
     )
 

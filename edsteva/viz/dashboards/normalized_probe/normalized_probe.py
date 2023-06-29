@@ -33,7 +33,6 @@ def normalized_probe_dashboard(
     fitted_model: BaseModel,
     care_site_level: str = CARE_SITE_LEVEL_NAMES["Hospital"],
     save_path: str = None,
-    remove_singleton_bar_chart: bool = True,
     x_axis_title: str = None,
     y_axis_title: str = None,
     main_chart_config: Dict[str, str] = None,
@@ -65,9 +64,6 @@ def normalized_probe_dashboard(
         **EXAMPLE**: `"Hospital"`, `"Hôpital"` or `"UF"`
     save_path : str, optional
         Folder path where to save the chart in HTML format.
-    remove_singleton_bar_chart : bool, optional
-        If set to True, remove the bar charts with only one element
-        **EXAMPLE**: `True`
     x_axis_title: str, optional,
         Label name for the x axis.
     y_axis_title: str, optional,
@@ -163,13 +159,11 @@ def normalized_probe_dashboard(
         base=base,
         horizontal_bar_charts_config=horizontal_bar_charts_config,
         predictor=predictor,
-        remove_singleton_bar_chart=remove_singleton_bar_chart,
     )
     vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
         base=base,
         vertical_bar_charts_config=vertical_bar_charts_config,
         predictor=predictor,
-        remove_singleton_bar_chart=remove_singleton_bar_chart,
     )
 
     selections = dict(
@@ -181,7 +175,6 @@ def normalized_probe_dashboard(
         horizontal_bar_charts,
         **vertical_bar_charts,
     )
-
     base = add_interactive_selection(
         base=base,
         selection_charts=selection_charts,
@@ -194,6 +187,7 @@ def normalized_probe_dashboard(
     )
     index_selection, index_fields = create_groupby_selection(
         indexes=vertical_bar_charts_config["x"] + horizontal_bar_charts_config["y"],
+        predictor=predictor,
     )
     main_chart = generate_main_chart(
         base=base,
@@ -215,7 +209,7 @@ def normalized_probe_dashboard(
 
     main_chart = probe_line + error_line + model_line
     if index_selection:
-        main_chart = main_chart.add_selection(index_selection)
+        main_chart = main_chart.add_params(index_selection)
     chart = concatenate_charts(
         main_chart=main_chart,
         time_line=time_line,
@@ -225,7 +219,7 @@ def normalized_probe_dashboard(
     )
     chart = configure_style(chart=chart, chart_style=chart_style)
     for estimate_selection in estimates_selections:
-        chart = chart.add_selection(estimate_selection)
+        chart = chart.add_params(estimate_selection)
 
     vis_threshold = "id" + uuid.uuid4().hex
     new_sliders_threshold_id = "id" + uuid.uuid4().hex

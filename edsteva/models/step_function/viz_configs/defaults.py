@@ -11,11 +11,11 @@ def get_c_0_min_selection(predictor: DataFrame):
         step=scale_it(predictor.c_0.max()) / 100,
         name="c₀ min: ",
     )
-    c_0_min_selection = alt.selection_single(
+    c_0_min_selection = alt.selection_point(
         name="c_0_min",
         fields=["c_0_min"],
         bind=c_0_min_slider,
-        init={"c_0_min": 0},
+        value=0,
     )
     c_0_min_filter = alt.datum.c_0 >= c_0_min_selection.c_0_min
     return c_0_min_selection, c_0_min_filter
@@ -28,11 +28,11 @@ def get_error_max_selection(predictor: DataFrame):
         step=scale_it(predictor.error.max()) / 100,
         name="error max: ",
     )
-    error_max_selection = alt.selection_single(
+    error_max_selection = alt.selection_point(
         name="error_max",
         fields=["error_max"],
         bind=error_max_slider,
-        init={"error_max": round_up(predictor.error.max(), 2)},
+        value=round_up(predictor.error.max(), 2),
     )
     error_max_filter = alt.datum.error <= error_max_selection.error_max
     return error_max_selection, error_max_filter
@@ -43,11 +43,11 @@ def get_t_0_selection(predictor: DataFrame):
         input="t_0",
         name="t₀ max: ",
     )
-    t_0_selection = alt.selection_single(
+    t_0_selection = alt.selection_point(
         name="t_0",
         fields=["t_0"],
         bind=t_0_slider,
-        init={"t_0": predictor.t_0.astype(str).max()},
+        value=predictor.t_0.astype(str).max(),
     )
     t_0_min_filter = alt.datum.t_0 <= t_0_selection.t_0
     return t_0_selection, t_0_min_filter
@@ -125,6 +125,11 @@ model_line = dict(
                 orient="left",
             ),
         ),
+        tooltip=[
+            alt.Tooltip("value:N", title="Index"),
+            alt.Tooltip("yearmonth(date):T", title="Date"),
+            alt.Tooltip("min(c_hat):Q", title="c₀"),
+        ],
     ),
     aggregates=[
         dict(

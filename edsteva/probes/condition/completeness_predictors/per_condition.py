@@ -39,7 +39,7 @@ def compute_completeness_predictor_per_condition(
     diag_types: Union[str, Dict[str, str]],
     condition_types: Union[str, Dict[str, str]],
     source_systems: List[str],
-    stay_durations: List[float],
+    length_of_stays: List[float],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -64,7 +64,7 @@ def compute_completeness_predictor_per_condition(
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         stay_types=stay_types,
-        stay_durations=stay_durations,
+        length_of_stays=length_of_stays,
     ).drop(columns="date")
 
     condition_occurrence = prepare_condition_occurrence(

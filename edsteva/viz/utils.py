@@ -16,7 +16,7 @@ from edsteva.probes.utils.utils import CARE_SITE_LEVEL_NAMES
 def generate_main_chart(
     base: alt.Chart,
     main_chart_config: Dict[str, str],
-    index_selection: alt.Selection = None,
+    index_selection: alt.SelectionParameter = None,
     index_fields: List[str] = None,
     x_axis_title: str = None,
     y_axis_title: str = None,
@@ -44,6 +44,7 @@ def generate_main_chart(
             x=main_chart_config["encode"]["x"],
             y=main_chart_config["encode"]["y"],
         )
+
     return main_chart.properties(**main_chart_config["properties"])
 
 
@@ -62,7 +63,7 @@ def generate_model_line(
         for filter in model_line_config["filters"]:
             model_line = model_line.transform_filter(**filter)
     model_line = model_line.encode(**model_line_config["encode"])
-
+    model_line = add_selection_on_legend(model_line)
     return model_line
 
 
@@ -73,6 +74,9 @@ def generate_error_line(
     error_line = main_chart.mark_errorband(
         **error_line_config["mark_errorband"]
     ).encode(**error_line_config["encode"])
+    error_line = add_selection_on_legend(
+        error_line, opacity_true=0.3, opacity_false=0.05
+    )
     return error_line
 
 
@@ -81,7 +85,7 @@ def generate_probe_line(
     probe_line_config: Dict[str, str],
 ):
     probe_line = main_chart.mark_line().encode(**probe_line_config["encode"])
-
+    probe_line = add_selection_on_legend(probe_line)
     return probe_line
 
 
@@ -91,9 +95,7 @@ def generate_time_line(
 ):
     time_selection = alt.selection_interval(encodings=["x"])
     time_line = (
-        base.mark_line()
-        .encode(**time_line_config["encode"])
-        .add_selection(time_selection)
+        base.mark_line().encode(**time_line_config["encode"]).add_params(time_selection)
     ).properties(**time_line_config["properties"])
     return time_line, time_selection
 
@@ -102,24 +104,21 @@ def generate_horizontal_bar_charts(
     base: alt.Chart,
     horizontal_bar_charts_config: Dict[str, str],
     predictor: pd.DataFrame,
-    remove_singleton_bar_chart: bool,
 ):
     horizontal_bar_charts = {}
     y_variables_selections = {}
     for y_variable in horizontal_bar_charts_config["y"]:
-        if y_variable["field"] not in predictor.columns or (
-            remove_singleton_bar_chart and predictor[y_variable["field"]].nunique() <= 1
-        ):
+        if y_variable["field"] not in predictor.columns:
             continue
         y_variable_bar_charts = []
-        y_variable_selection = alt.selection_multi(fields=[y_variable["field"]])
+        y_variable_selection = alt.selection_point(fields=[y_variable["field"]])
         y_variables_selections[y_variable["field"]] = y_variable_selection
         y_variable_base_chart = (
             base.mark_bar()
             .encode(
                 y=alt.Y(**y_variable),
             )
-            .add_selection(y_variable_selection)
+            .add_params(y_variable_selection)
         )
         for x_variable in horizontal_bar_charts_config["x"]:
             y_index_variable_color = alt.condition(
@@ -146,24 +145,21 @@ def generate_vertical_bar_charts(
     base: alt.Chart,
     vertical_bar_charts_config: Dict[str, str],
     predictor: pd.DataFrame,
-    remove_singleton_bar_chart: bool,
 ):
     vertical_bar_charts = {}
     x_variables_selections = {}
     for x_variable in vertical_bar_charts_config["x"]:
-        if x_variable["field"] not in predictor.columns or (
-            remove_singleton_bar_chart and predictor[x_variable["field"]].nunique() <= 1
-        ):
+        if x_variable["field"] not in predictor.columns:
             continue
         x_variable_bar_charts = []
-        x_variable_selection = alt.selection_multi(fields=[x_variable["field"]])
+        x_variable_selection = alt.selection_point(fields=[x_variable["field"]])
         x_variables_selections[x_variable["field"]] = x_variable_selection
         x_variable_base_chart = (
             base.mark_bar()
             .encode(
                 x=alt.X(**x_variable),
             )
-            .add_selection(x_variable_selection)
+            .add_params(x_variable_selection)
         )
 
         for y_variable in vertical_bar_charts_config["y"]:
@@ -189,7 +185,7 @@ def generate_vertical_bar_charts(
 
 def add_interactive_selection(
     base: alt.Chart,
-    selections: Dict[str, alt.Selection],
+    selections: Dict[str, alt.SelectionParameter],
     selection_charts: Dict[str, List[alt.Chart]] = None,
 ):
     if selection_charts is None:
@@ -205,9 +201,21 @@ def add_interactive_selection(
     return base
 
 
+def add_selection_on_legend(
+    chart: alt.Chart, opacity_true: float = 1, opacity_false: float = 0.2
+):
+    legend_selection = alt.selection_point(fields=["value"], bind="legend")
+    chart = chart.encode(
+        opacity=alt.condition(
+            legend_selection, alt.value(opacity_true), alt.value(opacity_false)
+        )
+    ).add_params(legend_selection)
+    return chart
+
+
 def add_estimates_filters(
     base: alt.Chart,
-    estimates_filters: Dict[str, alt.Selection],
+    estimates_filters: Dict[str, alt.SelectionParameter],
     selection_charts: Dict[str, List[alt.Chart]] = None,
 ):
     if selection_charts is None:
@@ -224,17 +232,22 @@ def add_estimates_filters(
 
 
 def create_groupby_selection(
-    indexes: List[str],
+    indexes: List[Dict[str, str]],
+    predictor: pd.DataFrame,
 ):
-    index_fields = [index["field"] for index in indexes]
+    index_fields = [
+        index["field"] for index in indexes if index["field"] in predictor.columns
+    ]
     if len(index_fields) >= 2:
-        index_labels = [index["title"] for index in indexes]
-        index_selection = alt.selection_single(
+        index_labels = [
+            index["title"] for index in indexes if index["field"] in predictor.columns
+        ]
+        index_selection = alt.selection_point(
             fields=["index"],
             bind=alt.binding_radio(
                 name="Group by: ", options=index_fields, labels=index_labels
             ),
-            init={"index": index_fields[0]},
+            value=index_fields[0],
         )
     else:
         index_selection = None
@@ -458,6 +471,13 @@ def filter_predictor(
             key,
             value,
         )
+
+    # Care site specialty
+    if (
+        "care_site_specialty" in predictor.columns
+        and predictor[~(predictor.care_site_specialty == "Non Renseigné")].empty
+    ):
+        predictor = predictor.drop(columns="care_site_specialty")
 
     if predictor.empty:
         raise TypeError("Empty predictor: no data to plot.")

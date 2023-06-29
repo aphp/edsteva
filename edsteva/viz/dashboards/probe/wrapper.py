@@ -17,7 +17,6 @@ def probe_dashboard(
     fitted_model: BaseModel = None,
     care_site_level: str = None,
     save_path: str = None,
-    remove_singleton_bar_chart: bool = True,
     legend_predictor: str = "Predictor c(t)",
     legend_model: str = "Model f(t)",
     x_axis_title: str = None,
@@ -49,9 +48,6 @@ def probe_dashboard(
     save_path : str, optional
         Folder path where to save the chart in HTML format.
         **EXAMPLE**: `"my_folder/my_file.html"`
-    remove_singleton_bar_chart : bool, optional
-        If set to True, remove the bar charts with only one element
-        **EXAMPLE**: `True`
     legend_predictor: str, optional,
         Label name for the predictor legend.
     legend_model: str, optional,
@@ -123,7 +119,6 @@ def probe_dashboard(
             predictor=predictor,
             legend_predictor=legend_predictor,
             legend_model=legend_model,
-            remove_singleton_bar_chart=remove_singleton_bar_chart,
             x_axis_title=x_axis_title,
             y_axis_title=y_axis_title,
             main_chart_config=main_chart_config,
@@ -137,7 +132,6 @@ def probe_dashboard(
     else:
         chart = probe_only_dashboard(
             predictor=predictor,
-            remove_singleton_bar_chart=remove_singleton_bar_chart,
             x_axis_title=x_axis_title,
             y_axis_title=y_axis_title,
             main_chart_config=main_chart_config,

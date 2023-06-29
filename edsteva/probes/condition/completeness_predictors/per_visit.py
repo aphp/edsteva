@@ -39,7 +39,7 @@ def compute_completeness_predictor_per_visit(
     diag_types: Union[str, Dict[str, str]],
     condition_types: Union[str, Dict[str, str]],
     source_systems: List[str],
-    stay_durations: List[float],
+    length_of_stays: List[float],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -66,7 +66,7 @@ def compute_completeness_predictor_per_visit(
         start_date=start_date,
         end_date=end_date,
         stay_types=stay_types,
-        stay_durations=stay_durations,
+        length_of_stays=length_of_stays,
     )
 
     condition_occurrence = prepare_condition_occurrence(
@@ -229,7 +229,11 @@ def get_uf_visit(
     condition_uf["has_condition"] = True
 
     visit_detail = visit_detail.merge(
-        visit_occurrence[["visit_occurrence_id", "stay_type", "length_of_stay"]],
+        visit_occurrence[
+            visit_occurrence.columns.intersection(
+                set(["visit_occurrence_id", "length_of_stay", "stay_type"])
+            )
+        ],
         on="visit_occurrence_id",
     )
     uf_visit = visit_detail.merge(

@@ -36,7 +36,7 @@ def compute_completeness_predictor_per_visit(
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     concepts_sets: Union[str, Dict[str, str]],
-    stay_durations: List[float],
+    length_of_stays: List[float],
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
     **kwargs
@@ -72,7 +72,7 @@ def compute_completeness_predictor_per_visit(
         start_date=start_date,
         end_date=end_date,
         stay_types=stay_types,
-        stay_durations=stay_durations,
+        length_of_stays=length_of_stays,
     )
     measurement = prepare_measurement(
         data=data,

@@ -71,6 +71,11 @@ horizontal_bar_charts = dict(
             "field": "specialties_set",
             "sort": "-x",
         },
+        {
+            "title": "Care sites-set",
+            "field": "care_sites_set",
+            "sort": "-x",
+        },
     ],
     x=[
         dict(
@@ -146,7 +151,7 @@ main_chart = dict(
         ),
         y=alt.Y(
             "sum(n_condition):Q",
-            title="Number of recorded diagnostics",
+            title="Number of recorded diagnostic codes",
             axis=alt.Axis(grid=True),
         ),
         color=alt.Color(
@@ -158,6 +163,15 @@ main_chart = dict(
             },
             title=None,
         ),
+        tooltip=[
+            alt.Tooltip("value:N", title="Index"),
+            alt.Tooltip("yearmonth(date):T", title="Date"),
+            alt.Tooltip(
+                "sum(n_condition):Q",
+                title="Number of recorded diagnostic codes",
+                format=",",
+            ),
+        ],
     ),
     properties=dict(
         height=300,

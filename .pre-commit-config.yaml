@@ -9,6 +9,7 @@ repos:
       - id: check-yaml
         args: ['--unsafe']
       - id: check-added-large-files
+        args: ['--maxkb=600']
   - repo: https://github.com/pycqa/isort
     rev: '5.11.5'
     hooks:

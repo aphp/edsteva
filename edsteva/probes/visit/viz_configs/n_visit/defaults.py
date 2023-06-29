@@ -53,6 +53,11 @@ horizontal_bar_charts = dict(
             "field": "specialties_set",
             "sort": "-x",
         },
+        {
+            "title": "Care sites-set",
+            "field": "care_sites_set",
+            "sort": "-x",
+        },
     ],
     x=[
         dict(
@@ -129,6 +134,13 @@ main_chart = dict(
             sort={"field": "n_visit", "op": "sum", "order": "descending"},
             title=None,
         ),
+        tooltip=[
+            alt.Tooltip("value:N", title="Index"),
+            alt.Tooltip("yearmonth(date):T", title="Date"),
+            alt.Tooltip(
+                "sum(n_visit):Q", title="Number of administrative records", format=","
+            ),
+        ],
     ),
     properties=dict(
         height=300,

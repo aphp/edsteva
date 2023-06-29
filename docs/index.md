@@ -1,9 +1,9 @@
----
+<!-- ---
 ᴴₒᴴₒᴴₒ: true
 ---
 
 !!! Warning "DISCLAIMER"
-    EDS-TeVa is intended to be a module of [EDS-Scikit](https://github.com/aphp/EDS-Scikit)
+    EDS-TeVa is intended to be a module of [EDS-Scikit](https://github.com/aphp/EDS-Scikit) -->
 
 <p align="center">
   <a href="https://aphp.github.io/edsteva/latest/"><img src="https://aphp.github.io/edsteva/latest/assets/logo/edsteva_logo_small.svg" alt="EDS-TeVa"></a>
@@ -204,32 +204,25 @@ visit.predictor.head()
 | :----------------------- | :----------- | :------------------- | :----------- | :--------- | :------ | :---- |
 | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg_Hospit' | 2019-05-01 | 233.0   | 0.841 |
 | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'All'        | 2021-04-01 | 393.0   | 0.640 |
-| Pôle/DMU                 | 8312027648   | Care site 2          | 'Urg_Hospit' | 2011-03-01 | 204.0   | 0.497 |
+| Pôle/DMU                 | 8312027648   | Care site 2          | 'Urg_Hospit' | 2017-03-01 | 204.0   | 0.497 |
 | Pôle/DMU                 | 8312027648   | Care site 2          | 'All'        | 2018-08-01 | 22.0    | 0.274 |
 | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 2022-02-01 | 9746.0  | 0.769 |
 
 #### 2.2 Filter your Probe
 
-In this example, we consider the poles of three hospitals over the period from 2009 to 2021. We consequently filter data before any further analysis.
+In this example, we consider the poles of three hospitals. We consequently filter data before any further analysis.
 
 ```python
 from edsteva.probes import VisitProbe
 
-start_date, end_date = ("2009-01-01", "2021-01-01")  # (1)
-care_site_short_name = ["HOSPITAL 1", "HOSPITAL 2", "HOSPITAL 3"]
+care_site_short_name = ["Hôpital-1", "Hôpital-2", "Hôpital-3"]
 
-bct_visit = VisitProbe()
-bct_visit.load()
-bct_visit.predictor = bct_visit.predictor[  # (2)
-    (bct_visit.predictor["date"] >= start_date)
-    & (bct_visit.predictor["date"] <= end_date)
-]
-bct_visit.filter_care_site(care_site_short_names=care_site_short_name)  # (3)
+filtered_visit = VisitProbe()
+filtered_visit.load(path=probe_path)
+filtered_visit.filter_care_site(care_site_short_names=care_site_short_name)  # (1)
 ```
 
-1. This is the study period considered in the example.
-2. `bct_visit.predictor` is a `Pandas.DataFrame`, you can use Pandas'API to filter the Probe.
-3. To filter care sites there is a dedicated method that also includes all upper and lower levels care sites related to the selected care sites.
+1. To filter care sites there is a dedicated method that also includes all upper and lower levels care sites related to the selected care sites.
 
 #### 2.3 Visualize your Probe
 ##### Interactive dashboard
@@ -237,26 +230,26 @@ bct_visit.filter_care_site(care_site_short_names=care_site_short_name)  # (3)
 Interactive dashboards can be used to visualize the average completeness predictor $c(t)$ of the selected care sites and stay types.
 
 ```python
-from edsteva.viz.dashboards import predictor_dashboard
+from edsteva.viz.dashboards import probe_dashboard
 
-predictor_dashboard(
-    probe=bct_visit,
+probe_dashboard(
+    probe=filtered_visit,
     care_site_level="Pole",
 )
 ```
 Interactive dashboard is available [here](assets/charts/interactive_visit.html)
 ##### Static plot
 
-If you need a static plot for a report, a paper or anything else, you can use the [`plot_probe()`][edsteva.viz.plots.probe.wrapper] function. It returns the top plot of the dashboard without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
+If you need a static plot for a report, a paper or anything else, you can use the [`probe_plot()`][edsteva.viz.plots.probe.wrapper] function. It returns the top plot of the dashboard without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
 
 ```python
-from edsteva.viz.plots import plot_probe
+from edsteva.viz.plots import probe_plot
 
 plot_path = "my_path/visit.html"
 stay_type = "All"
 
-plot_probe(
-    probe=bct_visit,
+probe_plot(
+    probe=filtered_visit,
     care_site_level="Hospital",
     stay_type=stay_type,
     save_path=plot_path,  # (1)
@@ -305,7 +298,7 @@ from edsteva.models.step_function import StepFunction
 model_path = "my_path/fitted_visit.pkl"
 
 step_function_model = StepFunction()
-step_function_model.fit(probe=bct_visit)
+step_function_model.fit(probe=filtered_visit)
 step_function_model.save(model_path)  # (1)
 step_function_model.estimates.head()
 ```
@@ -317,7 +310,7 @@ step_function_model.estimates.head()
 | care_site_level | care_site_id | stay_type    | t_0        | c_0   | error |
 | :-------------- | :----------- | :----------- | :--------- | :---- | :---- |
 | Pôle/DMU        | 8312056386   | 'Urg_Hospit' | 2019-05-01 | 0.397 | 0.040 |
-| Pôle/DMU        | 8312056386   | 'All'        | 2011-04-01 | 0.583 | 0.028 |
+| Pôle/DMU        | 8312056386   | 'All'        | 2017-04-01 | 0.583 | 0.028 |
 | Pôle/DMU        | 8312027648   | 'Urg_Hospit' | 2021-03-01 | 0.677 | 0.022 |
 | Pôle/DMU        | 8312027648   | 'All'        | 2018-08-01 | 0.764 | 0.014 |
 | Pôle/DMU        | 8312022130   | 'Urg_Hospit' | 2022-02-01 | 0.652 | 0.027 |
@@ -329,10 +322,10 @@ step_function_model.estimates.head()
 Interactive dashboards can be used to visualize the average completeness predictor $c(t)$ along with the fitted step function of the selected care sites and stay types.
 
 ```python
-from edsteva.viz.dashboards import predictor_dashboard
+from edsteva.viz.dashboards import probe_dashboard
 
-predictor_dashboard(
-    probe=bct_visit,
+probe_dashboard(
+    probe=filtered_visit,
     fitted_model=step_function_model,
     care_site_level="Pole",
 )
@@ -340,16 +333,16 @@ predictor_dashboard(
 Interactive dashboard is available [here](assets/charts/interactive_fitted_visit.html).
 ##### Static plot
 
-If you need a static plot for a report, a paper or anything else, you can use the [`plot_probe()`][edsteva.viz.plots.probe.wrapper] function. It returns the top plot of the dashboard without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
+If you need a static plot for a report, a paper or anything else, you can use the [`probe_plot()`][edsteva.viz.plots.probe.wrapper] function. It returns the top plot of the dashboard without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
 
 ```python
-from edsteva.viz.plots import plot_probe
+from edsteva.viz.plots import probe_plot
 
 plot_path = "my_path/fitted_visit.html"
-stay_type = {"All": ".*"}
+stay_type = "All"
 
-plot_probe(
-    probe=bct_visit,
+probe_plot(
+    probe=filtered_visit,
     fitted_model=step_function_model,
     care_site_level="Hospital",
     stay_type=stay_type,
@@ -372,15 +365,16 @@ Now, that we have estimated $t_0$, $c_0$ and $error$ for each care site and each
 Visualizing the density plots and the medians of the estimates can help you setting the thresholds' values.
 
 ```python
-from edsteva.viz.plots import plot_estimates_densities
+from edsteva.viz.plots import estimates_densities_plot
 
-plot_estimates_densities(
+estimates_densities_plot(
+    probe=filtered_visit,
     fitted_model=step_function_model,
 )
 ```
 ```vegalite
 {
-  "schema-url": "assets/charts/distributions.json"
+  "schema-url": "assets/charts/estimates_densities.json"
 }
 ```
 #### 4.2 Set the thresholds
@@ -391,22 +385,22 @@ The estimates dashboard provides a representation of the overall deviation from 
 from edsteva.viz.dashboards import estimates_dashboard
 
 estimates_dashboard(
-    probe=bct_visit,
+    probe=filtered_visit,
     fitted_model=step_function_model,
     care_site_level="Pole",
 )
 ```
 
 
-The threshold dashboard is available [here](assets/charts/threshold_dashboard.html).
+The threshold dashboard is available [here](assets/charts/normalized_probe_dashboard.html).
 #### 4.3 Fix the deployment bias
 
 Once you set the thresholds, you can extract for each stay type the care sites for which data availability is estimated to be stable over the entire study period.
 
 ```python
-t_0_max = "2009-01-01"  # (1)
-c_0_min = 0.63  # (2)
-error_max = 0.03  # (3)
+t_0_max = "2020-01-01"  # (1)
+c_0_min = 0.3  # (2)
+error_max = 0.1  # (3)
 
 estimates = step_function_model.estimates
 selected_care_site = estimates[
@@ -414,10 +408,10 @@ selected_care_site = estimates[
     & (estimates["c_0"] >= c_0_min)
     & (estimates["error"] <= error_max)
 ]
-print(selected_care_site["care_site_id"].tolist())
+print(selected_care_site["care_site_id"].unique())
 ```
 
-1. In this example the study period starts on January 1, 2009.
+1. In this example the study period starts on January 1, 2020.
 2. The characteristic value $c_0$ estimates the stabilized routine completeness. As we want the selected care sites to have a good completeness after $t_0$, one can for example set the threshold around the median (cf. [distribution][41-visualize-estimates-distributions]) to keep half of the care sites with the highest completeness after $t_0$.
 3. $error$ estimates the stability of the data after $t_0$. As we want the selected care sites to be stable after $t_0$, one can set the threshold around the median (cf. [distribution][41-visualize-estimates-distributions]) to keep half of the care sites with the lowest error after $t_0$.
 
@@ -474,7 +468,7 @@ The working example above describes the canonical usage workflow. However, you w
             | :----------------------- | :----------- | :------------------- | :----------- | :--------- | :------ | :---- |
             | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 2019-05-01 | 233.0   | 0.841 |
             | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 2021-04-01 | 393.0   | 0.640 |
-            | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 2011-03-01 | 204.0   | 0.497 |
+            | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 2017-03-01 | 204.0   | 0.497 |
             | Pôle/DMU                 | 8312027648   | Care site 2          | 'Urg'        | 2018-08-01 | 22.0    | 0.274 |
             | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 2022-02-01 | 9746.0  | 0.769 |
 
@@ -519,7 +513,7 @@ The working example above describes the canonical usage workflow. However, you w
             | care_site_level          | care_site_id | care_site_short_name | stay_type    | note_type             | date       | n_visit | n_visit_with_note | c     |
             | :----------------------- | :----------- | :------------------- | :----------- | :-------------------- | :--------- | :------ | :---------------- | :---- |
             | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 'All'                 | 2019-05-01 | 233.0   | 196.0             | 0.841 |
-            | Unité Fonctionnelle (UF) | 8653815660   | Care site 1          | 'Hospit'     | 'CRH'                 | 2011-04-01 | 393.0   | 252.0             | 0.640 |
+            | Unité Fonctionnelle (UF) | 8653815660   | Care site 1          | 'Hospit'     | 'CRH'                 | 2017-04-01 | 393.0   | 252.0             | 0.640 |
             | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 'CRH'                 | 2021-03-01 | 204.0   | 101.0             | 0.497 |
             | Pôle/DMU                 | 8312056379   | Care site 2          | 'Urg'        | 'Ordonnance'          | 2018-08-01 | 22.0    | 6.0               | 0.274 |
             | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 'CR Passage Urgences' | 2022-02-01 | 9746.0  | 7495.0            | 0.769 |
@@ -561,7 +555,7 @@ The working example above describes the canonical usage workflow. However, you w
             | care_site_level          | care_site_id | care_site_short_name | stay_type    | note_type             | date       | n_note | c     |
             | :----------------------- | :----------- | :------------------- | :----------- | :-------------------- | :--------- | :----- | :---- |
             | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 'All'                 | 2019-05-01 | 233.0  | 0.841 |
-            | Unité Fonctionnelle (UF) | 8653815660   | Care site 1          | 'Hospit'     | 'CRH'                 | 2011-04-01 | 393.0  | 0.640 |
+            | Unité Fonctionnelle (UF) | 8653815660   | Care site 1          | 'Hospit'     | 'CRH'                 | 2017-04-01 | 393.0  | 0.640 |
             | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 'CRH'                 | 2021-03-01 | 204.0  | 0.497 |
             | Pôle/DMU                 | 8312056379   | Care site 2          | 'Urg'        | 'Ordonnance'          | 2018-08-01 | 22.0   | 0.274 |
             | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 'CR Passage Urgences' | 2022-02-01 | 9746.0 | 0.769 |
@@ -612,7 +606,7 @@ The working example above describes the canonical usage workflow. However, you w
             | :----------------------- | :----------- | :------------------- | :-------- | :-------- | :------------------- | :------------- | :--------- | :------ | :--------------------- | :---- |
             | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2019-05-01 | 233.0   | 196.0                  | 0.841 |
             | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | AREM           | 2021-04-01 | 393.0   | 252.0                  | 0.640 |
-            | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2011-03-01 | 204.0   | 101.0                  | 0.497 |
+            | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2017-03-01 | 204.0   | 101.0                  | 0.497 |
             | Unité Fonctionnelle (UF) | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'All'                | ORBIS          | 2018-08-01 | 22.0    | 6.0                    | 0.274 |
             | Pôle/DMU                 | 8312022130   | Care site 3          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | ORBIS          | 2022-02-01 | 9746.0  | 7495.0                 | 0.769 |
 
@@ -656,7 +650,7 @@ The working example above describes the canonical usage workflow. However, you w
             | :----------------------- | :----------- | :------------------- | :-------- | :-------- | :------------------- | :------------- | :--------- | :---------- | :---- |
             | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2019-05-01 | 233.0       | 0.841 |
             | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | AREM           | 2021-04-01 | 393.0       | 0.640 |
-            | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2011-03-01 | 204.0       | 0.497 |
+            | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2017-03-01 | 204.0       | 0.497 |
             | Unité Fonctionnelle (UF) | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'All'                | ORBIS          | 2018-08-01 | 22.0        | 0.274 |
             | Pôle/DMU                 | 8312022130   | Care site 3          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | ORBIS          | 2022-02-01 | 9746.0      | 0.769 |
 
@@ -701,7 +695,7 @@ The working example above describes the canonical usage workflow. However, you w
             | :-------------- | :----------- | :------------------- | :-------- | :------------ | :--------- | :------ | :----------------------- | :---- |
             | Hôpital         | 8312057527   | Care site 1          | 'Hospit'  | 'Créatinine'  | 2019-05-01 | 233.0   | 196.0                    | 0.841 |
             | Hôpital         | 8312057527   | Care site 1          | 'Hospit'  | 'Leucocytes'  | 2021-04-01 | 393.0   | 252.0                    | 0.640 |
-            | Hôpital         | 8312027648   | Care site 2          | 'Hospit'  | 'Créatinine'  | 2011-03-01 | 204.0   | 101.0                    | 0.497 |
+            | Hôpital         | 8312027648   | Care site 2          | 'Hospit'  | 'Créatinine'  | 2017-03-01 | 204.0   | 101.0                    | 0.497 |
             | Hôpital         | 8312027648   | Care site 2          | 'Hospit'  | 'Leucocytes'  | 2018-08-01 | 22.0    | 6.0                      | 0.274 |
             | Hôpital         | 8312022130   | Care site 3          | 'Hospit'  | 'Leucocytes'  | 2022-02-01 | 9746.0  | 7495.0                   | 0.769 |
 
@@ -742,7 +736,7 @@ The working example above describes the canonical usage workflow. However, you w
             | :----------------------- | :----------- | :------------------- | :-------- | :------------ | :--------- | :------------ | :---- |
             | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'Créatinine'  | 2019-05-01 | 233.0         | 0.841 |
             | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'Leucocytes'  | 2021-04-01 | 393.0         | 0.640 |
-            | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'Créatinine'  | 2011-03-01 | 204.0         | 0.497 |
+            | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'Créatinine'  | 2017-03-01 | 204.0         | 0.497 |
             | Unité Fonctionnelle (UF) | 8312027648   | Care site 2          | 'Hospit'  | 'Leucocytes'  | 2018-08-01 | 22.0          | 0.274 |
             | Pôle/DMU                 | 8312022130   | Care site 3          | 'Hospit'  | 'Leucocytes'  | 2022-02-01 | 9746.0        | 0.769 |
 
@@ -832,7 +826,7 @@ The working example above describes the canonical usage workflow. However, you w
             | care_site_level          | care_site_id | stay_type | t_0        | c_0   | error |
             | :----------------------- | :----------- | :-------- | :--------- | :---- | :---- |
             | Unité Fonctionnelle (UF) | 8312056386   | 'Urg'     | 2019-05-01 | 0.397 | 0.040 |
-            | Unité Fonctionnelle (UF) | 8312056386   | 'All'     | 2011-04-01 | 0.583 | 0.028 |
+            | Unité Fonctionnelle (UF) | 8312056386   | 'All'     | 2017-04-01 | 0.583 | 0.028 |
             | Pôle/DMU                 | 8312027648   | 'Hospit'  | 2021-03-01 | 0.677 | 0.022 |
             | Pôle/DMU                 | 8312027648   | 'All'     | 2018-08-01 | 0.764 | 0.014 |
             | Hôpital                  | 8312022130   | 'Hospit'  | 2022-02-01 | 0.652 | 0.027 |
@@ -908,7 +902,7 @@ The working example above describes the canonical usage workflow. However, you w
             | care_site_level          | care_site_id | stay_type | t_0        | c_0   | t_1        | error |
             | :----------------------- | :----------- | :-------- | :--------- | :---- | :--------- | :---- |
             | Unité Fonctionnelle (UF) | 8312056386   | 'Urg'     | 2019-05-01 | 0.397 | 2020-05-01 | 0.040 |
-            | Unité Fonctionnelle (UF) | 8312056386   | 'All'     | 2011-04-01 | 0.583 | 2013-04-01 | 0.028 |
+            | Unité Fonctionnelle (UF) | 8312056386   | 'All'     | 2017-04-01 | 0.583 | 2013-04-01 | 0.028 |
             | Pôle/DMU                 | 8312027648   | 'Hospit'  | 2021-03-01 | 0.677 | 2022-03-01 | 0.022 |
             | Pôle/DMU                 | 8312027648   | 'All'     | 2018-08-01 | 0.764 | 2019-08-01 | 0.014 |
             | Hôpital                  | 8312022130   | 'Hospit'  | 2022-02-01 | 0.652 | 2022-08-01 | 0.027 |
@@ -919,17 +913,17 @@ The working example above describes the canonical usage workflow. However, you w
 
         The library provides interactive dashboards that let you set any combination of care sites, stay types and other columns if included in the Probe. You can only export a dashboard in HTML format.
 
-        === "predictor_dashboard()"
+        === "probe_dashboard()"
 
-            The [``predictor_dashboard()``][edsteva.viz.dashboards.probe.wrapper] returns:
+            The [``probe_dashboard()``][edsteva.viz.dashboards.probe.wrapper] returns:
 
             - On the top, the aggregated variable is the average completeness predictor $c(t)$ over time $t$ with the prediction $\hat{c}(t)$ if the [fitted Model][model] is specified.
             - On the bottom, the interactive filters are all the columns included in the [Probe][probe] (such as time, care site, number of visits...etc.).
 
             ```python
-            from edsteva.viz.dashboards import predictor_dashboard
+            from edsteva.viz.dashboards import probe_dashboard
 
-            predictor_dashboard(
+            probe_dashboard(
                 probe=probe,
                 fitted_model=step_function_model,
                 care_site_level=care_site_level,
@@ -937,39 +931,37 @@ The working example above describes the canonical usage workflow. However, you w
             ```
             An example is available [here](assets/charts/interactive_fitted_visit.html).
 
-        === "estimates_dashboard()"
+        === "normalized_probe_dashboard()"
 
-            The [``estimates_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe] returns a representation of the overall deviation from the [Model][model]:
+            The [``normalized_probe_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe] returns a representation of the overall deviation from the [Model][model]:
 
             - On the top, the aggregated variable is a normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
             - On the bottom, the interactive filters are all the columns included in the [Probe][probe] (such as time, care site, number of visits...etc.) with all the [Model coefficients][model-coefficients] and [metrics][metrics] included in the [Model][model].
 
             ```python
-            from edsteva.viz.dashboards import estimates_dashboard
+            from edsteva.viz.dashboards import normalized_probe_dashboard
 
-            threshold_dashboard(
+            normalized_probe_dashboard(
                 probe=probe,
                 fitted_model=step_function_model,
                 care_site_level=care_site_level,
             )
             ```
 
-            <!-- ![Image title](assets/charts/threshold.gif) -->
-
-            An example is available [here](assets/charts/threshold_dashboard.html).
+            An example is available [here](assets/charts/normalized_probe_dashboard.html).
 
     === "Plot"
 
         The library provides static plots that you can export in png or svg. As it is less interactive, you may specify the filters in the inputs of the functions.
 
-        === "plot_probe()"
+        === "probe_plot()"
 
-            The [``plot_probe()``][edsteva.viz.plots.probe.wrapper] returns the top plot of the [``predictor_dashboard()``][edsteva.viz.dashboards.probe.wrapper]: the normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
+            The [``probe_plot()``][edsteva.viz.plots.probe.wrapper] returns the top plot of the [``probe_dashboard()``][edsteva.viz.dashboards.probe.wrapper]: the normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
 
             ```python
-            from edsteva.viz.plots import plot_probe
+            from edsteva.viz.plots import probe_plot
 
-            plot_probe(
+            probe_plot(
                 probe=probe,
                 fitted_model=step_function_model,
                 care_site_level=care_site_level,
@@ -984,14 +976,14 @@ The working example above describes the canonical usage workflow. However, you w
             }
             ```
 
-        === "plot_normalized_probe()"
+        === "normalized_probe_plot()"
 
-            The [``plot_normalized_probe()``][edsteva.viz.plots.normalized_probe] returns the top plot of the [``estimates_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe]. Consequently, you have to specify the filters in the inputs of the function.
+            The [``normalized_probe_plot()``][edsteva.viz.plots.normalized_probe] returns the top plot of the [``normalized_probe_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe]. Consequently, you have to specify the filters in the inputs of the function.
 
             ```python
-            from edsteva.viz.plots import plot_normalized_probe
+            from edsteva.viz.plots import normalized_probe_plot
 
-            plot_normalized_probe(
+            normalized_probe_plot(
                 probe=probe,
                 fitted_model=step_function_model,
                 care_site_level=care_site_level,
@@ -1001,24 +993,24 @@ The working example above describes the canonical usage workflow. However, you w
             ```
             ```vegalite
             {
-            "schema-url": "assets/charts/normalized_plot.json"
+            "schema-url": "assets/charts/normalized_probe.json"
             }
             ```
 
 
-        === "plot_estimates_densities()"
+        === "estimates_densities_plot()"
 
-            The [``plot_estimates_densities()``][edsteva.viz.plots.estimates_densities] returns the density plot and the median of each estimate. It can help you to set the thresholds.
+            The [``estimates_densities_plot()``][edsteva.viz.plots.estimates_densities] returns the density plot and the median of each estimate. It can help you to set the thresholds.
 
             ```python
-            from edsteva.viz.plots import plot_estimates_densities
+            from edsteva.viz.plots import estimates_densities_plot
 
-            plot_estimates_densities(
+            estimates_densities_plot(
                 fitted_model=step_function_model,
             )
             ```
             ```vegalite
             {
-            "schema-url": "assets/charts/distributions.json"
+            "schema-url": "assets/charts/estimates_densities.json"
             }
             ```

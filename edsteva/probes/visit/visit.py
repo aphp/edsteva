@@ -63,7 +63,7 @@ class VisitProbe(BaseProbe):
         care_site_specialties: List[str] = None,
         care_sites_sets: Union[str, Dict[str, str]] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
-        stay_durations: List[float] = None,
+        length_of_stays: List[float] = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -92,11 +92,13 @@ class VisitProbe(BaseProbe):
             **EXAMPLE**: `{"All AP-HP": ".*"}` or `{"All AP-HP": ".*", "Pediatrics": r"debre|trousseau|necker"}`
         specialties_sets : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
-        stay_durations : List[float], optional
+        length_of_stays : List[float], optional
             **EXAMPLE**: `[1, 30]`
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
+        if length_of_stays is None and "length_of_stay" in self._index:
+            self._index.remove("length_of_stay")
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
         return completeness_predictors.get(self._completeness_predictor)(
@@ -112,7 +114,7 @@ class VisitProbe(BaseProbe):
             care_site_specialties=care_site_specialties,
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
-            stay_durations=stay_durations,
+            length_of_stays=length_of_stays,
             **kwargs,
         )
 

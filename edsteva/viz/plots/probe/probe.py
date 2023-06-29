@@ -3,7 +3,11 @@ from typing import Dict, List
 import altair as alt
 import pandas as pd
 
-from edsteva.viz.utils import create_groupby_selection, generate_main_chart
+from edsteva.viz.utils import (
+    add_selection_on_legend,
+    create_groupby_selection,
+    generate_main_chart,
+)
 
 
 def probe_line(
@@ -32,6 +36,7 @@ def probe_line(
 
     index_selection, index_fields = create_groupby_selection(
         indexes=indexes,
+        predictor=predictor,
     )
     main_chart = generate_main_chart(
         base=base,
@@ -42,8 +47,9 @@ def probe_line(
         y_axis_title=y_axis_title,
     )
     main_chart = main_chart.mark_line()
+    main_chart = add_selection_on_legend(main_chart)
 
     if index_selection:
-        main_chart = main_chart.add_selection(index_selection)
+        main_chart = main_chart.add_params(index_selection)
 
     return main_chart

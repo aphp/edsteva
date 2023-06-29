@@ -70,7 +70,7 @@ class ConditionProbe(BaseProbe):
         specialties_sets: Union[str, Dict[str, str]] = None,
         condition_types: Union[str, Dict[str, str]] = None,
         source_systems: List[str] = ["ORBIS"],
-        stay_durations: List[float] = None,
+        length_of_stays: List[float] = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -105,11 +105,13 @@ class ConditionProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Pulmonary_embolism": "I26"}`
         source_systems : List[str], optional
             **EXAMPLE**: `["AREM", "ORBIS"]`
-        stay_durations : List[float], optional
+        length_of_stays : List[float], optional
             **EXAMPLE**: `[1, 30]`
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
+        if length_of_stays is None and "length_of_stay" in self._index:
+            self._index.remove("length_of_stay")
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
         if condition_types is None and "condition_type" in self._index:
@@ -129,7 +131,7 @@ class ConditionProbe(BaseProbe):
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             diag_types=diag_types,
-            stay_durations=stay_durations,
+            length_of_stays=length_of_stays,
             condition_types=condition_types,
             source_systems=source_systems,
             **kwargs,

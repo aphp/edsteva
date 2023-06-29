@@ -33,7 +33,7 @@ def compute_completeness_predictor_per_visit(
     care_site_specialties: List[str],
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
-    stay_durations: List[float],
+    length_of_stays: List[float],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -52,7 +52,7 @@ def compute_completeness_predictor_per_visit(
         start_date=start_date,
         end_date=end_date,
         stay_types=stay_types,
-        stay_durations=stay_durations,
+        length_of_stays=length_of_stays,
     )
 
     care_site = prepare_care_site(
@@ -188,7 +188,11 @@ def get_uf_visit(
 ):
     uf_visit = visit_detail[visit_detail.visit_detail_type == VISIT_DETAIL_TYPE["UF"]]
     uf_visit = uf_visit.merge(
-        visit_occurrence[["visit_occurrence_id", "length_of_stay", "stay_type"]],
+        visit_occurrence[
+            visit_occurrence.columns.intersection(
+                set(["visit_occurrence_id", "length_of_stay", "stay_type"])
+            )
+        ],
         on="visit_occurrence_id",
     ).drop(columns="visit_occurrence_id")
     uf_visit = uf_visit.merge(care_site, on="care_site_id")
@@ -206,7 +210,11 @@ def get_uc_visit(
 ):
     uc_visit = visit_detail[visit_detail.visit_detail_type == VISIT_DETAIL_TYPE["UC"]]
     uc_visit = uc_visit.merge(
-        visit_occurrence[["visit_occurrence_id", "length_of_stay", "stay_type"]],
+        visit_occurrence[
+            visit_occurrence.columns.intersection(
+                set(["visit_occurrence_id", "length_of_stay", "stay_type"])
+            )
+        ],
         on="visit_occurrence_id",
     ).drop(columns="visit_occurrence_id")
     uc_visit = uc_visit.merge(care_site, on="care_site_id")
@@ -224,7 +232,11 @@ def get_uh_visit(
 ):
     uh_visit = visit_detail[visit_detail.visit_detail_type == VISIT_DETAIL_TYPE["UH"]]
     uh_visit = uh_visit.merge(
-        visit_occurrence[["visit_occurrence_id", "length_of_stay", "stay_type"]],
+        visit_occurrence[
+            visit_occurrence.columns.intersection(
+                set(["visit_occurrence_id", "length_of_stay", "stay_type"])
+            )
+        ],
         on="visit_occurrence_id",
     ).drop(columns="visit_occurrence_id")
     uh_visit = uh_visit.merge(care_site, on="care_site_id")

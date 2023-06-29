@@ -19,7 +19,6 @@ from edsteva.viz.utils import (
 
 def fitted_probe_dashboard(
     predictor: pd.DataFrame,
-    remove_singleton_bar_chart: bool,
     legend_predictor: str,
     legend_model: str,
     x_axis_title: str,
@@ -38,9 +37,6 @@ def fitted_probe_dashboard(
     ----------
     predictor : pd.DataFrame
         $c(t)$ computed in the Probe with its prediction $\hat{c}(t)$
-    remove_singleton_bar_chart : bool, optional
-        If set to True, remove the bar charts with only one element
-        **EXAMPLE**: `True`
     legend_predictor: str, optional,
         Label name for the predictor legend.
     legend_model: str, optional,
@@ -77,13 +73,11 @@ def fitted_probe_dashboard(
         base=base,
         horizontal_bar_charts_config=horizontal_bar_charts_config,
         predictor=predictor,
-        remove_singleton_bar_chart=remove_singleton_bar_chart,
     )
     vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
         base=base,
         vertical_bar_charts_config=vertical_bar_charts_config,
         predictor=predictor,
-        remove_singleton_bar_chart=remove_singleton_bar_chart,
     )
 
     selections = dict(
@@ -102,6 +96,7 @@ def fitted_probe_dashboard(
 
     index_selection, index_fields = create_groupby_selection(
         indexes=vertical_bar_charts_config["x"] + horizontal_bar_charts_config["y"],
+        predictor=predictor,
     )
     main_chart = generate_main_chart(
         base=base,
@@ -122,7 +117,7 @@ def fitted_probe_dashboard(
 
     main_chart = probe_line + model_line
     if index_selection:
-        main_chart = main_chart.add_selection(index_selection)
+        main_chart = main_chart.add_params(index_selection)
     chart = concatenate_charts(
         main_chart=main_chart,
         time_line=time_line,

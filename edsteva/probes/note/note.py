@@ -65,7 +65,7 @@ class NoteProbe(BaseProbe):
         care_sites_sets: Union[str, Dict[str, str]] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
         extra_data: Data = None,
-        stay_durations: List[float] = None,
+        length_of_stays: List[float] = None,
         note_types: Union[str, Dict[str, str]] = {
             "Urgence": "urge",
             "Ordonnance": "ordo",
@@ -103,13 +103,15 @@ class NoteProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
         extra_data : Data
             Instantiated [``HiveData``][edsteva.io.hive.HiveData], [``PostgresData``][edsteva.io.postgres.PostgresData] or [``LocalData``][edsteva.io.files.LocalData]
-        stay_durations : List[float], optional
+        length_of_stays : List[float], optional
             **EXAMPLE**: `[1, 30]`
         note_types : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"CRH": "crh", "Urgence": "urge"}`
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
+        if length_of_stays is None and "length_of_stay" in self._index:
+            self._index.remove("length_of_stay")
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
         if note_types is None and "note_type" in self._index:
@@ -129,7 +131,7 @@ class NoteProbe(BaseProbe):
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             note_types=note_types,
-            stay_durations=stay_durations,
+            length_of_stays=length_of_stays,
             **kwargs,
         )
 

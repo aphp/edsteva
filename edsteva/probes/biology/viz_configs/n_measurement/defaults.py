@@ -56,6 +56,11 @@ def get_horizontal_bar_charts(standard_terminologies: List[str]):
                 "field": "specialties_set",
                 "sort": "-x",
             },
+            {
+                "title": "Care sites-set",
+                "field": "care_sites_set",
+                "sort": "-x",
+            },
             {"title": "Concepts-set", "field": "concepts_set", "sort": "-x"},
         ]
         + [
@@ -104,6 +109,13 @@ main_chart = dict(
             sort={"field": "n_measurement", "op": "sum", "order": "descending"},
             title=None,
         ),
+        tooltip=[
+            alt.Tooltip("value:N", title="Index"),
+            alt.Tooltip("yearmonth(date):T", title="Date"),
+            alt.Tooltip(
+                "sum(n_measurement):Q", title="Number of measurements", format=","
+            ),
+        ],
     ),
     properties=dict(
         height=300,

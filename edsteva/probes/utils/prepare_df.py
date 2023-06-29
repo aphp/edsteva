@@ -11,7 +11,7 @@ from edsteva.utils.typing import Data, DataFrame
 from .filter_df import (
     filter_table_by_care_site,
     filter_table_by_date,
-    filter_table_by_stay_duration,
+    filter_table_by_length_of_stay,
     filter_table_by_type,
     filter_valid_observations,
 )
@@ -20,7 +20,7 @@ from .filter_df import (
 def prepare_visit_occurrence(
     data: Data,
     stay_types: Union[str, Dict[str, str]],
-    stay_durations: List[float],
+    length_of_stays: List[float],
     start_date: datetime = None,
     end_date: datetime = None,
 ):
@@ -40,18 +40,19 @@ def prepare_visit_occurrence(
     )
     visit_occurrence = data.visit_occurrence[required_columns]
 
-    visit_occurrence = filter_table_by_stay_duration(
-        visit_occurrence=visit_occurrence, stay_durations=stay_durations
-    )
-
-    visit_occurrence = visit_occurrence.rename(
-        columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
-    )
-
     visit_occurrence = filter_valid_observations(
         table=visit_occurrence,
         table_name="visit_occurrence",
         invalid_naming="supprimé",
+    )
+
+    if length_of_stays:
+        visit_occurrence = filter_table_by_length_of_stay(
+            visit_occurrence=visit_occurrence, length_of_stays=length_of_stays
+        )
+
+    visit_occurrence = visit_occurrence.rename(
+        columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
     )
 
     visit_occurrence = filter_table_by_date(

@@ -52,6 +52,7 @@ def fitted_probe_line(
 
     index_selection, index_fields = create_groupby_selection(
         indexes=indexes,
+        predictor=predictor,
     )
     main_chart = generate_main_chart(
         base=base,
@@ -72,6 +73,6 @@ def fitted_probe_line(
 
     main_chart = probe_line + model_line
     if index_selection:
-        main_chart = main_chart.add_selection(index_selection)
+        main_chart = main_chart.add_params(index_selection)
 
     return main_chart
