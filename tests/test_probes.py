@@ -45,7 +45,7 @@ params = [
             "entity 4": "A3",
             "entity 5": "A4",
         },
-        concepts_codes=None,
+        concept_codes=None,
         start_date=None,
         end_date=datetime(2020, 1, 1),
         test_save=False,
@@ -62,7 +62,7 @@ params = [
         care_site_specialties=None,
         specialties_sets={"All": ".*"},
         care_sites_sets=None,
-        concepts_codes=["A0009", "A0209", "A3109"],
+        concept_codes=["A0009", "A0209", "A3109"],
         length_of_stays=[1],
         note_types="CRH",
         stay_types="hospitalisés",
@@ -93,7 +93,7 @@ params = [
         condition_types={"ALL": ".*", "Cancer": "C"},
         source_systems=["ORBIS"],
         concepts_sets=None,
-        concepts_codes=["A0009", "A0209", "A3109"],
+        concept_codes=["A0009", "A0209", "A3109"],
         start_date=datetime(2010, 5, 10),
         end_date=datetime(2020, 1, 1),
         test_save=True,
@@ -106,7 +106,9 @@ params = [
 def test_base_probe(data):
     visit = VisitProbe()
     with pytest.raises(Exception):
-        filter_valid_observations(data.care_site, "care_site")
+        filter_valid_observations(
+            table=data.visit_occurrence, table_name="visit_occurrence"
+        )
     with pytest.raises(AttributeError):
         visit.compute(data=data, care_site_levels=["fail"])
     with pytest.raises(TypeError):
@@ -686,6 +688,7 @@ def test_compute_biology_probe(data, params):
         specialties_sets=params["specialties_sets"],
         length_of_stays=params["length_of_stays"],
         concepts_sets=params["concepts_sets"],
+        concept_codes=params["concept_codes"],
     )
 
     # Care site levels
