@@ -109,7 +109,6 @@ safe_licenses = [
   "Mozilla Public License 2.0 (MPL 2.0)",
   "Eclipse Public License 2.0 (EPL-2.0)",
   "GNU Library or Lesser General Public License (LGPL)",
-  "GNU Lesser General Public License v3 (LGPLv3)",
 ]
 unsafe_packages  = ["ypy-websocket"]
 ignore_packages = ["pgpasslib"]
