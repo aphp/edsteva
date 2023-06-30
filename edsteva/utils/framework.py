@@ -1,8 +1,11 @@
+import os
 from types import ModuleType
 from typing import Optional
 
 import pandas as _pandas
+import pyarrow.parquet as pq
 from databricks import koalas as _koalas
+from loguru import logger
 
 from edsteva.utils.typing import DataObject
 
@@ -40,6 +43,19 @@ def to(framework: str, obj: DataObject) -> DataObject:
 def pandas(obj: DataObject) -> DataObject:
     if get_framework(obj) is _pandas:
         return obj
+
+    # Try using pyarrow via HDFS to convert object to pandas as it is way faster.
+    user = os.environ["USER"]
+    parquet_path = f"hdfs://bbsedsi/user/{user}/temp.parquet"
+    try:  # pragma: no cover
+        obj.to_parquet(parquet_path)
+        obj = pq.read_table(parquet_path)
+    except Exception as e:
+        logger.debug(
+            "Cannot convert object to parquet. It will skip this step and convert directly to pandas if possible. /n Following error: {}",
+            e,
+        )
+
     try:
         return obj.to_pandas()
     except AttributeError:

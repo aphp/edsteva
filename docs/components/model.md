@@ -16,15 +16,15 @@ A **Model** is a python class designed to characterize the temporal variability 
 The Model class is expecting a [**``Probe``**][probe] object in order to estimate the Model coefficients $\Theta$ and some metrics if desired.
 ### Attributes
 
-- [**`estimates`**][edsteva.models.base.BaseModel] is a [`Pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/version/1.3/reference/api/pandas.DataFrame.html) computed by the [`fit()`][edsteva.models.base.BaseModel.fit] method. It contains the estimated coefficients $\Theta$ and metrics for each column given by the [`Probe._index`][edsteva.probes.visit.VisitProbe] (e.g. care site, stay type, etc.).
+- [**`estimates`**][edsteva.models.base.BaseModel] is a [`Pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/version/1.3/reference/api/pandas.DataFrame.html) computed by the [`fit()`][edsteva.models.base.BaseModel.fit] method. It contains the estimated coefficients $\Theta$ and metrics for each column given by the [`Probe._index`][edsteva.probes.visit.visit.VisitProbe] (e.g. care site, stay type, etc.).
 - [**`_coefs`**][edsteva.models.step_function.step_function.StepFunction] is the list of the Model coefficients $\Theta$ that are estimated by the [`fit()`][edsteva.models.base.BaseModel.fit] method.
 
 ### Methods
 
 - [**`fit()`**][edsteva.models.base.BaseModel.fit] method calls the [`fit_process()`][edsteva.models.step_function.step_function.StepFunction.fit_process] method to compute the estimated coefficients $\Theta$ and metrics and store them in the [`estimates`][edsteva.models.base.BaseModel] attribute.
 - [**`fit_process()`**][edsteva.models.step_function.step_function.StepFunction.fit_process] method computes the estimated coefficients $\Theta$ and metrics from a [`Probe.predictor`][edsteva.probes.base.BaseProbe] DataFrame.
-- [**`predict()`**][edsteva.models.base.BaseModel.predict] method applies the [`predict_process()`][edsteva.models.step_function.step_function.StepFunction.predict_process] on a [`Probe.predictor`][edsteva.probes.base.BaseProbe] DataFrame and returns a [`Pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/version/1.3/reference/api/pandas.DataFrame.html) of the estimated prediction $\hat{c}(t)$ for each columns given by [`Probe._index`][edsteva.probes.visit.VisitProbe].
-- [**`predict_process()`**][edsteva.models.step_function.step_function.StepFunction.predict_process] method computes the estimated completeness predictor $\hat{c}(t)$ for each column given by [`Probe._index`][edsteva.probes.visit.VisitProbe].
+- [**`predict()`**][edsteva.models.base.BaseModel.predict] method applies the [`predict_process()`][edsteva.models.step_function.step_function.StepFunction.predict_process] on a [`Probe.predictor`][edsteva.probes.base.BaseProbe] DataFrame and returns a [`Pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/version/1.3/reference/api/pandas.DataFrame.html) of the estimated prediction $\hat{c}(t)$ for each columns given by [`Probe._index`][edsteva.probes.visit.visit.VisitProbe].
+- [**`predict_process()`**][edsteva.models.step_function.step_function.StepFunction.predict_process] method computes the estimated completeness predictor $\hat{c}(t)$ for each column given by [`Probe._index`][edsteva.probes.visit.visit.VisitProbe].
 - [**`save()`**][edsteva.models.base.BaseModel.save] method saves the [`Model`][edsteva.models.base.BaseModel] in the desired path. By default it is saved in the cache directory (~/.cache/edsteva/models).
 - [**`load()`**][edsteva.models.base.BaseModel.load] method loads the [`Model`][edsteva.models.base.BaseModel] from the desired path. By default it is loaded from the cache directory (~/.cache/edsteva/models).
 
@@ -36,7 +36,7 @@ Data stored in the `estimates` attribute follows a specific schema:
 
 ### Indexes
 
-The estimates are computed for each column given by the [`Probe._index`][edsteva.probes.visit.VisitProbe]. For example, if you fit your Model on the [``VisitProbe``][edsteva.probes.visit.VisitProbe], the estimates will be computed for each:
+The estimates are computed for each column given by the [`Probe._index`][edsteva.probes.visit.visit.VisitProbe]. For example, if you fit your Model on the [``VisitProbe``][edsteva.probes.visit.visit.VisitProbe], the estimates will be computed for each:
 
 - **`care_site_level`**: care site hierarchic level (`uf`, `pole`, ``hospital``).
 - **`care_site_id`**: care site unique identifier.
@@ -60,7 +60,7 @@ $$
 
 ### Example
 
-When considering the [`StepFunction.estimates`][edsteva.models.step_function.step_function.StepFunction] fitted on a [``VisitProbe``][edsteva.probes.visit.VisitProbe], it may for instance look like this:
+When considering the [`StepFunction.estimates`][edsteva.models.step_function.step_function.StepFunction] fitted on a [``VisitProbe``][edsteva.probes.visit.visit.VisitProbe], it may for instance look like this:
 
 | care_site_level          | care_site_id | stay_type | t_0        | c_0   | error |
 | :----------------------- | :----------- | :-------- | :--------- | :---- | :---- |

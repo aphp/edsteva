@@ -41,7 +41,6 @@ def loss_minimization(
         $c(t)$ computed in the Probe.
     index : List[str]
         Variable from which data is grouped.
-
         **EXAMPLE**: `["care_site_level", "stay_type", "note_type", "care_site_id"]`
     x_col : str, optional
         Column name for the time variable $t$.
@@ -53,6 +52,7 @@ def loss_minimization(
         Min number of months between $t_0$ and $t_1$.
     """
     check_columns(df=predictor, required_columns=index + [x_col, y_col])
+    predictor = predictor.sort_values(x_col)
     cols = index + [x_col, y_col]
     iter = predictor[cols].groupby(index)
     results = []
@@ -83,7 +83,7 @@ def _compute_one_double_threshold(
     target = group[[x_col, y_col]].values
     best_x0 = best_y0 = best_x1 = None
     best_loss = np.inf
-    for idx in range(1, len(target) - min_rect_month_width):
+    for idx in range(len(target) - min_rect_month_width):
         x0 = target[idx, 0]
         y_before_x0 = target[:idx, 1]
         for jdx in range(idx + min_rect_month_width, len(target)):

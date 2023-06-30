@@ -1,4 +1,4 @@
-__version__ = "0.1.4"
+__version__ = "0.2.0"
 
 
 import importlib
@@ -43,12 +43,12 @@ def set_env_variables() -> None:
         if LooseVersion(pyarrow.__version__) >= LooseVersion("0.15"):
             os.environ["ARROW_PRE_0_15_IPC_FORMAT"] = "1"
 
-    if LooseVersion(pyarrow.__version__) >= LooseVersion("2.0.0"):
+    if LooseVersion(pyarrow.__version__) >= LooseVersion("2.0.0"):  # pragma: no cover
         os.environ["PYARROW_IGNORE_TIMEZONE"] = "0"
 
 
 def improve_performances(
-    to_add_conf: List[Tuple[str, str]] = [],
+    to_add_conf: List[Tuple[str, str]] = None,
     quiet_spark: bool = True,
 ) -> Tuple[SparkSession, SparkContext, SparkSession.sql]:
     """
@@ -84,6 +84,9 @@ def improve_performances(
     tz = os.environ.get("TZ", "UTC")
     os.environ["TZ"] = tz
     time.tzset()
+
+    if to_add_conf is None:
+        to_add_conf = []
 
     to_add_conf.extend(
         [

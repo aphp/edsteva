@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 from edsteva.utils.typing import Data, DataFrame
 
@@ -8,16 +8,10 @@ class MissingColumnError(Exception):
 
     def __init__(
         self,
-        required_columns: Union[List, dict],
+        required_columns: List,
         df_name: str = "",
     ):
-        if isinstance(required_columns, dict):
-            to_display_per_column = [
-                f"- {column} ({msg})" if msg is not None else f"{column}"
-                for column, msg in required_columns.items()
-            ]
-        else:
-            to_display_per_column = [f"- {column}" for column in required_columns]
+        to_display_per_column = [f"- {column}" for column in required_columns]
         str_to_display = "\n".join(to_display_per_column)
 
         if df_name:
@@ -36,15 +30,9 @@ class MissingTableError(Exception):
 
     def __init__(
         self,
-        required_tables: Union[List, dict],
+        required_tables: List,
     ):
-        if isinstance(required_tables, dict):
-            to_display_per_concept = [
-                f"- {concept} ({msg})" if msg is not None else f"{concept}"
-                for concept, msg in required_tables.items()
-            ]
-        else:
-            to_display_per_concept = [f"- {concept}" for concept in required_tables]
+        to_display_per_concept = [f"- {concept}" for concept in required_tables]
         str_to_display = "\n".join(to_display_per_concept)
 
         message = f"Data is missing some tables, namely:\n {str_to_display}"
@@ -71,7 +59,7 @@ def check_tables(data: Data, required_tables: List[str]):
         )
 
 
-def check_conditon_source_systems(
+def check_condition_source_systems(
     source_systems: List[str], valid_source_systems: List[str] = ["AREM", "ORBIS"]
 ):
     if source_systems and isinstance(source_systems, list):
@@ -87,6 +75,6 @@ def check_conditon_source_systems(
     else:
         raise AttributeError(
             "Source systems must be a non empty list and not {}".format(
-                type(source_systems)
+                type(source_systems).__name__
             )
         )

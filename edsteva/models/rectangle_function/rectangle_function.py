@@ -1,10 +1,10 @@
-from typing import Callable, List
+from typing import List
 
 import pandas as pd
 
-from edsteva.metrics import error_between_t0_t1
 from edsteva.models import BaseModel
-from edsteva.models.rectangle_function import algos
+from edsteva.models.rectangle_function.algos import algos
+from edsteva.models.rectangle_function.viz_configs import viz_configs
 
 
 class RectangleFunction(BaseModel):
@@ -22,10 +22,18 @@ class RectangleFunction(BaseModel):
 
     Attributes
     ----------
+    _algo: List[str]
+        Algorithm used to compute the estimates
+        **VALUE**: ``"loss_minimization"``
     _coefs: List[str]
         Model coefficients
-
         **VALUE**: ``["t_0", "c_0", "t_1"]``
+    _default_metrics: List[str]
+        Metrics to used by default
+        **VALUE**: ``[error_between_t0_t1]``
+    _viz_config: List[str]
+        Dictionary of configuration for visualization purpose.
+        **VALUE**: ``{}``
 
     Example
     ----------
@@ -47,13 +55,29 @@ class RectangleFunction(BaseModel):
     | Hôpital                  | 8312022130   | 'Hospit'  | 2022-02-01 | 0.652 | 2022-08-01 | 0.027 |
     """
 
-    _coefs = ["t_0", "c_0", "t_1"]
+    def __init__(
+        self,
+        algo: str = "loss_minimization",
+    ):
+        """Initialisation of the RectangleFunction Model.
+
+        Parameters
+        ----------
+        algo : Callable, optional
+            Algorithm used for the coefficients estimation ($t_0$, $t_1$ and $c_0$)
+        """
+        coefs = ["t_0", "c_0", "t_1"]
+        default_metrics = ["error_between_t0_t1"]
+        super().__init__(
+            algo=algo,
+            coefs=coefs,
+            default_metrics=default_metrics,
+        )
 
     def fit_process(
         self,
         predictor: pd.DataFrame,
         index: List[str] = None,
-        algo: Callable = algos.loss_minimization,
         **kwargs,
     ):
         """Script to be used by [``fit()``][edsteva.models.base.BaseModel.fit]
@@ -64,12 +88,11 @@ class RectangleFunction(BaseModel):
             Target variable to be fitted
         index : List[str], optional
             Variable from which data is grouped
-
             **EXAMPLE**: `["care_site_level", "stay_type", "note_type", "care_site_id"]`
-        algo : Callable, optional
-            Algorithm used for the coefficients estimation ($t_0$ and $c_0$)
         """
-        return algo(predictor, index, **kwargs)
+        estimates = algos.get(self._algo)(predictor=predictor, index=index, **kwargs)
+
+        return estimates
 
     def predict_process(
         self,
@@ -112,29 +135,13 @@ class RectangleFunction(BaseModel):
         )
         prediction["c_hat"] = prediction["c_0"].where(rect_mask, 0)
 
-        return prediction.drop(columns=self._coefs + self._metrics)
+        return prediction.drop(columns=self._metrics)
 
-    def default_metrics(
-        self,
-        predictor: pd.DataFrame,
-        estimates: pd.DataFrame,
-        index: List[str],
-    ):
-        r"""Default metrics used if metric_functions is set to None. Here the default metric is the mean squared error between $t_0$ and $t_1$.
-
-        Parameters
-        ----------
-        predictor : pd.DataFrame
-            Target DataFrame describing the completeness predictor $c(t)$
-        estimates : pd.DataFrame
-            Target DataFrame describing the estimates $(\hat{t_0}, \hat{c_0})$
-        index : List[str]
-            Variable from which data is grouped
-
-            **EXAMPLE**: `["care_site_level", "stay_type", "note_type", "care_site_id"]`
-        """
-        return error_between_t0_t1(
-            predictor=predictor,
-            estimates=estimates,
-            index=index,
-        )
+    def get_viz_config(self, viz_type: str, **kwargs):
+        if viz_type in viz_configs.keys():
+            _viz_config = self._viz_config.get(viz_type)
+            if _viz_config is None:
+                _viz_config = "default"
+        else:
+            raise ValueError(f"edsteva has no {viz_type} registry !")
+        return viz_configs[viz_type].get(_viz_config)(self, **kwargs)

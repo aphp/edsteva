@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "edsteva"
-version = "0.1.4"
+version = "0.2.0"
 description = "EDS-TeVa provides a set of tools that aims at modeling the adoption over time and across space of the Electronic Health Records."
 authors = ["Adam Remaki <adam.remaki@aphp.fr>", "Vicent Maladiere <vincent.maladiere-ext@aphp.fr>", "Benoit Playe <benoit.playe@aphp.fr>", "Romain Bey <romain.bey@aphp.fr>", "Paul Bernard <paul.bernard@aphp.fr>"]
 keywords = ["OMOP", "Data Analysis", "Electronic health record"]
@@ -27,20 +27,21 @@ classifiers = [
 python = "~3.7.1"
 pyspark = "~2.4.3"
 pandas = "^1.3"
-altair = "^4.2"
+altair = "^5.0"
 numpy = "<1.20.0" # https://github.com/databricks/koalas/pull/2166
-loguru = "0.6.0"
+loguru = "0.7.0"
 ipython = "^7.31.0"
 koalas = "^1.8.2"
 pgpasslib = "^1.1.0"
 psycopg2-binary = "^2.9.3"
 pyarrow = ">=0.15, <0.17.0"
+catalogue = "^2.0.8"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
 pre-commit = "^2.17.0"
 ipykernel = "^6.15.3"
-jupyterlab-rise = "0.1.0"
+jupyterlab-rise = "0.2.0"
 jupyterlab = "^3.0.0"
 
 [tool.poetry.group.docs.dependencies]
@@ -106,11 +107,10 @@ safe_licenses = [
   "Apache License 2.0",
   "http://www.apache.org/licenses/LICENSE-2.0",
   "Mozilla Public License 2.0 (MPL 2.0)",
-  "MPL-2.0",
   "Eclipse Public License 2.0 (EPL-2.0)",
   "GNU Library or Lesser General Public License (LGPL)",
 ]
-unsafe_packages  = ["ypy-websocket", "y-py"]
+unsafe_packages  = ["ypy-websocket"]
 ignore_packages = ["pgpasslib"]
 
 [build-system]

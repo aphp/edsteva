@@ -1,118 +1,134 @@
 import numpy as np
 import pandas as pd
+from loguru import logger
+
+from edsteva.io.synthetic.utils import (
+    generate_events_after_t0,
+    generate_events_after_t1,
+    generate_events_around_t0,
+    generate_events_around_t1,
+    generate_events_before_t0,
+)
 
 
-def generate_before_t0(
+def generate_stays(
     t_start: int,
     t_end: int,
-    n_visit: int,
-    t0: int,
+    n_events: int,
     increase_time: int,
     increase_ratio: float,
+    care_site_id: int,
+    date_col: str,
+    mode: str,
 ):
-    t0_before = t0 - increase_time / 2
-    n_before = int(
-        (t0_before - t_start)
-        * n_visit
-        / ((t0 - t_start) + increase_ratio * (t_end - t0))
-    )
+    if mode == "step":
+        return _generate_stays_step(
+            t_start=t_start,
+            t_end=t_end,
+            n_events=n_events,
+            increase_time=increase_time,
+            increase_ratio=increase_ratio,
+            care_site_id=care_site_id,
+            date_col=date_col,
+        )
+    if mode == "rect":
+        return _generate_stays_rect(
+            t_start=t_start,
+            t_end=t_end,
+            n_events=n_events,
+            increase_time=increase_time,
+            increase_ratio=increase_ratio,
+            care_site_id=care_site_id,
+            date_col=date_col,
+        )
 
-    return pd.to_datetime(
-        pd.Series(np.random.randint(t_start, t0_before, n_before)),
-        unit="s",
-    )
 
-
-def generate_after_t0(
+def _generate_stays_step(
     t_start: int,
     t_end: int,
-    n_visit: int,
-    t0: int,
+    n_events: int,
     increase_time: int,
     increase_ratio: float,
+    care_site_id: int,
+    date_col: str,
 ):
-    t0_after = t0 + increase_time / 2
-    n_after = int(
-        increase_ratio
-        * (t_end - t0_after)
-        * n_visit
-        / ((t0 - t_start) + increase_ratio * (t_end - t0))
+    t0 = np.random.randint(t_start + increase_time, t_end - increase_time)
+    params = dict(
+        t_start=t_start,
+        t_end=t_end,
+        n_events=n_events,
+        t0=t0,
+        increase_ratio=increase_ratio,
+        increase_time=increase_time,
     )
+    df = pd.concat(
+        [
+            generate_events_before_t0(**params),
+            generate_events_after_t0(**params),
+            generate_events_around_t0(**params),
+        ]
+    ).to_frame()
+    df.columns = [date_col]
+    df["care_site_id"] = care_site_id
+    df["t_0_min"] = t0 - increase_time / 2
+    df["t_0_max"] = t0 + increase_time / 2
+    logger.debug("Generate visit occurrences deploying as step function")
 
-    return pd.to_datetime(
-        pd.Series(np.random.randint(t0_after, t_end, n_after)),
-        unit="s",
-    )
+    return df
 
 
-def generate_around_t0(
+def _generate_stays_rect(
     t_start: int,
     t_end: int,
-    n_visit: int,
-    t0: int,
+    n_events: int,
     increase_time: int,
     increase_ratio: float,
+    care_site_id: int,
+    date_col: str,
 ):
-    t0_before = t0 - increase_time / 2
-    t0_after = t0 + increase_time / 2
-    n_middle = int(
-        (increase_time / 2)
-        * (increase_ratio + 1)
-        * n_visit
-        / ((t0 - t_start) + increase_ratio * (t_end - t0))
+    t0 = np.random.randint(
+        t_start + increase_time, (t_end + t_start) / 2 - increase_time
     )
-
-    return pd.to_datetime(
-        pd.Series(
-            np.random.triangular(
-                left=t0_before, right=t0_after, mode=t0_after, size=n_middle
-            )
-        ),
-        unit="s",
+    t1 = np.random.randint((t_end + t_start) / 2 + increase_time, t_end - increase_time)
+    t0_params = dict(
+        t_start=t_start,
+        t_end=t1 - increase_time / 2,
+        n_events=n_events,
+        t0=t0,
+        increase_ratio=increase_ratio,
+        increase_time=increase_time,
     )
-
-
-def generate_around_t1(
-    t_start: int,
-    t_end: int,
-    n_visit: int,
-    t1: int,
-    increase_time: int,
-    increase_ratio: float,
-):
-    t1_before = t1 - increase_time / 2
-    t1_after = t1 + increase_time / 2
-    n_middle = int(
-        (increase_time / 2)
-        * (increase_ratio + 1)
-        * n_visit
-        / ((t1 - t_start) * increase_ratio + (t_end - t1))
+    before_t0 = generate_events_before_t0(**t0_params)
+    around_t0 = generate_events_around_t0(**t0_params)
+    # Raise n_visit to enforce a rectangle shape
+    between_t0_t1 = generate_events_after_t0(**t0_params)
+    t1_params = dict(
+        t_start=t_start,
+        t_end=t_end,
+        n_events=n_events,
+        t1=t1,
+        increase_time=increase_time,
+        increase_ratio=increase_ratio,
     )
+    around_t1 = generate_events_around_t1(**t1_params)
+    after_t1 = generate_events_after_t1(**t1_params)
 
-    return pd.to_datetime(
-        pd.Series(
-            np.random.triangular(
-                left=t1_before, right=t1_after, mode=t1_before, size=n_middle
-            )
-        ),
-        unit="s",
-    )
+    df = pd.concat(
+        [
+            before_t0,
+            around_t0,
+            between_t0_t1,
+            around_t1,
+            after_t1,
+        ]
+    ).to_frame()
 
+    df.columns = [date_col]
+    df["care_site_id"] = care_site_id
+    df["t_0_min"] = t0 - increase_time / 2
+    df["t_0_max"] = t0 + increase_time / 2
+    df["t_1_min"] = t1 - increase_time / 2
+    df["t_1_max"] = t1 + increase_time / 2
+    logger.debug("Generate visit occurrences deploying as rectangle function")
 
-def generate_after_t1(
-    t_start: int,
-    t_end: int,
-    n_visit: int,
-    t1: int,
-    increase_time: int,
-    increase_ratio: float,
-):
-    t1_after = t1 + increase_time / 2
-    n_after = int(
-        (t_end - t1_after) * n_visit / ((t1 - t_start) * increase_ratio + (t_end - t1))
-    )
-
-    return pd.to_datetime(
-        pd.Series(np.random.randint(t1_after, t_end, n_after)),
-        unit="s",
-    )
+    return df

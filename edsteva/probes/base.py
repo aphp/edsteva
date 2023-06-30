@@ -6,15 +6,11 @@ import pandas as pd
 from loguru import logger
 
 from edsteva import CACHE_DIR
-from edsteva.probes.utils import (
-    delete_object,
-    filter_table_by_care_site,
-    get_care_site_relationship,
-    load_object,
-    save_object,
-)
+from edsteva.probes.utils.filter_df import filter_table_by_care_site
+from edsteva.probes.utils.prepare_df import prepare_care_site_relationship
 from edsteva.utils.checks import check_columns, check_tables
-from edsteva.utils.typing import Data
+from edsteva.utils.file_management import delete_object, load_object, save_object
+from edsteva.utils.typing import Data, DataFrame
 
 
 class BaseProbe(metaclass=ABCMeta):
@@ -35,14 +31,19 @@ class BaseProbe(metaclass=ABCMeta):
     care_site_relationship: pd.DataFrame
         Available with the [``compute()``][edsteva.probes.base.BaseProbe.compute] method
 
-        It describes the care site structure (cf. [``get_care_site_relationship()``][edsteva.probes.utils.get_care_site_relationship])
+        It describes the care site structure (cf. [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship])
     """
 
-    def __init__(self):
-        self.is_valid_probe()
-        self.name = self._get_name()
+    _schema = ["care_site_level", "care_site_id", "date", "c"]
 
-    _schema = ["care_site_id", "care_site_level", "stay_type", "date", "c"]
+    def __init__(
+        self,
+        completeness_predictor: str,
+        index: List[str],
+    ):
+        self._completeness_predictor = completeness_predictor
+        self._cache_index = index.copy()
+        self._viz_config = {}
 
     def validate_input_data(self, data: Data) -> None:
         """Raises an error if the input data is not valid
@@ -54,7 +55,7 @@ class BaseProbe(metaclass=ABCMeta):
         """
 
         if not isinstance(data, Data.__args__):
-            raise TypeError("Unsupported type {} for data".format(type(data)))
+            raise TypeError("Unsupported type {} for data".format(type(data).__name__))
 
         check_tables(
             data=data,
@@ -65,20 +66,13 @@ class BaseProbe(metaclass=ABCMeta):
             ],
         )
 
-    def is_valid_probe(self) -> None:
-        """Raises an error if the instantiated Probe is not valid"""
-        if not hasattr(self, "_index"):
-            raise Exception(
-                "Probe must have _index attribute. Please review the code of your probe"
-            )
-
     def is_computed_probe(self) -> None:
         """Raises an error if the Probe has not been computed properly"""
         if hasattr(self, "predictor"):
             if not isinstance(self.predictor, pd.DataFrame):
                 raise TypeError(
                     "Predictor must be a Pandas DataFrame and not a {}, please review the process method or your arguments".format(
-                        type(self.predictor)
+                        type(self.predictor).__name__
                     )
                 )
             if self.predictor.empty:
@@ -105,70 +99,34 @@ class BaseProbe(metaclass=ABCMeta):
                 "Predictor has not been computed, please use the compute method as follow: Predictor.compute()"
             )
 
-    def impute_missing_date(
-        self,
-        only_impute_per_care_site: bool = False,
-    ) -> pd.DataFrame:
-        """Impute missing date with 0 on the predictor of a probe.
-
-        Parameters
-        ----------
-        only_impute_per_care_site : bool, optional
-            If True it will only impute missing date between the first and the last observation of each care site.
-            If False it will impute missing data on the entire study period whatever the care site
-        """
-        # Check if probe has been computed.
-        self.is_computed_probe()
-
-        # Set start_date to the beginning of the month.
-        date_index = pd.date_range(
-            start=self.start_date,
-            end=self.end_date,
-            freq="MS",
-            closed="left",
+    def filter_date_per_care_site(self, target_column: str):
+        filtered_predictor = self.predictor.copy()
+        predictor_activity = self.predictor[self.predictor[target_column] > 0].copy()
+        predictor_activity = (
+            predictor_activity.groupby("care_site_id")
+            .agg({"date": ["min", "max"]})
+            .droplevel(axis="columns", level=0)
+            .reset_index()
         )
-        date_index = pd.DataFrame({"date": date_index})
-
-        # Precompute the mapping:
-        # {'Hôpital-1': {'min': Timestamp('2010-06-01'), 'max': Timestamp('2019-11-01')}
-        if only_impute_per_care_site:
-            site_to_min_max_ds = (
-                self.predictor.groupby(["care_site_short_name"])["date"]
-                .agg([min, max])
-                .to_dict("index")
-            )
-
-        partition_cols = self._index + ["care_site_short_name"]
-        groups = []
-        for partition, group in self.predictor.groupby(partition_cols):
-            group = date_index.merge(group, on="date", how="left")
-
-            # Filter on each care site timeframe.
-            if only_impute_per_care_site:
-                care_site_short_name = partition[-1]
-                ds_min = site_to_min_max_ds[care_site_short_name]["min"]
-                ds_max = site_to_min_max_ds[care_site_short_name]["max"]
-                group = group.loc[(group["date"] >= ds_min) & (group["date"] <= ds_max)]
-
-            # Fill specific partition values.
-            for key, val in zip(partition_cols, partition):
-                group[key] = val
-            # Fill remaining NaN from counts values with 0.
-            group.fillna(0, inplace=True)
-            groups.append(group)
-
-        self.predictor = pd.concat(groups)
+        filtered_predictor = filtered_predictor.merge(
+            predictor_activity, on="care_site_id"
+        )
+        filtered_predictor = filtered_predictor[
+            (filtered_predictor["date"] >= filtered_predictor["min"])
+            & (filtered_predictor["date"] <= filtered_predictor["max"])
+        ].drop(columns=["min", "max"])
+        self.predictor = filtered_predictor
 
     @abstractmethod
     def compute_process(
         self,
         data: Data,
         care_site_relationship: pd.DataFrame,
-        start_date: datetime = None,
-        end_date: datetime = None,
-        care_site_levels: List[str] = None,
-        stay_types: Union[str, Dict[str, str]] = None,
-        care_site_ids: List[int] = None,
+        start_date: datetime,
+        end_date: datetime,
+        care_site_levels: List[str],
+        stay_types: Union[str, Dict[str, str]],
+        care_site_ids: List[int],
         **kwargs,
     ) -> pd.DataFrame:
         """Process the data in order to obtain a predictor table"""
@@ -181,8 +139,7 @@ class BaseProbe(metaclass=ABCMeta):
         care_site_levels: List[str] = None,
         stay_types: Union[str, Dict[str, str]] = None,
         care_site_ids: List[int] = None,
-        impute_missing_dates: bool = True,
-        only_impute_per_care_site: bool = False,
+        with_cache: bool = True,
         **kwargs,
     ) -> None:
         """Calls [``compute_process()``][edsteva.probes.base.BaseProbe.compute_process]
@@ -191,7 +148,7 @@ class BaseProbe(metaclass=ABCMeta):
         Here are the following computation steps:
 
         - check if input data is valid with [``validate_input_data()``][edsteva.probes.base.BaseProbe.validate_input_data] method
-        - query care site relationship table with [``get_care_site_relationship()``][edsteva.probes.utils.get_care_site_relationship]
+        - query care site relationship table with [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship]
         - compute predictor with [``compute_process()``][edsteva.probes.base.BaseProbe.compute_process] method
         - check if predictor is valid with [``is_computed_probe()``][edsteva.probes.base.BaseProbe.is_computed_probe] method
 
@@ -246,8 +203,10 @@ class BaseProbe(metaclass=ABCMeta):
 
         """
         self.validate_input_data(data=data)
-        care_site_relationship = get_care_site_relationship(data=data)
-
+        self._reset_index()
+        care_site_relationship = prepare_care_site_relationship(data=data)
+        self.start_date = pd.to_datetime(start_date) if start_date else None
+        self.end_date = pd.to_datetime(end_date) if end_date else None
         self.predictor = self.compute_process(
             data=data,
             care_site_relationship=care_site_relationship,
@@ -259,20 +218,10 @@ class BaseProbe(metaclass=ABCMeta):
             **kwargs,
         )
         self.is_computed_probe()
-
-        self.start_date = (
-            pd.to_datetime(start_date) if start_date else self.predictor["date"].min()
-        )
-        self.end_date = (
-            pd.to_datetime(end_date) if end_date else self.predictor["date"].max()
-        )
-
-        if impute_missing_dates:
-            self.impute_missing_date(
-                only_impute_per_care_site=only_impute_per_care_site,
-            )
-        self.cache_predictor()
         self.care_site_relationship = care_site_relationship
+        self.predictor = self.add_names_columns(self.predictor)
+        if with_cache:
+            self.cache_predictor()
 
     def reset_predictor(
         self,
@@ -293,6 +242,7 @@ class BaseProbe(metaclass=ABCMeta):
         self,
         care_site_ids: Union[int, List[int]] = None,
         care_site_short_names: Union[str, List[str]] = None,
+        care_site_specialties: Union[str, List[str]] = None,
     ) -> None:
         """Filters all the care sites related to the selected care sites.
 
@@ -305,12 +255,40 @@ class BaseProbe(metaclass=ABCMeta):
         """
         self.predictor = filter_table_by_care_site(
             table_to_filter=self.predictor,
-            table_name="{} predictor".format(type(self).__name__.lower()),
             care_site_relationship=self.care_site_relationship,
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
+            care_site_specialties=care_site_specialties,
         )
         logger.info("Use probe.reset_predictor() to get back the initial predictor")
+
+    def add_names_columns(self, df: DataFrame):
+        if hasattr(self, "care_site_relationship") and "care_site_id" in df.columns:
+            df = df.merge(
+                self.care_site_relationship[
+                    ["care_site_id", "care_site_short_name"]
+                ].drop_duplicates(),
+                on="care_site_id",
+                how="left",
+            )
+        if hasattr(self, "biology_relationship"):
+            concept_codes = [
+                "{}_concept_code".format(terminology)
+                for terminology in self._standard_terminologies
+            ]
+            concept_names = [
+                "{}_concept_name".format(terminology)
+                for terminology in self._standard_terminologies
+            ]
+            if set(concept_codes).issubset(df.columns):
+                df = df.merge(
+                    self.biology_relationship[
+                        concept_codes + concept_names
+                    ].drop_duplicates(),
+                    on=concept_codes,
+                    how="left",
+                )
+        return df.reset_index(drop=True)
 
     def load(self, path=None) -> None:
         """Loads a Probe from local
@@ -365,9 +343,9 @@ class BaseProbe(metaclass=ABCMeta):
 
         self.is_computed_probe()
 
+        if name:
+            self.name = name
         if not path:
-            if name:
-                self.name = name
             path = self._get_path()
 
         self.path = path
@@ -383,17 +361,20 @@ class BaseProbe(metaclass=ABCMeta):
         """
 
         if not path:
-            if hasattr(self, "path"):
-                path = self.path
-            else:
-                path = self._get_path()
+            path = self.path
 
         delete_object(self, path)
 
     def _get_path(self):
         base_path = CACHE_DIR / "edsteva" / "probes"
-        filename = f"{self.name.lower()}.pickle"
+        if hasattr(self, "name"):
+            filename = f"{self.name.lower()}.pickle"
+        else:
+            filename = f"{type(self).__name__.lower()}.pickle"
         return base_path / filename
 
-    def _get_name(self):
-        return type(self).__name__
+    def _reset_index(
+        self,
+    ) -> None:
+        """Reset the index to its initial state"""
+        self._index = self._cache_index.copy()

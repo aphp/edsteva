@@ -1,22 +1,11 @@
 import pandas as pd
 
 
-def split_name_id(string):
-    splitted = string.split("-")
-
-    # Name - Type - ID
-    return dict(
-        care_site_short_name=string,
-        care_site_type_source_value=splitted[0],
-        care_site_id=splitted[1],
-    )
-
-
 def generate_care_site_tables(structure, parent=None, final=True):
     cs = []
     fr = []
     for key, value in structure.items():
-        this_cs = split_name_id(key)
+        this_cs = _split_name_id(key)
         cs.append(this_cs)
 
         if parent is not None:
@@ -40,3 +29,14 @@ def generate_care_site_tables(structure, parent=None, final=True):
         fr["relationship_concept_id"] = 46233688
 
     return cs, fr
+
+
+def _split_name_id(string):
+    splitted = string.split("-")
+
+    # Name - Type - ID
+    return dict(
+        care_site_short_name=string,
+        care_site_type_source_value=splitted[0],
+        care_site_id=splitted[1],
+    )
