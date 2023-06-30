@@ -1,2 +1,2 @@
 **New features: **
-Check out the new [**RectangleModel**][available-models] and [**ConditionProbe**][available-probes] !
+Check out the new [**BiologyProbe**][available-probes] !
