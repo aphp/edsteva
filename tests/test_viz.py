@@ -142,7 +142,7 @@ def test_viz_visit(data, Model, Probe, tmp_dir):
                 x_axis_title="x_axis",
                 y_axis_title="y_axis",
                 save_path=tmp_dir / "test.html",
-                care_site_specialty="Non Renseigné",
+                care_site_specialty="Non renseigné",
             )
 
             model.reset_estimates()
