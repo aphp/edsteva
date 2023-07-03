@@ -32,6 +32,9 @@
 <a href="https://www.python.org/" target="_blank">
     <img src="https://img.shields.io/badge/python-~3.7.1-brightgreen" alt="Supported Python versions">
 </a>
+<a href="https://github.com/astral-sh/ruff" target="_blank">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json" alt="Ruff">
+</a>
 </p>
 
 ---
