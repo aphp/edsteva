@@ -119,7 +119,7 @@ def compute_completeness(
     self,
     visit_predictor: DataFrame,
 ):
-    partition_cols = self._index.copy() + ["date"]
+    partition_cols = [*self._index.copy(), "date"]
 
     n_visit = (
         visit_predictor.groupby(
@@ -158,9 +158,7 @@ def compute_completeness(
         visit_predictor["max_n_visit"] == 0,
         visit_predictor["n_visit"] / visit_predictor["max_n_visit"],
     )
-    visit_predictor = visit_predictor.drop(columns="max_n_visit")
-
-    return visit_predictor
+    return visit_predictor.drop(columns="max_n_visit")
 
 
 def get_hospital_visit(

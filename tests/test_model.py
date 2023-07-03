@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -45,28 +45,28 @@ def test_base_model():
     visit_model.reset_estimates()
     # Test Cache saving
     visit_model.save()
-    assert os.path.isfile(CACHE_DIR / "edsteva" / "models" / "stepfunction.pickle")
+    assert Path.is_file(CACHE_DIR / "edsteva" / "models" / "stepfunction.pickle")
     visit_model = StepFunction()
     visit_model.load()
     visit_model.delete()
-    assert not os.path.isfile(CACHE_DIR / "edsteva" / "models" / "stepfunction.pickle")
+    assert not Path.is_file(CACHE_DIR / "edsteva" / "models" / "stepfunction.pickle")
 
     # Test target saving
     visit_model.save(
         name="Test",
     )
-    assert os.path.isfile(CACHE_DIR / "edsteva" / "models" / "test.pickle")
+    assert Path.is_file(CACHE_DIR / "edsteva" / "models" / "test.pickle")
     visit_model.delete()
-    assert not os.path.isfile(CACHE_DIR / "edsteva" / "models" / "test.pickle")
+    assert not Path.is_file(CACHE_DIR / "edsteva" / "models" / "test.pickle")
     visit_model.save(
         path="test.pickle",
     )
-    assert os.path.isfile("test.pickle")
+    assert Path.is_file(Path("test.pickle"))
 
     visit_model = StepFunction()
     visit_model.load("test.pickle")
     visit_model.delete()
-    assert not os.path.isfile("test.pickle")
+    assert not Path.is_file(Path("test.pickle"))
 
 
 def test_step_function_visit_occurence():

@@ -120,10 +120,14 @@ OTHER_MEASUREMENT_COLUMNS = dict(
 )
 
 
-def add_other_columns(table: pd.DataFrame, other_columns: Dict):
+def add_other_columns(
+    generator: np.random.Generator,
+    table: pd.DataFrame,
+    other_columns: Dict,
+):
     for name, params in other_columns.items():
         options, prob = list(zip(*params))
-        table[name] = pd.Series(np.random.choice(options, size=len(table), p=prob))
+        table[name] = pd.Series(generator.choice(options, size=len(table), p=prob))
     return table
 
 
@@ -160,15 +164,19 @@ class SyntheticData:
 
     def __post_init__(self):
         if self.module not in ["pandas", "koalas"]:
-            raise ValueError(
+            raise AttributeError(
                 f"Unknown module {self.mode}, options are ('pandas', 'koalas')"
             )
         if self.mode not in ["step", "rect"]:
-            raise ValueError(f"Unknown mode {self.mode}, options are ('step', 'rect')")
+            raise AttributeError(
+                f"Unknown mode {self.mode}, options are ('step', 'rect')"
+            )
 
     def generate(self):
         if self.seed:
-            np.random.seed(seed=self.seed)
+            self.generator = np.random.default_rng(self.seed)
+        else:
+            self.generator = np.random.default_rng()
 
         care_site, fact_relationship, hospital_ids = self._generate_care_site_tables()
         visit_occurrence = self._generate_visit_occurrence(hospital_ids)
@@ -206,7 +214,8 @@ class SyntheticData:
             care_site.care_site_type_source_value == "Unité de consultation (UC)"
         ][["care_site_id"]].reset_index(drop=True)
         uc_care_site = add_other_columns(
-            uc_care_site,
+            generator=self.generator,
+            table=uc_care_site,
             other_columns=dict(
                 place_of_service_source_value=[
                     ("CARDIO", 0.2),
@@ -219,7 +228,8 @@ class SyntheticData:
             care_site.care_site_type_source_value == "Unité d’hébergement (UH)"
         ][["care_site_id"]].reset_index(drop=True)
         uh_care_site = add_other_columns(
-            uh_care_site,
+            generator=self.generator,
+            table=uh_care_site,
             other_columns=dict(
                 place_of_service_source_value=[
                     ("REA ADULTE", 0.5),
@@ -230,7 +240,7 @@ class SyntheticData:
         care_site = care_site.merge(
             pd.concat([uc_care_site, uh_care_site]), on="care_site_id", how="left"
         )
-        care_site.fillna("Non Renseigné", inplace=True)
+        care_site = care_site.fillna("Non Renseigné")
         hospital_ids = list(
             care_site[care_site.care_site_type_source_value == "Hôpital"].care_site_id
         )
@@ -241,14 +251,15 @@ class SyntheticData:
         t_min = self.t_min.timestamp()
         t_max = self.t_max.timestamp()
         for care_site_id in hospital_ids:
-            t_start = t_min + np.random.randint(0, (t_max - t_min) / 20)
-            t_end = t_max - np.random.randint(0, (t_max - t_min) / 20)
-            n_visits = np.random.normal(self.mean_visit, self.mean_visit / 5)
-            increase_time = np.random.randint(
+            t_start = t_min + self.generator.integers(0, (t_max - t_min) / 20)
+            t_end = t_max - self.generator.integers(0, (t_max - t_min) / 20)
+            n_visits = self.generator.normal(self.mean_visit, self.mean_visit / 5)
+            increase_time = self.generator.integers(
                 (t_end - t_start) / 100, (t_end - t_start) / 10
             )
-            increase_ratio = np.random.uniform(150, 200)
+            increase_ratio = self.generator.uniform(150, 200)
             params = dict(
+                generator=self.generator,
                 t_start=t_start,
                 t_end=t_end,
                 n_events=n_visits,
@@ -266,15 +277,19 @@ class SyntheticData:
             self.date_col
         ] + pd.to_timedelta(
             pd.Series(
-                np.random.choice([None] * 50 + list(range(100)), len(visit_occurrence))
+                self.generator.choice(
+                    [None] * 50 + list(range(100)), len(visit_occurrence)
+                )
             ),
             unit="days",
         )
         visit_occurrence[self.id_visit_col] = range(visit_occurrence.shape[0])
         visit_occurrence[self.id_visit_source_col] = range(visit_occurrence.shape[0])
-        visit_occurrence = add_other_columns(visit_occurrence, self.other_visit_columns)
-
-        return visit_occurrence
+        return add_other_columns(
+            generator=self.generator,
+            table=visit_occurrence,
+            other_columns=self.other_visit_columns,
+        )
 
     def _generate_visit_detail(self, visit_occurrence, care_site):
         t_min = self.t_min.timestamp()
@@ -283,8 +298,8 @@ class SyntheticData:
         cols = visit_occurrence.columns
         col_to_idx = dict(zip(cols, range(len(cols))))
 
-        for visit in visit_occurrence.values:
-            n_visit_detail = np.random.randint(1, 5)
+        for visit in visit_occurrence.to_numpy():
+            n_visit_detail = self.generator.integers(1, 5)
             visit_date_start = visit[col_to_idx[self.date_col]].timestamp()
             visit_date_end = min(visit_date_start + (t_max - t_min) / 50, t_max)
             visit_id = visit[col_to_idx["visit_occurrence_id"]]
@@ -295,12 +310,12 @@ class SyntheticData:
                     CARE_SITE_STRUCTURE["Hôpital-{}".format(hospital_id)]
                 )
             ]
-            care_site_ids = np.random.choice(uf_ids, n_visit_detail)
+            care_site_ids = self.generator.choice(uf_ids, n_visit_detail)
             detail = pd.DataFrame(
                 {
                     self.id_visit_col: visit_id,
                     self.detail_date_col: pd.to_datetime(
-                        np.random.randint(
+                        self.generator.integers(
                             visit_date_start, visit_date_end, n_visit_detail
                         ),
                         unit="s",
@@ -313,8 +328,9 @@ class SyntheticData:
         visit_detail = pd.concat(visit_detail).reset_index(drop=True)
         visit_detail[self.id_detail_col] = range(visit_detail.shape[0])
         visit_detail = add_other_columns(
-            visit_detail,
-            self.other_detail_columns,
+            generator=self.generator,
+            table=visit_detail,
+            other_columns=self.other_detail_columns,
         )
         visit_detail = visit_detail.merge(care_site, on="care_site_id")
         uc_detail = (
@@ -345,10 +361,9 @@ class SyntheticData:
         rum_detail["visit_detail_type_source_value"] = "RUM"
         care_site_col = list(care_site.columns)
         care_site_col.remove("care_site_id")
-        visit_detail = pd.concat([uc_detail, uh_detail, uf_detail, rum_detail]).drop(
+        return pd.concat([uc_detail, uh_detail, uf_detail, rum_detail]).drop(
             columns=care_site_col
         )
-        return visit_detail
 
     def _generate_condition_occurrence(self, visit_detail):
         visit_detail = visit_detail[
@@ -358,8 +373,8 @@ class SyntheticData:
         cols = visit_detail.columns
         col_to_idx = dict(zip(cols, range(len(cols))))
 
-        for visit in visit_detail.values:
-            n_condition = np.random.randint(1, 5)
+        for visit in visit_detail.to_numpy():
+            n_condition = self.generator.integers(1, 5)
             detail_id = visit[col_to_idx[self.id_detail_col]]
             visit_id = visit[col_to_idx[self.id_visit_col]]
             date = visit[col_to_idx[self.detail_date_col]]
@@ -376,11 +391,11 @@ class SyntheticData:
         condition_occurrence[self.id_condition_col] = range(
             condition_occurrence.shape[0]
         )
-        condition_occurrence = add_other_columns(
-            condition_occurrence, self.other_condition_columns
+        return add_other_columns(
+            generator=self.generator,
+            table=condition_occurrence,
+            other_columns=self.other_condition_columns,
         )
-
-        return condition_occurrence
 
     def _generate_note(
         self,
@@ -404,6 +419,7 @@ class SyntheticData:
             )
             t0_visit = visit_care_site["t_0_min"].max()
             params = dict(
+                generator=self.generator,
                 care_site_id=care_site_id,
                 date_col=date_col,
                 note_date_col=note_date_col,
@@ -414,14 +430,16 @@ class SyntheticData:
             )
             for note_type in note_types:
                 params["note_type"] = note_type
-                note = generate_note(visit_care_site, **params)
+                note = generate_note(visit_care_site=visit_care_site, **params)
                 notes.append(note)
 
         notes = pd.concat(notes).reset_index(drop=True)
         notes[id_note_col] = range(notes.shape[0])
-        notes = add_other_columns(notes, self.other_note_columns)
-
-        return notes
+        return add_other_columns(
+            generator=self.generator,
+            table=notes,
+            other_columns=self.other_note_columns,
+        )
 
     def _generate_concept(
         self, n_entity: int = 5, units: List[str] = ["g", "g/l", "mol", "s"]
@@ -444,15 +462,15 @@ class SyntheticData:
         concept_id_2 = []
         relationship_id = []
         for i in range(n_entity):
-            n_loinc = np.random.randint(1, 4)
+            n_loinc = self.generator.integers(1, 4)
             loinc_codes = [str(i) + str(j) + "-0" for j in range(n_loinc)]
             loinc_concept_code.extend(loinc_codes)
             loinc_concept_id.extend(loinc_codes)
-            unit_values = np.random.choice(units, n_loinc)
+            unit_values = self.generator.choice(units, n_loinc)
             for loinc_code in loinc_codes:
-                unit_value = np.random.choice(unit_values)
+                unit_value = self.generator.choice(unit_values)
                 loinc_concept_name.append("LOINC_" + loinc_code + "_" + unit_value)
-                has_loinc_itm = np.random.random() >= 0.5
+                has_loinc_itm = self.generator.random() >= 0.5
                 if has_loinc_itm:
                     loinc_id_itm = loinc_code + "_ITM"
                     loinc_itm_concept_code.append(loinc_code)
@@ -460,7 +478,7 @@ class SyntheticData:
                     loinc_itm_concept_name.append(
                         "LOINC_" + loinc_id_itm + "_" + unit_value
                     )
-                n_anabio = np.random.randint(1, 3)
+                n_anabio = self.generator.integers(1, 3)
                 supp_code = "9" if len(str(i)) == 1 else ""
                 anabio_codes = [
                     "A" + loinc_code.split("-")[0] + str(j) + supp_code
@@ -472,7 +490,7 @@ class SyntheticData:
                     anabio_concept_name.append(
                         "ANABIO_" + anabio_code + "_" + unit_value
                     )
-                    has_anabio_itm = np.random.random() >= 0.5
+                    has_anabio_itm = self.generator.random() >= 0.5
                     if has_anabio_itm:
                         anabio_id_itm = anabio_code + "_ITM"
                         anabio_itm_concept_code.append(anabio_code)
@@ -487,7 +505,7 @@ class SyntheticData:
                             concept_id_1.extend([anabio_id_itm, loinc_id_itm])
                             concept_id_2.extend([loinc_id_itm, anabio_id_itm])
                             relationship_id.extend(["Maps to", "Mapped from"])
-                    n_src = np.random.randint(1, 3)
+                    n_src = self.generator.integers(1, 3)
                     src_codes = [
                         loinc_code + "-" + anabio_code + "-" + str(j)
                         for j in range(n_src)
@@ -579,22 +597,23 @@ class SyntheticData:
             mean_value = (1 + units.index(unit)) * 2
             std_value = 1
             for care_site_id in hospital_ids:
-                t_start = t_min + np.random.randint(0, (t_max - t_min) / 20)
-                t_end = t_max - np.random.randint(0, (t_max - t_min) / 20)
+                t_start = t_min + self.generator.integers(0, (t_max - t_min) / 20)
+                t_end = t_max - self.generator.integers(0, (t_max - t_min) / 20)
                 valid_measurements = int(
-                    np.random.normal(mean_measurement, mean_measurement / 5)
+                    self.generator.normal(mean_measurement, mean_measurement / 5)
                 )
-                missing_value = int(np.random.uniform(1, valid_measurements / 10))
+                missing_value = int(self.generator.uniform(1, valid_measurements / 10))
                 n_measurements = valid_measurements + missing_value
-                increase_time = np.random.randint(
+                increase_time = self.generator.integers(
                     (t_end - t_start) / 100, (t_end - t_start) / 10
                 )
-                increase_ratio = np.random.uniform(150, 200)
+                increase_ratio = self.generator.uniform(150, 200)
                 concept_code = concept_name.split("_")[1]
                 unit = concept_name.split("_")[-1]
                 mean_value = (1 + units.index(unit)) * 2
                 std_value = 1
                 params = dict(
+                    generator=self.generator,
                     t_start=t_start,
                     t_end=t_end,
                     n_events=n_measurements,
@@ -615,7 +634,7 @@ class SyntheticData:
                     .reset_index(drop=True)
                 )
                 measurement["value_as_number"] = [None] * missing_value + list(
-                    np.random.normal(
+                    self.generator.normal(
                         mean_value, std_value, measurement.shape[0] - missing_value
                     )
                 )
@@ -628,9 +647,11 @@ class SyntheticData:
             + measurements["unit_source_value"].astype(str)
         )
         measurements[self.id_bio_col] = range(measurements.shape[0])
-        measurements = add_other_columns(measurements, self.other_measurement_columns)
-
-        return measurements
+        return add_other_columns(
+            generator=self.generator,
+            table=measurements,
+            other_columns=self.other_measurement_columns,
+        )
 
     def convert_to_koalas(self):
         if isinstance(self.care_site, ks.frame.DataFrame):

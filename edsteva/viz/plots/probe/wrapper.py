@@ -86,7 +86,7 @@ def probe_plot(
     if not chart_style:
         chart_style = probe_config["chart_style"]
     predictor = probe.predictor.copy()
-    cols_to_remove = ["date"] + probe._metrics
+    cols_to_remove = ["date", *probe._metrics]
     if remove_care_site_id:
         cols_to_remove.append("care_site_id")
     indexes = list(set(predictor.columns).difference(cols_to_remove))

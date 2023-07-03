@@ -48,9 +48,9 @@ def loss_minimization(
     loss_function : Callable, optional
         The loss function $\mathcal{L}$
     """
-    check_columns(df=predictor, required_columns=index + [x_col, y_col])
+    check_columns(df=predictor, required_columns=[*index, x_col, y_col])
     predictor = predictor.sort_values(x_col)
-    cols = index + [x_col, y_col]
+    cols = [*index, x_col, y_col]
     iter = predictor[cols].groupby(index)
     results = []
     for partition, group in iter:
@@ -74,7 +74,7 @@ def _compute_one_threshold(
     y_col: str,
     loss_func: Callable,
 ):
-    target = group[[x_col, y_col]].values
+    target = group[[x_col, y_col]].to_numpy()
     best_loss, best_x0, best_y0 = np.inf, None, None
     for idx in range(len(target)):
         x0 = target[idx, 0]

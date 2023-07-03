@@ -15,10 +15,7 @@ def quantile(
     threshold: str = "c_0",
 ):
     estimates = c_0_from_quantile(predictor=predictor, index=index, q=q, x=x, y=y)
-    estimates = t_0_from_c_0(
-        predictor=estimates, index=index, x=x, y=y, threshold=threshold
-    )
-    return estimates
+    return t_0_from_c_0(predictor=estimates, index=index, x=x, y=y, threshold=threshold)
 
 
 def c_0_from_quantile(
@@ -50,7 +47,7 @@ def c_0_from_quantile(
         Column name  for the completeness variable $c(t)$
     """
 
-    check_columns(df=predictor, required_columns=index + [x, y])
+    check_columns(df=predictor, required_columns=[*index, x, y])
 
     quantile = (
         predictor.groupby(index)[[y]]
@@ -90,7 +87,7 @@ def t_0_from_c_0(
         Column name  for the threshold variable $t_0$
     """
 
-    check_columns(df=predictor, required_columns=index + [x, y, threshold])
+    check_columns(df=predictor, required_columns=[*index, x, y, threshold])
 
     threshold = (
         predictor[predictor[y] > predictor[threshold]]

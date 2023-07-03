@@ -49,7 +49,7 @@ pypandoc = "1.7.5"
 markdown = "^3.3.4"
 mkdocs-autorefs = "0.4.1"
 mkdocs-bibtex = "^2.0.1"
-mkdocs-charts-plugin = "0.0.8"
+mkdocs-charts-plugin = "0.0.9"
 mkdocs-gen-files = "0.3.5"
 mkdocs-img2fig-plugin = "0.9.3"
 mkdocs-literate-nav = "0.4.1"
@@ -65,14 +65,15 @@ mknotebooks = "0.7.1"
 mike = "^1.1.2"
 
 [tool.poetry.group.test.dependencies]
-ruff = "0.0.241"
+ruff = "0.0.275"
 pytest = "^7.1.3"
 pytest-cov = "^3.0.0"
 pytest-html = "^3.1.1"
 pylic = "^3.4.0"
 
 [tool.ruff]
-ignore = ["E501"]
+select = ["E", "F", "I", "W", "B", "RUF", "NPY", "PD", "ERA", "PTH", "SIM", "RET", "RSE", "T20", "PIE"]
+ignore = ["E501", "B006", "B905", "B017", "W605", "RUF001", "RUF013", "PD901", "SIM118", "RET503"]
 # Exclude a variety of commonly ignored directories.
 exclude = [
     ".eggs",

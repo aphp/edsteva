@@ -168,7 +168,7 @@ def get_i2b2_table(
 
 
 def mapping_dict(
-    mapping: Dict[str, str], Non_renseigne: str
+    mapping: Dict[str, str], not_specified_val: str
 ) -> FunctionUDF:  # pragma: no cover
     """
     Returns a function that maps data according to a mapping dictionnary in a Spark DataFrame.
@@ -177,7 +177,7 @@ def mapping_dict(
     ----------
     mapping: Dict
         Mapping dictionnary
-    Non_renseigne: str
+    not_specified_val: str
         Value to return if the function input is not find in the mapping dictionnary.
 
     Returns
@@ -189,6 +189,6 @@ def mapping_dict(
     def f(x):
         if x in mapping:
             return mapping.get(x)
-        return Non_renseigne
+        return not_specified_val
 
     return F.udf(f)

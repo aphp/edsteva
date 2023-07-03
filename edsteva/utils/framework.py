@@ -19,7 +19,6 @@ def get_framework(obj: DataObject) -> Optional[ModuleType]:
     for _, framework in VALID_FRAMEWORKS.items():
         if obj.__class__.__module__.startswith(framework.__name__):
             return framework
-    # raise ValueError(f"Object from unknown framework: {obj}")
     return None
 
 
@@ -34,10 +33,9 @@ def is_koalas(obj: DataObject) -> bool:
 def to(framework: str, obj: DataObject) -> DataObject:
     if framework == "koalas" or framework is _koalas:
         return koalas(obj)
-    elif framework == "pandas" or framework is _pandas:
+    if framework == "pandas" or framework is _pandas:
         return pandas(obj)
-    else:
-        raise ValueError(f"Unknown framework: {framework}")
+    raise ValueError(f"Unknown framework: {framework}")
 
 
 def pandas(obj: DataObject) -> DataObject:

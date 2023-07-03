@@ -104,10 +104,7 @@ def probe_dashboard(
     if not chart_style:
         chart_style = probe_config["chart_style"]
 
-    if fitted_model:
-        predictor = fitted_model.predict(probe)
-    else:
-        predictor = probe.predictor.copy()
+    predictor = fitted_model.predict(probe) if fitted_model else probe.predictor.copy()
     predictor = filter_predictor(
         predictor=predictor,
         care_site_level=care_site_level,

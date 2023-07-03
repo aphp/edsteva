@@ -21,8 +21,7 @@ data_rect = SyntheticData(mean_visit=100, seed=41, mode="rect").generate()
 
 @pytest.fixture(scope="session")
 def tmp_dir(tmp_path_factory):
-    template_dir = tmp_path_factory.mktemp("Test")
-    return template_dir
+    return tmp_path_factory.mktemp("Test")
 
 
 @pytest.mark.parametrize(

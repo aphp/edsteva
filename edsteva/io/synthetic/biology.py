@@ -12,6 +12,7 @@ from edsteva.io.synthetic.utils import (
 
 
 def generate_bio(
+    generator: np.random.Generator,
     t_start: int,
     t_end: int,
     n_events: int,
@@ -24,6 +25,7 @@ def generate_bio(
 ):
     if mode == "step":
         return _generate_bio_step(
+            generator=generator,
             t_start=t_start,
             t_end=t_end,
             n_events=n_events,
@@ -35,6 +37,7 @@ def generate_bio(
         )
     if mode == "rect":
         return _generate_bio_rect(
+            generator=generator,
             t_start=t_start,
             t_end=t_end,
             n_events=n_events,
@@ -47,6 +50,7 @@ def generate_bio(
 
 
 def _generate_bio_step(
+    generator: np.random.Generator,
     t_start: int,
     t_end: int,
     n_events: int,
@@ -56,8 +60,9 @@ def _generate_bio_step(
     unit: str,
     concept_code: str,
 ):
-    t0 = np.random.randint(t_start + increase_time, t_end - increase_time)
+    t0 = generator.integers(t_start + increase_time, t_end - increase_time)
     params = dict(
+        generator=generator,
         t_start=t_start,
         t_end=t_end,
         n_events=n_events,
@@ -83,6 +88,7 @@ def _generate_bio_step(
 
 
 def _generate_bio_rect(
+    generator: np.random.Generator,
     t_start: int,
     t_end: int,
     n_events: int,
@@ -92,11 +98,14 @@ def _generate_bio_rect(
     unit: str,
     concept_code: str,
 ):
-    t0 = np.random.randint(
+    t0 = generator.integers(
         t_start + increase_time, (t_end + t_start) / 2 - increase_time
     )
-    t1 = np.random.randint((t_end + t_start) / 2 + increase_time, t_end - increase_time)
+    t1 = generator.integers(
+        (t_end + t_start) / 2 + increase_time, t_end - increase_time
+    )
     t0_params = dict(
+        generator=generator,
         t_start=t_start,
         t_end=t1 - increase_time / 2,
         n_events=n_events,
@@ -109,6 +118,7 @@ def _generate_bio_rect(
     # Raise n_visit to enforce a rectangle shape
     between_t0_t1 = generate_events_after_t0(**t0_params)
     t1_params = dict(
+        generator=generator,
         t_start=t_start,
         t_end=t_end,
         n_events=n_events,

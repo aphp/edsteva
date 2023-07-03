@@ -51,9 +51,9 @@ def loss_minimization(
     min_rect_month_width : int, optional
         Min number of months between $t_0$ and $t_1$.
     """
-    check_columns(df=predictor, required_columns=index + [x_col, y_col])
+    check_columns(df=predictor, required_columns=[*index, x_col, y_col])
     predictor = predictor.sort_values(x_col)
-    cols = index + [x_col, y_col]
+    cols = [*index, x_col, y_col]
     iter = predictor[cols].groupby(index)
     results = []
     for partition, group in iter:
@@ -80,7 +80,7 @@ def _compute_one_double_threshold(
     loss_func: Callable,
     min_rect_month_width: int,
 ):
-    target = group[[x_col, y_col]].values
+    target = group[[x_col, y_col]].to_numpy()
     best_x0 = best_y0 = best_x1 = None
     best_loss = np.inf
     for idx in range(len(target) - min_rect_month_width):

@@ -101,7 +101,7 @@ def normalized_probe_plot(
     predictor = probe.predictor.copy()
     estimates = fitted_model.estimates.copy()
 
-    cols_to_remove = ["date"] + probe._metrics
+    cols_to_remove = ["date", *probe._metrics]
     if remove_care_site_id:
         cols_to_remove.append("care_site_id")
     indexes = list(set(predictor.columns).difference(cols_to_remove))

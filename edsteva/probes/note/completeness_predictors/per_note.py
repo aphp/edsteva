@@ -119,7 +119,7 @@ def compute_completeness(
     self,
     note_predictor: DataFrame,
 ):
-    partition_cols = self._index.copy() + ["date"]
+    partition_cols = [*self._index.copy(), "date"]
 
     n_note = (
         note_predictor.groupby(
@@ -158,9 +158,7 @@ def compute_completeness(
         note_predictor["max_n_note"] == 0,
         note_predictor["n_note"] / note_predictor["max_n_note"],
     )
-    note_predictor = note_predictor.drop(columns="max_n_note")
-
-    return note_predictor
+    return note_predictor.drop(columns="max_n_note")
 
 
 def get_hospital_note(

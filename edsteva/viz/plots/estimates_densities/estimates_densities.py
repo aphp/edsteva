@@ -84,7 +84,7 @@ def estimates_densities_plot(
     estimates = fitted_model.estimates.copy()
     estimates = estimates.merge(
         predictor[
-            predictor.columns.intersection(set(probe._index + ["care_site_short_name"]))
+            predictor.columns.intersection(set([*probe._index, "care_site_short_name"]))
         ].drop_duplicates(),
         on=list(predictor.columns.intersection(set(probe._index))),
     )

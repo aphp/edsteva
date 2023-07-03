@@ -131,7 +131,7 @@ def compute_completeness(
     self,
     condition_predictor: DataFrame,
 ):
-    partition_cols = self._index.copy() + ["date"]
+    partition_cols = [*self._index.copy(), "date"]
 
     n_condition = (
         condition_predictor.groupby(
@@ -170,9 +170,7 @@ def compute_completeness(
         condition_predictor["max_n_condition"] == 0,
         condition_predictor["n_condition"] / condition_predictor["max_n_condition"],
     )
-    condition_predictor = condition_predictor.drop(columns="max_n_condition")
-
-    return condition_predictor
+    return condition_predictor.drop(columns="max_n_condition")
 
 
 def get_hospital_condition(

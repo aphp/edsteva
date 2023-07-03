@@ -1,6 +1,6 @@
 import datetime
 from abc import ABCMeta, abstractmethod
-from typing import Dict, List, Union
+from typing import ClassVar, Dict, List, Union
 
 import pandas as pd
 from loguru import logger
@@ -34,7 +34,7 @@ class BaseProbe(metaclass=ABCMeta):
         It describes the care site structure (cf. [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship])
     """
 
-    _schema = ["care_site_level", "care_site_id", "date", "c"]
+    _schema: ClassVar[List[str]] = ["care_site_level", "care_site_id", "date", "c"]
 
     def __init__(
         self,
@@ -83,7 +83,7 @@ class BaseProbe(metaclass=ABCMeta):
                 self.predictor,
                 required_columns=self._schema,
             )
-            if not self.predictor.dtypes["date"] == "datetime64[ns]":
+            if self.predictor.dtypes["date"] != "datetime64[ns]":
                 try:
                     self.predictor["date"] = self.predictor["date"].astype(
                         "datetime64[ns]"
@@ -93,7 +93,7 @@ class BaseProbe(metaclass=ABCMeta):
                         "Predictor column 'date' type is {} and cannot convert to datetime and return the following error: {}. Please review the process method or your arguments".format(
                             self.predictor.dtypes["date"], e
                         )
-                    )
+                    ) from e
         else:
             raise Exception(
                 "Predictor has not been computed, please use the compute method as follow: Predictor.compute()"

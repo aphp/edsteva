@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 from functools import reduce
 from math import ceil, floor, log10
@@ -63,8 +62,7 @@ def generate_model_line(
         for filter in model_line_config["filters"]:
             model_line = model_line.transform_filter(**filter)
     model_line = model_line.encode(**model_line_config["encode"])
-    model_line = add_selection_on_legend(model_line)
-    return model_line
+    return add_selection_on_legend(model_line)
 
 
 def generate_error_line(
@@ -74,10 +72,7 @@ def generate_error_line(
     error_line = main_chart.mark_errorband(
         **error_line_config["mark_errorband"]
     ).encode(**error_line_config["encode"])
-    error_line = add_selection_on_legend(
-        error_line, opacity_true=0.3, opacity_false=0.05
-    )
-    return error_line
+    return add_selection_on_legend(error_line, opacity_true=0.3, opacity_false=0.05)
 
 
 def generate_probe_line(
@@ -85,8 +80,7 @@ def generate_probe_line(
     probe_line_config: Dict[str, str],
 ):
     probe_line = main_chart.mark_line().encode(**probe_line_config["encode"])
-    probe_line = add_selection_on_legend(probe_line)
-    return probe_line
+    return add_selection_on_legend(probe_line)
 
 
 def generate_time_line(
@@ -205,12 +199,11 @@ def add_selection_on_legend(
     chart: alt.Chart, opacity_true: float = 1, opacity_false: float = 0.2
 ):
     legend_selection = alt.selection_point(fields=["value"], bind="legend")
-    chart = chart.encode(
+    return chart.encode(
         opacity=alt.condition(
             legend_selection, alt.value(opacity_true), alt.value(opacity_false)
         )
     ).add_params(legend_selection)
-    return chart
 
 
 def add_estimates_filters(
@@ -368,11 +361,11 @@ def save_html(obj: alt.Chart, filename: str):
     """
     if not isinstance(filename, Path):
         filename = Path(filename)
-    os.makedirs(filename.parent, exist_ok=True)
+    Path.mkdir(filename.parent, exist_ok=True, parents=True)
     if hasattr(obj, "save"):
         obj.save(filename)
     else:
-        with open(filename, "w") as f:
+        with Path.open(filename, "w") as f:
             f.write(obj)
     logger.info("The chart has been saved in {}", filename)
 
@@ -380,16 +373,14 @@ def save_html(obj: alt.Chart, filename: str):
 def round_up(x: float, sig: int):
     if x == 0:
         return 0
-    else:
-        decimals = sig - floor(log10(abs(x))) - 1
-        return ceil(x * 10**decimals) / 10**decimals
+    decimals = sig - floor(log10(abs(x))) - 1
+    return ceil(x * 10**decimals) / 10**decimals
 
 
 def scale_it(x: float):
     if x == 0:
         return 1
-    else:
-        return 10 ** ceil(log10(x))
+    return 10 ** ceil(log10(x))
 
 
 def filter_predictor(

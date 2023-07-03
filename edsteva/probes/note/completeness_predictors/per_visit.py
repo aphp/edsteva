@@ -122,7 +122,7 @@ def compute_completeness(
     note_predictor: DataFrame,
 ):
     # Visit with note
-    partition_cols = self._index.copy() + ["date"]
+    partition_cols = [*self._index.copy(), "date"]
     n_visit_with_note = (
         note_predictor.groupby(
             partition_cols,

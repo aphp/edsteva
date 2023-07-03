@@ -8,11 +8,10 @@ from .defaults import (
 
 
 def get_probe_dashboard_config(self):
-    probe_dashboard_config = dict(
+    return dict(
         chart_style=chart_style,
         main_chart=main_chart,
         time_line=time_line,
         vertical_bar_charts=vertical_bar_charts,
         horizontal_bar_charts=horizontal_bar_charts,
     )
-    return probe_dashboard_config

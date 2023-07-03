@@ -90,9 +90,7 @@ class RectangleFunction(BaseModel):
             Variable from which data is grouped
             **EXAMPLE**: `["care_site_level", "stay_type", "note_type", "care_site_id"]`
         """
-        estimates = algos.get(self._algo)(predictor=predictor, index=index, **kwargs)
-
-        return estimates
+        return algos.get(self._algo)(predictor=predictor, index=index, **kwargs)
 
     def predict_process(
         self,

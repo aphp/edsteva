@@ -130,7 +130,7 @@ def compute_completeness(
     condition_predictor: DataFrame,
 ):
     # Visit with diagnosis
-    partition_cols = self._index.copy() + ["date"]
+    partition_cols = [*self._index.copy(), "date"]
     n_visit_with_condition = (
         condition_predictor.groupby(
             partition_cols,

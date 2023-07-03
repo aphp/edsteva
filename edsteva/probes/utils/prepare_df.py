@@ -408,9 +408,7 @@ def prepare_note_care_site(extra_data: Data, note: DataFrame):  # pragma: no cov
         value_name="care_site_source_value",
     )
     note_ref = note_ref.merge(care_site_ref, on="care_site_source_value")
-    note = note.merge(note_ref[["note_id", "care_site_id"]], on="note_id")
-
-    return note
+    return note.merge(note_ref[["note_id", "care_site_id"]], on="note_id")
 
 
 def prepare_visit_detail(
@@ -439,14 +437,12 @@ def prepare_visit_detail(
         table=visit_detail, table_name="visit_detail", valid_naming="Actif"
     )
 
-    visit_detail = filter_table_by_date(
+    return filter_table_by_date(
         table=visit_detail,
         table_name="visit_detail",
         start_date=start_date,
         end_date=end_date,
     )
-
-    return visit_detail
 
 
 def prepare_care_site_relationship(data: Data) -> pd.DataFrame:

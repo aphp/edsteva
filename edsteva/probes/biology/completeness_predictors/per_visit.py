@@ -122,7 +122,7 @@ def compute_completeness(
     biology_predictor: DataFrame,
 ):
     # Visit with measurement
-    partition_cols = self._index.copy() + ["date"]
+    partition_cols = [*self._index.copy(), "date"]
     n_visit_with_measurement = (
         biology_predictor.groupby(
             partition_cols,
@@ -187,7 +187,7 @@ def get_hospital_visit(
 ):
     hospital_measurement = measurement[
         set(measurement.columns).intersection(
-            set(["visit_occurrence_id"] + self._index)
+            set(["visit_occurrence_id", *self._index])
         )
     ].drop_duplicates()
     hospital_measurement["has_measurement"] = True

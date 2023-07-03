@@ -30,7 +30,7 @@ def koalas_options() -> None:
     if ks is not None:
         importlib.reload(ks)
 
-    else:
+    else:  # pragma: no cover
         import databricks.koalas as ks
 
     ks.set_option("compute.default_index_type", "distributed")

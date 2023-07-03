@@ -15,7 +15,7 @@ def get_normalized_probe_plot_config(self, predictor: DataFrame):
     t_0_selection, t_0_min_filter = get_t_0_selection(predictor=predictor)
     t_1_selection, t_1_min_filter = get_t_1_selection(predictor=predictor)
     error_max_selection, error_max_filter = get_error_max_selection(predictor=predictor)
-    normalized_probe_dashboard_config = dict(
+    return dict(
         estimates_selections=[
             t_0_selection,
             t_1_selection,
@@ -31,4 +31,3 @@ def get_normalized_probe_plot_config(self, predictor: DataFrame):
         probe_line=normalized_probe_line,
         model_line=normalized_model_line,
     )
-    return normalized_probe_dashboard_config

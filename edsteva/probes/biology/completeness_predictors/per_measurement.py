@@ -123,7 +123,7 @@ def compute_completeness(
     self,
     biology_predictor: DataFrame,
 ):
-    partition_cols = self._index.copy() + ["date"]
+    partition_cols = [*self._index.copy(), "date"]
     n_measurement = (
         biology_predictor.groupby(
             partition_cols,
@@ -161,9 +161,7 @@ def compute_completeness(
         biology_predictor["max_n_measurement"] == 0,
         biology_predictor["n_measurement"] / biology_predictor["max_n_measurement"],
     )
-    biology_predictor = biology_predictor.drop(columns="max_n_measurement")
-
-    return biology_predictor
+    return biology_predictor.drop(columns="max_n_measurement")
 
 
 def get_hospital_measurements(

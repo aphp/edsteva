@@ -124,6 +124,4 @@ def fitted_probe_dashboard(
         horizontal_bar_charts=horizontal_bar_charts,
         vertical_bar_charts=vertical_bar_charts,
     )
-    chart = configure_style(chart=chart, chart_style=chart_style)
-
-    return chart
+    return configure_style(chart=chart, chart_style=chart_style)

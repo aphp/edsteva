@@ -47,12 +47,11 @@ def impute_missing_dates(
         .drop_duplicates()
         .merge(date_index, how="cross")
     )
-    filled_predictor = all_partitions.merge(
+    return all_partitions.merge(
         predictor,
         on=partition_cols,
         how="left",
     ).fillna({col: 0 for col in set(predictor.columns) - set(partition_cols)})
-    return filled_predictor
 
 
 def hospital_only(care_site_levels: List[str]):
@@ -205,7 +204,4 @@ def get_child_and_parent_cs(
             }
         )
 
-    extended_care_site_id_to_filter = pd.concat(
-        extended_care_site_id_to_filter
-    ).drop_duplicates()
-    return extended_care_site_id_to_filter
+    return pd.concat(extended_care_site_id_to_filter).drop_duplicates()
