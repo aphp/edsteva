@@ -100,6 +100,8 @@ markdown_extensions:
   - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.snippets
+  - toc:
+      toc_depth: 4
   - pymdownx.superfences:
       custom_fences:
         - name: vegalite

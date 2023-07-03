@@ -240,7 +240,7 @@ class SyntheticData:
         care_site = care_site.merge(
             pd.concat([uc_care_site, uh_care_site]), on="care_site_id", how="left"
         )
-        care_site = care_site.fillna("Non Renseigné")
+        care_site = care_site.fillna("Non renseigné")
         hospital_ids = list(
             care_site[care_site.care_site_type_source_value == "Hôpital"].care_site_id
         )

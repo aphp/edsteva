@@ -158,7 +158,7 @@ def normalized_probe_plot(
     indexes = [
         {"field": variable, "title": variable.replace("_", " ").capitalize()}
         for variable in indexes
-        if variable in predictor.columns and len(predictor[variable].unique()) >= 2
+        if variable in predictor.columns
     ]
 
     index_selection, index_fields = create_groupby_selection(

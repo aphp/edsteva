@@ -101,7 +101,7 @@ color:green Successfully installed edsteva
 We recommend pinning the library version in your projects, or use a strict package manager like [Poetry](https://python-poetry.org/).
 
 ```
-pip install edsteva==0.2.1
+pip install edsteva==0.2.2
 ```
 ## Working example: administrative records relative to visits
 
@@ -402,8 +402,8 @@ Once you set the thresholds, you can extract for each stay type the care sites f
 
 ```python
 t_0_max = "2020-01-01"  # (1)
-c_0_min = 0.3  # (2)
-error_max = 0.1  # (3)
+c_0_min = 0.6  # (2)
+error_max = 0.05  # (3)
 
 estimates = step_function_model.estimates
 selected_care_site = estimates[
@@ -422,7 +422,7 @@ print(selected_care_site["care_site_id"].unique())
 [8312056386, 8457691845, 8745619784, 8314578956, 8314548764, 8542137845]
 ```
 
-In this example, $c_0$ and $error$ thresholds have been set around the median (cf. [distribution][41-visualize-estimates-distributions]). However, this method is arbitrary and you have to find the appropriate method for your study with the help of the [estimate dashboard][42-set-the-thresholds].
+In this example, $c_0$ and $error$ thresholds have been set around the median (cf. [distribution][41-visualize-estimates-distributions]). However, this method is arbitrary and you have to find the appropriate method for your study with the help of the [estimate dashboard](assets/charts/normalized_probe_dashboard.html).
 
 !!!danger "Limitations"
     EDS-TeVa provides modelling tools to characterize the temporal variability of your data, it does not intend to provide direct methods to fix the deployment bias. As an open-source library, EDS-TeVa is also here to host a discussion in order to facilitate collective methodological convergence on flexible solutions. The default methods proposed in this example is intended to be reviewed and challenged by the user community.

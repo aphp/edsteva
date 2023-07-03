@@ -466,7 +466,7 @@ def filter_predictor(
     # Care site specialty
     if (
         "care_site_specialty" in predictor.columns
-        and predictor[~(predictor.care_site_specialty == "Non Renseigné")].empty
+        and predictor[~(predictor.care_site_specialty == "Non renseigné")].empty
     ):
         predictor = predictor.drop(columns="care_site_specialty")
 
