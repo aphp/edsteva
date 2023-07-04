@@ -42,7 +42,7 @@ def normalized_probe_plot(
     estimates_selections: Dict[str, str] = None,
     estimates_filters: Dict[str, str] = None,
     chart_style: Dict[str, float] = None,
-    remove_care_site_id: bool = True,
+    indexes_to_remove: List[str] = ["care_site_id"],
     **kwargs,
 ):
     r"""Displays a chart with the aggregated normalized completeness predictor $\frac{c(\Delta t)}{c_0}$ over normalized time $\Delta t = t - t_0$. It represents the overall deviation from the Model.
@@ -94,16 +94,16 @@ def normalized_probe_plot(
     chart_style: Dict[str, float], optional
         If not None, configuration used to configure the chart style.
         **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
-    remove_care_site_id: bool, optional
-        If False, it will display care site id and care site name, else only care site name.
+    indexes_to_remove: List[str], optional
+        indexes to remove from the groupby selection.
     """
 
     predictor = probe.predictor.copy()
     estimates = fitted_model.estimates.copy()
 
     cols_to_remove = ["date", *probe._metrics]
-    if remove_care_site_id:
-        cols_to_remove.append("care_site_id")
+    if indexes_to_remove:
+        cols_to_remove.extend(*indexes_to_remove)
     indexes = list(set(predictor.columns).difference(cols_to_remove))
     predictor = predictor.merge(estimates, on=probe._index)
 

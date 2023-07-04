@@ -29,7 +29,7 @@ def probe_plot(
     model_line_config: Dict[str, str] = None,
     probe_line_config: Dict[str, str] = None,
     chart_style: Dict[str, float] = None,
-    remove_care_site_id: bool = True,
+    indexes_to_remove: List[str] = ["care_site_id"],
     **kwargs,
 ):
     r"""
@@ -74,8 +74,8 @@ def probe_plot(
     chart_style: Dict[str, float], optional
         If not None, configuration used to configure the chart style.
         **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
-    remove_care_site_id: bool, optional
-        If False, it will display care site id and care site name, else only care site name.
+    indexes_to_remove: List[str], optional
+        indexes to remove from the groupby selection.
     """
     alt.data_transformers.enable("default")
     alt.data_transformers.disable_max_rows()
@@ -87,8 +87,8 @@ def probe_plot(
         chart_style = probe_config["chart_style"]
     predictor = probe.predictor.copy()
     cols_to_remove = ["date", *probe._metrics]
-    if remove_care_site_id:
-        cols_to_remove.append("care_site_id")
+    if indexes_to_remove:
+        cols_to_remove.extend(*indexes_to_remove)
     indexes = list(set(predictor.columns).difference(cols_to_remove))
 
     if fitted_model:
