@@ -135,7 +135,10 @@ def normalized_probe_plot(
 
     predictor["model"] = 1
     predictor["model"] = predictor["model"].where(predictor["normalized_date"] >= 0, 0)
-
+    predictor["c_0_norm"] = 1
+    predictor["c_0_norm"] = predictor["c_0_norm"].where(
+        predictor["normalized_date"] < 0, predictor["c_0"]
+    )
     predictor = filter_predictor(
         predictor=predictor,
         care_site_level=care_site_level,

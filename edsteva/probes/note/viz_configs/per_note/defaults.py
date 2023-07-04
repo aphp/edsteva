@@ -97,7 +97,9 @@ normalized_main_chart = dict(
         ),
     ],
     calculates=[
-        dict(normalized_c=(alt.datum.sum_note / alt.datum.max_note) / alt.datum.c_0)
+        dict(
+            normalized_c=(alt.datum.sum_note / alt.datum.max_note) / alt.datum.c_0_norm
+        )
     ],
     legend_title="Mean",
     encode=dict(

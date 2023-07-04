@@ -1,6 +1,6 @@
 import uuid
 from copy import deepcopy
-from typing import Dict
+from typing import Dict, List
 
 import altair as alt
 import pandas as pd
@@ -45,6 +45,7 @@ def normalized_probe_dashboard(
     horizontal_bar_charts_config: Dict[str, str] = None,
     time_line_config: Dict[str, str] = None,
     chart_style: Dict[str, float] = None,
+    indexes_to_remove: List[str] = ["care_site_id"],
     **kwargs,
 ):
     r"""Displays an interactive chart with:
@@ -89,11 +90,18 @@ def normalized_probe_dashboard(
     chart_style: Dict[str, float], optional
         If not None, configuration used to configure the chart style.
         **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
+    indexes_to_remove: List[str], optional
+        indexes to remove from the groupby selection.
     """
     alt.data_transformers.disable_max_rows()
 
     predictor = probe.predictor.copy()
     estimates = fitted_model.estimates.copy()
+    cols_to_remove = ["date", *probe._metrics]
+    if indexes_to_remove:
+        cols_to_remove.extend(indexes_to_remove)
+    indexes = list(set(predictor.columns).difference(cols_to_remove))
+
     predictor = predictor.merge(estimates, on=probe._index)
 
     predictor["normalized_date"] = month_diff(
@@ -105,7 +113,10 @@ def normalized_probe_dashboard(
 
     predictor["model"] = 1
     predictor["model"] = predictor["model"].where(predictor["normalized_date"] >= 0, 0)
-
+    predictor["c_0_norm"] = 1
+    predictor["c_0_norm"] = predictor["c_0_norm"].where(
+        predictor["normalized_date"] < 0, predictor["c_0"]
+    )
     predictor.t_0 = predictor.t_0.dt.strftime("%Y-%m")
     probe_config = deepcopy(probe.get_viz_config("normalized_probe_dashboard"))
     model_config = deepcopy(
@@ -185,8 +196,14 @@ def normalized_probe_dashboard(
         selection_charts=selection_charts,
         estimates_filters=estimates_filters,
     )
+
+    indexes = [
+        {"field": variable, "title": variable.replace("_", " ").capitalize()}
+        for variable in indexes
+        if variable in predictor.columns
+    ]
     index_selection, index_fields = create_groupby_selection(
-        indexes=vertical_bar_charts_config["x"] + horizontal_bar_charts_config["y"],
+        indexes=indexes,
         predictor=predictor,
     )
     main_chart = generate_main_chart(

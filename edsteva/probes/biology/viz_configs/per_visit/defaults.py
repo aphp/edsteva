@@ -148,7 +148,7 @@ normalized_main_chart = dict(
     calculates=[
         dict(
             normalized_c=(alt.datum.sum_visit_with_measurement / alt.datum.sum_visit)
-            / alt.datum.c_0
+            / alt.datum.c_0_norm
         )
     ],
     legend_title="Mean",
