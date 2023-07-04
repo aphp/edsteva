@@ -1,3 +1,4 @@
+import altair as alt
 import pytest
 
 from edsteva import improve_performances
@@ -5,6 +6,7 @@ from edsteva.io import SyntheticData
 from edsteva.models.rectangle_function import RectangleFunction
 from edsteva.models.step_function import StepFunction
 from edsteva.probes import BiologyProbe, ConditionProbe, NoteProbe, VisitProbe
+from edsteva.probes.visit.viz_configs import viz_configs
 from edsteva.viz.dashboards import normalized_probe_dashboard, probe_dashboard
 from edsteva.viz.plots import (
     estimates_densities_plot,
@@ -85,6 +87,91 @@ def test_viz_fail(data, Model, Probe, tmp_dir):
     model.reset_estimates()
 
 
+def test_custom_config(tmp_dir):
+    probe = VisitProbe()
+    probe.compute(
+        data=data_step,
+        start_date=data_step.t_min,
+        end_date=data_step.t_max,
+        stay_types={"HC": "hospitalisés", "Urg": "urgences"},
+        care_site_ids=["1", "2"],
+        care_site_short_names=["Hôpital-1", "Hôpital-2"],
+        concepts_sets=None,
+        note_types=None,
+        length_of_stays=None,
+    )
+    model = StepFunction()
+    model.fit(
+        probe=probe,
+        start_date=data_step.t_min,
+        end_date=data_step.t_max,
+    )
+    model.estimates["error"] = 0
+    model_line_config = dict(
+        mark_line=dict(
+            color="black",
+            interpolate="step-after",
+            strokeDash=[5, 5],
+        ),
+        encode=dict(
+            y="model:Q",
+            strokeWidth=alt.StrokeWidth(
+                field="legend_model",
+                title="Model line",
+                legend=alt.Legend(
+                    symbolType="stroke",
+                    symbolStrokeColor="steelblue",
+                    labelFontSize=12,
+                    labelFontStyle="bold",
+                    symbolDash=[2, 2],
+                    orient="top",
+                ),
+            ),
+        ),
+        calculates=[
+            dict(completeness=alt.datum.error + 0.01),
+        ],
+    )
+    normalized_probe_dashboard(
+        probe=probe,
+        fitted_model=model,
+        model_line_config=model_line_config,
+        care_site_level="Hospital",
+        save_path=tmp_dir / "test.html",
+    )
+    catalogue_viz_probe_dashboard = viz_configs["probe_dashboard"]
+    default_config = probe.get_viz_config("probe_dashboard")
+    custom_filters_config = default_config.copy()
+    custom_filters_config["main_chart"]["filters"] = [
+        dict(filter=alt.datum.date <= "2023")
+    ]
+
+    @catalogue_viz_probe_dashboard.register("custom_filters")
+    def get_custom_filters(self):
+        return custom_filters_config
+
+    probe_dashboard(
+        probe=probe,
+        care_site_level="Hospital",
+        vertical_bar_charts_config={"x": [], "y": []},
+        save_path=tmp_dir / "test.html",
+    )
+    probe_dashboard(
+        probe=probe,
+        care_site_level="Hospital",
+        horizontal_bar_charts_config={"x": [], "y": []},
+        save_path=tmp_dir / "test.html",
+    )
+    probe._viz_config["probe_dashboard"] = "custom_filters"
+    probe_dashboard(
+        probe=probe,
+        care_site_level="Hospital",
+        vertical_bar_charts_config={"x": [], "y": []},
+        horizontal_bar_charts_config={"x": [], "y": []},
+        save_path=tmp_dir / "test.html",
+    )
+
+
 @pytest.mark.parametrize(
     "data,Model",
     [
@@ -101,7 +188,7 @@ def test_viz_fail(data, Model, Probe, tmp_dir):
         VisitProbe,
     ],
 )
-def test_viz_visit(data, Model, Probe, tmp_dir):
+def test_viz_probe(data, Model, Probe, tmp_dir):
     probe = Probe()
     for completness_predictor in probe.available_completeness_predictors():
         probe._completness_predictor = completness_predictor
@@ -114,6 +201,7 @@ def test_viz_visit(data, Model, Probe, tmp_dir):
             care_site_short_names=["Hôpital-1", "Hôpital-2"],
             concepts_sets=None,
             note_types=None,
+            length_of_stays=None,
         )
         model = Model()
         model.fit(
@@ -137,12 +225,15 @@ def test_viz_visit(data, Model, Probe, tmp_dir):
             probe_plot(
                 probe=probe,
                 care_site_level="Hospital",
+                stay_type="HC",
+                care_site_id="1",
+                care_site_short_name="Hôpital-1",
+                care_site_specialty="Non renseigné",
                 start_date=data.t_min,
                 end_date=data.t_max,
                 x_axis_title="x_axis",
                 y_axis_title="y_axis",
-                save_path=tmp_dir / "test.html",
-                care_site_specialty="Non renseigné",
+                save_path=str(tmp_dir.resolve()) + "/test.html",
             )
 
             model.reset_estimates()

@@ -180,10 +180,8 @@ def generate_vertical_bar_charts(
 def add_interactive_selection(
     base: alt.Chart,
     selections: Dict[str, alt.SelectionParameter],
-    selection_charts: Dict[str, List[alt.Chart]] = None,
+    selection_charts: Dict[str, List[alt.Chart]],
 ):
-    if selection_charts is None:
-        selection_charts = {}
     for selection_variable, selection in selections.items():
         base = base.transform_filter(selection)
         for chart_variable in selection_charts.keys():
@@ -251,15 +249,17 @@ def configure_style(
     chart: alt.Chart,
     chart_style: Dict[str, float],
 ):
-    return chart.configure_axis(
-        labelFontSize=chart_style["labelFontSize"],
-        titleFontSize=chart_style["titleFontSize"],
-        labelLimit=500,
-    ).configure_legend(
-        labelFontSize=chart_style["labelFontSize"],
-        titleFontSize=chart_style["titleFontSize"],
-        labelLimit=500,
-    )
+    if chart_style:
+        chart = chart.configure_axis(
+            labelFontSize=chart_style["labelFontSize"],
+            titleFontSize=chart_style["titleFontSize"],
+            labelLimit=500,
+        ).configure_legend(
+            labelFontSize=chart_style["labelFontSize"],
+            titleFontSize=chart_style["titleFontSize"],
+            labelLimit=500,
+        )
+    return chart
 
 
 def concatenate_charts(
