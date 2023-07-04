@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "edsteva"
-version = "0.2.2"
+version = "0.2.3"
 description = "EDS-TeVa provides a set of tools that aims at modeling the adoption over time and across space of the Electronic Health Records."
 authors = ["Adam Remaki <adam.remaki@aphp.fr>", "Vicent Maladiere <vincent.maladiere-ext@aphp.fr>", "Benoit Playe <benoit.playe@aphp.fr>", "Romain Bey <romain.bey@aphp.fr>", "Paul Bernard <paul.bernard@aphp.fr>"]
 keywords = ["OMOP", "Data Analysis", "Electronic health record"]

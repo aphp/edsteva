@@ -1,7 +1,10 @@
 # Changelog
+## v0.2.3 - 04-07-2023
+
+- Viz: Fix dashboards
 ## v0.2.2 - 03-07-2023
 
-- Viz: Fix [normalized_probe_plot()](https://aphp.github.io/edsteva/latest/reference/viz/plots/normalized_probe/normalized_probe/).
+- Viz: Fix normalized probe
 ## v0.2.1 - 03-07-2023
 
 - Linting: Improve code style with ruff.
