@@ -98,22 +98,6 @@ horizontal_bar_charts = dict(
 )
 
 normalized_main_chart = dict(
-    aggregates=[
-        dict(
-            sum_condition="sum(n_condition)",
-            groupby=["value", "date"],
-        ),
-        dict(
-            max_condition="max(sum_condition)",
-            groupby=["value"],
-        ),
-    ],
-    calculates=[
-        dict(
-            normalized_c=(alt.datum.sum_condition / alt.datum.max_condition)
-            / alt.datum.c_0_norm
-        )
-    ],
     legend_title="Mean",
     encode=dict(
         x=alt.X(

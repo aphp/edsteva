@@ -222,6 +222,21 @@ def add_estimates_filters(
     return base
 
 
+def get_indexes_to_groupby(
+    predictor_columns: List[str],
+    predictor_metrics: List[str],
+    indexes_to_remove: List[str],
+):
+    cols_to_remove = ["date", *predictor_metrics]
+    if indexes_to_remove:
+        cols_to_remove.extend(indexes_to_remove)
+    indexes = list(set(predictor_columns).difference(cols_to_remove))
+    return [
+        {"field": variable, "title": variable.replace("_", " ").capitalize()}
+        for variable in indexes
+    ]
+
+
 def create_groupby_selection(
     indexes: List[Dict[str, str]],
     predictor: pd.DataFrame,

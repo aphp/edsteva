@@ -124,22 +124,6 @@ main_chart = dict(
 )
 
 normalized_main_chart = dict(
-    aggregates=[
-        dict(
-            sum_measurement="sum(n_measurement)",
-            groupby=["value", "date"],
-        ),
-        dict(
-            max_measurement="max(sum_measurement)",
-            groupby=["value"],
-        ),
-    ],
-    calculates=[
-        dict(
-            normalized_c=(alt.datum.sum_measurement / alt.datum.max_measurement)
-            / alt.datum.c_0_norm
-        )
-    ],
     legend_title="Mean",
     encode=dict(
         x=alt.X(

@@ -100,8 +100,8 @@ A **Plot** is exportable in png or svg format and easy to integrate into a repor
         normalized_probe_plot(
             probe=probe,
             fitted_model=step_function_model,
-            care_site_level=care_site_level,
-            stay_type=stay_type,
+            t_min=-15,
+            t_max=15,
             save_path=plot_path,
         )
         ```

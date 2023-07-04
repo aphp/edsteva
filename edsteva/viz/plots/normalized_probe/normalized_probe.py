@@ -16,6 +16,7 @@ from edsteva.viz.utils import (
     generate_main_chart,
     generate_model_line,
     generate_probe_line,
+    get_indexes_to_groupby,
     month_diff,
     save_html,
 )
@@ -98,15 +99,47 @@ def normalized_probe_plot(
         indexes to remove from the groupby selection.
     """
 
+    alt.data_transformers.disable_max_rows()
+
+    # Pre-processing
     predictor = probe.predictor.copy()
+    predictor_metrics = probe._metrics.copy()
     estimates = fitted_model.estimates.copy()
-
-    cols_to_remove = ["date", *probe._metrics]
-    if indexes_to_remove:
-        cols_to_remove.extend(indexes_to_remove)
-    indexes = list(set(predictor.columns).difference(cols_to_remove))
+    indexes = get_indexes_to_groupby(
+        predictor_columns=predictor.columns,
+        predictor_metrics=predictor_metrics,
+        indexes_to_remove=indexes_to_remove,
+    )
     predictor = predictor.merge(estimates, on=probe._index)
+    predictor["normalized_date"] = month_diff(
+        predictor["date"], predictor["t_0"]
+    ).astype(int)
+    for estimate in fitted_model._coefs + fitted_model._metrics:
+        if pd.api.types.is_datetime64_any_dtype(predictor[estimate]):
+            predictor[estimate] = predictor[estimate].dt.strftime("%Y-%m")
+    predictor["normalized_c"] = predictor["c"].where(
+        (predictor["normalized_date"] < 0) | (predictor["c_0"] == 0),
+        predictor["c"] / predictor["c_0"],
+    )
+    predictor["model"] = 1
+    predictor["model"] = predictor["model"].where(predictor["normalized_date"] >= 0, 0)
+    predictor["legend_model"] = type(fitted_model).__name__
+    predictor = filter_predictor(
+        predictor=predictor,
+        care_site_level=care_site_level,
+        stay_type=stay_type,
+        care_site_id=care_site_id,
+        care_site_short_name=care_site_short_name,
+        start_date=start_date,
+        end_date=end_date,
+        **kwargs,
+    )
+    if t_min:
+        predictor = predictor[predictor.normalized_date >= t_min]
+    if t_max:
+        predictor = predictor[predictor.normalized_date <= t_max]
 
+    # Get viz config
     probe_config = deepcopy(probe.get_viz_config("normalized_probe_plot"))
     model_config = deepcopy(
         fitted_model.get_viz_config("normalized_probe_plot", predictor=predictor)
@@ -126,44 +159,9 @@ def normalized_probe_plot(
     if not chart_style:
         chart_style = probe_config["chart_style"]
 
-    predictor["normalized_date"] = month_diff(
-        predictor["date"], predictor["t_0"]
-    ).astype(int)
-    predictor["legend_predictor"] = "Mean"
-    predictor["legend_error_band"] = "Standard deviation"
-    predictor["legend_model"] = type(fitted_model).__name__
-
-    predictor["model"] = 1
-    predictor["model"] = predictor["model"].where(predictor["normalized_date"] >= 0, 0)
-    predictor["c_0_norm"] = 1
-    predictor["c_0_norm"] = predictor["c_0_norm"].where(
-        predictor["normalized_date"] < 0, predictor["c_0"]
-    )
-    predictor = filter_predictor(
-        predictor=predictor,
-        care_site_level=care_site_level,
-        stay_type=stay_type,
-        care_site_id=care_site_id,
-        care_site_short_name=care_site_short_name,
-        start_date=start_date,
-        end_date=end_date,
-        **kwargs,
-    )
-    for estimate in fitted_model._coefs + fitted_model._metrics:
-        if pd.api.types.is_datetime64_any_dtype(predictor[estimate]):
-            predictor[estimate] = predictor[estimate].dt.strftime("%Y-%m")
-
-    if t_min:
-        predictor = predictor[predictor.normalized_date >= t_min]
-    if t_max:
-        predictor = predictor[predictor.normalized_date <= t_max]
-
-    indexes = [
-        {"field": variable, "title": variable.replace("_", " ").capitalize()}
-        for variable in indexes
-        if variable in predictor.columns
-    ]
-
+    # Viz
+    predictor["legend_predictor"] = main_chart_config["legend_title"]
+    predictor["legend_error_band"] = error_line_config["legend_title"]
     index_selection, index_fields = create_groupby_selection(
         indexes=indexes,
         predictor=predictor,
