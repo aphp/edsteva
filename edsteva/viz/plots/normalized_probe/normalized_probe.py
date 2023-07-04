@@ -103,7 +103,7 @@ def normalized_probe_plot(
 
     cols_to_remove = ["date", *probe._metrics]
     if indexes_to_remove:
-        cols_to_remove.extend(*indexes_to_remove)
+        cols_to_remove.extend(indexes_to_remove)
     indexes = list(set(predictor.columns).difference(cols_to_remove))
     predictor = predictor.merge(estimates, on=probe._index)
 

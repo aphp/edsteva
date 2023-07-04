@@ -88,7 +88,7 @@ def probe_plot(
     predictor = probe.predictor.copy()
     cols_to_remove = ["date", *probe._metrics]
     if indexes_to_remove:
-        cols_to_remove.extend(*indexes_to_remove)
+        cols_to_remove.extend(indexes_to_remove)
     indexes = list(set(predictor.columns).difference(cols_to_remove))
 
     if fitted_model:
