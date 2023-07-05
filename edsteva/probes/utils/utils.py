@@ -29,15 +29,17 @@ def impute_missing_dates(
     partition_cols: List[str],
 ):
     # Generate all available dates
+    closed = "left"
     if not start_date:
         start_date = predictor["date"].min()
     if not end_date:
         end_date = predictor["date"].max()
+        closed = None
     date_index = pd.date_range(
         start=start_date,
         end=end_date,
         freq="MS",
-        closed="left",
+        closed=closed,
     )
     date_index = pd.DataFrame({"date": date_index})
 
