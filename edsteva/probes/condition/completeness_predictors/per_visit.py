@@ -241,7 +241,15 @@ def get_uf_visit(
     visit_detail = visit_detail.merge(
         visit_occurrence[
             visit_occurrence.columns.intersection(
-                set(["visit_occurrence_id", "length_of_stay", "stay_type"])
+                set(
+                    [
+                        "visit_occurrence_id",
+                        "length_of_stay",
+                        "stay_type",
+                        "pmsi_type",
+                        "provenance_source",
+                    ]
+                )
             )
         ],
         on="visit_occurrence_id",

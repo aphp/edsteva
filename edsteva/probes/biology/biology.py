@@ -165,6 +165,8 @@ class BiologyProbe(BaseProbe):
             self._index.remove("length_of_stay")
         if age_list is None and "age_range" in self._index:
             self._index.remove("age_range")
+        if pmsi_type is None and "pmsi_type" in self._index:
+            self._index.remove("pmsi_type")
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
         if concepts_sets is None and "concepts_set" in self._index:

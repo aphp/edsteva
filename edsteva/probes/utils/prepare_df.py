@@ -49,6 +49,12 @@ def prepare_visit_occurrence(
     )
     visit_occurrence = data.visit_occurrence[required_columns]
 
+    visit_occurrence = filter_valid_observations(
+        table=visit_occurrence,
+        table_name="visit_occurrence",
+        invalid_naming="supprimé",
+    )
+
     visit_occurrence = filter_table_by_type(
         table=visit_occurrence,
         table_name="visit_occurrence",
@@ -63,16 +69,6 @@ def prepare_visit_occurrence(
         type_groups=provenance_source,
         source_col="provenance_source_value",
         target_col="provenance_source",
-    )
-
-    visit_occurrence = visit_occurrence.rename(
-        columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
-    )
-
-    visit_occurrence = filter_valid_observations(
-        table=visit_occurrence,
-        table_name="visit_occurrence",
-        invalid_naming="supprimé",
     )
 
     if length_of_stays:

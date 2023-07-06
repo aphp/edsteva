@@ -130,6 +130,8 @@ class NoteProbe(BaseProbe):
             self._index.remove("length_of_stay")
         if age_list is None and "age_range" in self._index:
             self._index.remove("age_range")
+        if pmsi_type is None and "pmsi_type" in self._index:
+            self._index.remove("pmsi_type")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,

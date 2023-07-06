@@ -80,6 +80,7 @@ def compute_completeness_predictor_per_visit(
         visit_occurrence,
         care_site,
     )
+
     hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
     visit_predictor_by_level = {hospital_name: hospital_visit}
 
@@ -199,7 +200,15 @@ def get_uf_visit(
     uf_visit = uf_visit.merge(
         visit_occurrence[
             visit_occurrence.columns.intersection(
-                set(["visit_occurrence_id", "length_of_stay", "stay_type"])
+                set(
+                    [
+                        "visit_occurrence_id",
+                        "length_of_stay",
+                        "stay_type",
+                        "pmsi_type",
+                        "provenance_source",
+                    ]
+                )
             )
         ],
         on="visit_occurrence_id",
@@ -221,7 +230,15 @@ def get_uc_visit(
     uc_visit = uc_visit.merge(
         visit_occurrence[
             visit_occurrence.columns.intersection(
-                set(["visit_occurrence_id", "length_of_stay", "stay_type"])
+                set(
+                    [
+                        "visit_occurrence_id",
+                        "length_of_stay",
+                        "stay_type",
+                        "pmsi_type",
+                        "provenance_source",
+                    ]
+                )
             )
         ],
         on="visit_occurrence_id",
@@ -243,7 +260,15 @@ def get_uh_visit(
     uh_visit = uh_visit.merge(
         visit_occurrence[
             visit_occurrence.columns.intersection(
-                set(["visit_occurrence_id", "length_of_stay", "stay_type"])
+                set(
+                    [
+                        "visit_occurrence_id",
+                        "length_of_stay",
+                        "stay_type",
+                        "pmsi_type",
+                        "provenance_source",
+                    ]
+                )
             )
         ],
         on="visit_occurrence_id",
