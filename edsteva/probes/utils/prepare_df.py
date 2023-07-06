@@ -10,8 +10,8 @@ from edsteva.utils.typing import Data, DataFrame
 
 from .filter_df import (
     filter_table_by_age,
-    filter_table_by_date,
     filter_table_by_care_site,
+    filter_table_by_date,
     filter_table_by_length_of_stay,
     filter_table_by_type,
     filter_valid_observations,
@@ -697,6 +697,4 @@ def prepare_person(
         df_name="person",
     )
 
-    person = data.person[person_columns]
-
-    return person
+    return data.person[person_columns]

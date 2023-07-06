@@ -74,7 +74,7 @@ def compute_completeness_predictor_per_note(
         provenance_source=provenance_source,
         person=person,
         age_list=age_list,
-        ).drop(columns=["visit_occurrence_source_value", "date"])
+    ).drop(columns=["visit_occurrence_source_value", "date"])
 
     care_site = prepare_care_site(
         data=data,

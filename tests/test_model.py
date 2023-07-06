@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import pandas as pd
@@ -9,13 +8,13 @@ from edsteva.io import SyntheticData
 from edsteva.models.rectangle_function import RectangleFunction
 from edsteva.models.step_function import StepFunction
 from edsteva.probes import NoteProbe, VisitProbe
-from edsteva.utils.loss_functions import l1_loss
 
 pytestmark = pytest.mark.filterwarnings("ignore")
 
 improve_performances()
 data_step = SyntheticData(seed=41, mode="step").generate()
 data_rect = SyntheticData(seed=41, mode="rect").generate()
+
 
 def test_base_model():
     data = data_step
@@ -97,88 +96,28 @@ def test_step_function_visit_occurence():
     visit_model.reset_estimates()
     # Test Cache saving
     visit_model.save()
-    assert os.path.isfile(CACHE_DIR / "edsteva" / "models" / "stepfunction.pickle")
+    assert Path.is_file(CACHE_DIR / "edsteva" / "models" / "stepfunction.pickle")
     visit_model = StepFunction()
     visit_model.load()
     visit_model.delete()
-    assert not os.path.isfile(CACHE_DIR / "edsteva" / "models" / "stepfunction.pickle")
+    assert not Path.is_file(CACHE_DIR / "edsteva" / "models" / "stepfunction.pickle")
 
     # Test target saving
     visit_model.save(
         name="Test",
     )
-    assert os.path.isfile(CACHE_DIR / "edsteva" / "models" / "test.pickle")
+    assert Path.is_file(CACHE_DIR / "edsteva" / "models" / "test.pickle")
     visit_model.delete()
-    assert not os.path.isfile(CACHE_DIR / "edsteva" / "models" / "test.pickle")
+    assert not Path.is_file(CACHE_DIR / "edsteva" / "models" / "test.pickle")
     visit_model.save(
         path="test.pickle",
     )
-    assert os.path.isfile("test.pickle")
+    assert Path.is_file("test.pickle")
 
     visit_model = StepFunction()
     visit_model.load("test.pickle")
     visit_model.delete()
-    assert not os.path.isfile("test.pickle")
-
-
-def test_step_function_visit_occurence():
-    data = data_step
-    visit = VisitProbe()
-    visit.compute(
-        data=data,
-        start_date=data.t_min,
-        end_date=data.t_max,
-        stay_types={"ALL": ".*", "HC": "hospitalisés", "Urg": "urgences"},
-        care_site_ids=["1", "2"],
-        care_site_short_names=["Hôpital-1", "Hôpital-2"],
-    )
-
-    visit_model = StepFunction(algo="quantile")
-    visit_model.fit(
-        probe=visit,
-        metric_functions=["error", "error_after_t0"],
-        start_date=data.t_min,
-        end_date=data.t_max,
-    )
-    visit_model = StepFunction(algo="loss_minimization")
-    visit_model.fit(probe=visit, loss_function=l1_loss)
-    visit_model.fit(
-        probe=visit,
-        start_date=data.t_min,
-        end_date=data.t_max,
-        metric_functions="error_after_t0",
-    )
-
-    visit_model = StepFunction(algo="quantile")
-    visit_model.fit(
-        probe=visit,
-        metric_functions=["error", "error_after_t0"],
-        start_date=data.t_min,
-        end_date=data.t_max,
-    )
-    visit_model = StepFunction(algo="loss_minimization")
-    visit_model.fit(probe=visit, loss_function=l1_loss)
-    visit_model.fit(
-        probe=visit,
-        start_date=data.t_min,
-        end_date=data.t_max,
-        metric_functions="error_after_t0",
-    )
-
-    simulation = data.visit_occurrence[
-        ["care_site_id", "t_0_min", "t_0_max"]
-    ].drop_duplicates()
-    model = visit_model.estimates[["care_site_id", "t_0"]].drop_duplicates()
-    prediction = simulation.merge(model, on="care_site_id")
-    prediction["t_0_min"] = pd.to_datetime(
-        prediction["t_0_min"], unit="s"
-    ) - pd.DateOffset(months=2)
-    prediction["t_0_max"] = pd.to_datetime(
-        prediction["t_0_max"], unit="s"
-    ) + pd.DateOffset(months=2)
-    true_t0_min = prediction["t_0_min"] <= prediction["t_0"]
-    true_t0_max = prediction["t_0_max"] >= prediction["t_0"]
-    assert (true_t0_min & true_t0_max).all()
+    assert not Path.is_file("test.pickle")
 
 
 def test_rect_function_visit_occurence():
