@@ -34,11 +34,7 @@ class BaseProbe(metaclass=ABCMeta):
         It describes the care site structure (cf. [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship])
     """
 
-<<<<<<< HEAD
-    _schema = ["care_site_level", "care_site_id", "date", "c"]
-=======
     _schema: ClassVar[List[str]] = ["care_site_level", "care_site_id", "date", "c"]
->>>>>>> main
 
     def __init__(
         self,

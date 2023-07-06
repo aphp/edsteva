@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 import altair as alt
->>>>>>> main
 import pytest
 
 from edsteva import improve_performances
@@ -9,10 +6,7 @@ from edsteva.io import SyntheticData
 from edsteva.models.rectangle_function import RectangleFunction
 from edsteva.models.step_function import StepFunction
 from edsteva.probes import BiologyProbe, ConditionProbe, NoteProbe, VisitProbe
-<<<<<<< HEAD
-=======
 from edsteva.probes.visit.viz_configs import viz_configs
->>>>>>> main
 from edsteva.viz.dashboards import normalized_probe_dashboard, probe_dashboard
 from edsteva.viz.plots import (
     estimates_densities_plot,
@@ -29,12 +23,7 @@ data_rect = SyntheticData(mean_visit=100, seed=41, mode="rect").generate()
 
 @pytest.fixture(scope="session")
 def tmp_dir(tmp_path_factory):
-<<<<<<< HEAD
-    template_dir = tmp_path_factory.mktemp("Test")
-    return template_dir
-=======
     return tmp_path_factory.mktemp("Test")
->>>>>>> main
 
 
 @pytest.mark.parametrize(
@@ -98,8 +87,6 @@ def test_viz_fail(data, Model, Probe, tmp_dir):
     model.reset_estimates()
 
 
-<<<<<<< HEAD
-=======
 def test_custom_config(tmp_dir):
     probe = VisitProbe()
     probe.compute(
@@ -185,7 +172,6 @@ def test_custom_config(tmp_dir):
     )
 
 
->>>>>>> main
 @pytest.mark.parametrize(
     "data,Model",
     [
@@ -202,11 +188,7 @@ def test_custom_config(tmp_dir):
         VisitProbe,
     ],
 )
-<<<<<<< HEAD
-def test_viz_visit(data, Model, Probe, tmp_dir):
-=======
 def test_viz_probe(data, Model, Probe, tmp_dir):
->>>>>>> main
     probe = Probe()
     for completness_predictor in probe.available_completeness_predictors():
         probe._completness_predictor = completness_predictor
@@ -219,10 +201,7 @@ def test_viz_probe(data, Model, Probe, tmp_dir):
             care_site_short_names=["Hôpital-1", "Hôpital-2"],
             concepts_sets=None,
             note_types=None,
-<<<<<<< HEAD
-=======
             length_of_stays=None,
->>>>>>> main
         )
         model = Model()
         model.fit(
@@ -246,23 +225,15 @@ def test_viz_probe(data, Model, Probe, tmp_dir):
             probe_plot(
                 probe=probe,
                 care_site_level="Hospital",
-<<<<<<< HEAD
-=======
                 stay_type="HC",
                 care_site_id="1",
                 care_site_short_name="Hôpital-1",
                 care_site_specialty="Non renseigné",
->>>>>>> main
                 start_date=data.t_min,
                 end_date=data.t_max,
                 x_axis_title="x_axis",
                 y_axis_title="y_axis",
-<<<<<<< HEAD
-                save_path=tmp_dir / "test.html",
-                care_site_specialty="Non Renseigné",
-=======
                 save_path=str(tmp_dir.resolve()) + "/test.html",
->>>>>>> main
             )
 
             model.reset_estimates()

@@ -32,11 +32,7 @@ params = [
         care_site_specialties="PSYCHIATRIE",
         specialties_sets=None,
         care_sites_sets={"All": ".*"},
-<<<<<<< HEAD
-        stay_durations=[1, 30],
-=======
         length_of_stays=[1, 30],
->>>>>>> main
         note_types={"ALL": ".*"},
         stay_types=None,
         diag_types=None,
@@ -49,11 +45,7 @@ params = [
             "entity 4": "A3",
             "entity 5": "A4",
         },
-<<<<<<< HEAD
-        concepts_codes=None,
-=======
         concept_codes=None,
->>>>>>> main
         start_date=None,
         end_date=datetime(2020, 1, 1),
         test_save=False,
@@ -70,13 +62,8 @@ params = [
         care_site_specialties=None,
         specialties_sets={"All": ".*"},
         care_sites_sets=None,
-<<<<<<< HEAD
-        concepts_codes=["A0009", "A0209", "A3109"],
-        stay_durations=[1],
-=======
         concept_codes=["A0009", "A0209", "A3109"],
         length_of_stays=[1],
->>>>>>> main
         note_types="CRH",
         stay_types="hospitalisés",
         diag_types="DP",
@@ -99,22 +86,14 @@ params = [
         care_site_specialties=["REA ADULTE", "PSYCHIATRIE"],
         specialties_sets=None,
         care_sites_sets=None,
-<<<<<<< HEAD
-        stay_durations=None,
-=======
         length_of_stays=None,
->>>>>>> main
         stay_types={"ALL": ".*", "HC": "hospitalisés", "Urg": "urgences"},
         note_types={"ALL": ".*", "CRH": "CRH", "Urg": "urg"},
         diag_types={"ALL": ".*", "DP/DR": "DP|DR"},
         condition_types={"ALL": ".*", "Cancer": "C"},
         source_systems=["ORBIS"],
         concepts_sets=None,
-<<<<<<< HEAD
-        concepts_codes=["A0009", "A0209", "A3109"],
-=======
         concept_codes=["A0009", "A0209", "A3109"],
->>>>>>> main
         start_date=datetime(2010, 5, 10),
         end_date=datetime(2020, 1, 1),
         test_save=True,
@@ -127,13 +106,9 @@ params = [
 def test_base_probe(data):
     visit = VisitProbe()
     with pytest.raises(Exception):
-<<<<<<< HEAD
-        filter_valid_observations(data.care_site, "care_site")
-=======
         filter_valid_observations(
             table=data.visit_occurrence, table_name="visit_occurrence"
         )
->>>>>>> main
     with pytest.raises(AttributeError):
         visit.compute(data=data, care_site_levels=["fail"])
     with pytest.raises(TypeError):
@@ -156,36 +131,19 @@ def test_base_probe(data):
     # Test cache saving
     visit.reset_predictor()
     visit.save()
-<<<<<<< HEAD
-    assert os.path.isfile(CACHE_DIR / "edsteva" / "probes" / "visitprobe.pickle")
-=======
     assert Path.is_file(CACHE_DIR / "edsteva" / "probes" / "visitprobe.pickle")
->>>>>>> main
     visit = VisitProbe()
     with pytest.raises(FileNotFoundError):
         visit.load("fail.pkl")
     visit.load()
     visit.delete()
     visit.delete("fail.pkl")
-<<<<<<< HEAD
-    assert not os.path.isfile(CACHE_DIR / "edsteva" / "probes" / "visitprobe.pickle")
-=======
     assert not Path.is_file(CACHE_DIR / "edsteva" / "probes" / "visitprobe.pickle")
->>>>>>> main
 
     # Test target saving
     visit.save(
         name="TEst",
     )
-<<<<<<< HEAD
-    assert os.path.isfile(CACHE_DIR / "edsteva" / "probes" / "test.pickle")
-    visit.delete()
-    assert not os.path.isfile(CACHE_DIR / "edsteva" / "probes" / "test.pickle")
-    visit.save(
-        path="test.pickle",
-    )
-    assert os.path.isfile("test.pickle")
-=======
     assert Path.is_file(CACHE_DIR / "edsteva" / "probes" / "test.pickle")
     visit.delete()
     assert not Path.is_file(CACHE_DIR / "edsteva" / "probes" / "test.pickle")
@@ -193,7 +151,6 @@ def test_base_probe(data):
         path="test.pickle",
     )
     assert Path.is_file(Path("test.pickle"))
->>>>>>> main
 
     visit = VisitProbe()
     visit.load("test.pickle")
@@ -205,11 +162,7 @@ def test_base_probe(data):
     visit.reset_predictor()
     assert predictor.equals(visit.predictor)
     visit.delete()
-<<<<<<< HEAD
-    assert not os.path.isfile("test.pickle")
-=======
     assert not Path.is_file(Path("test.pickle"))
->>>>>>> main
 
 
 @pytest.mark.parametrize("data", [data_step, data_rect])
@@ -231,11 +184,7 @@ def test_compute_visit_probe(data, params):
         care_site_specialties=params["care_site_specialties"],
         care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
-<<<<<<< HEAD
-        stay_durations=params["stay_durations"],
-=======
         length_of_stays=params["length_of_stays"],
->>>>>>> main
     )
 
     # Care site levels
@@ -343,25 +292,6 @@ def test_compute_visit_probe(data, params):
         assert visit.predictor.care_site_id.isin(care_site_filters).all()
 
     # Stay durations
-<<<<<<< HEAD
-    if params["stay_durations"]:
-        if isinstance(params["stay_durations"], list):
-            min_duration = params["stay_durations"][0]
-            max_duration = params["stay_durations"][-1]
-            specialties_sets = [
-                "Incomplete stay",
-                "<= {} days".format(min_duration),
-                ">= {} days".format(max_duration),
-            ]
-            n_duration = len(params["stay_durations"])
-            for i in range(0, n_duration - 1):
-                min = params["stay_durations"][i]
-                max = params["stay_durations"][i + 1]
-                specialties_sets.append("{} days - {} days".format(min, max))
-            assert set(visit.predictor.length_of_stay.unique()).issubset(
-                set(specialties_sets)
-            )
-=======
     if params["length_of_stays"] and isinstance(params["length_of_stays"], list):
         min_duration = params["length_of_stays"][0]
         max_duration = params["length_of_stays"][-1]
@@ -378,7 +308,6 @@ def test_compute_visit_probe(data, params):
         assert set(visit.predictor.length_of_stay.unique()).issubset(
             set(specialties_sets)
         )
->>>>>>> main
 
     # Viz config
     assert isinstance(visit.get_viz_config(viz_type="normalized_probe_plot"), dict)
@@ -405,11 +334,7 @@ def test_compute_note_probe(data, params):
         care_site_specialties=params["care_site_specialties"],
         care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
-<<<<<<< HEAD
-        stay_durations=params["stay_durations"],
-=======
         length_of_stays=params["length_of_stays"],
->>>>>>> main
         note_types=params["note_types"],
     )
 
@@ -502,25 +427,6 @@ def test_compute_note_probe(data, params):
         assert note.predictor.care_site_id.isin(care_site_filters).all()
 
     # Stay durations
-<<<<<<< HEAD
-    if params["stay_durations"]:
-        if isinstance(params["stay_durations"], list):
-            min_duration = params["stay_durations"][0]
-            max_duration = params["stay_durations"][-1]
-            specialties_sets = [
-                "Incomplete stay",
-                "<= {} days".format(min_duration),
-                ">= {} days".format(max_duration),
-            ]
-            n_duration = len(params["stay_durations"])
-            for i in range(0, n_duration - 1):
-                min = params["stay_durations"][i]
-                max = params["stay_durations"][i + 1]
-                specialties_sets.append("{} days - {} days".format(min, max))
-            assert set(note.predictor.length_of_stay.unique()).issubset(
-                set(specialties_sets)
-            )
-=======
     if params["length_of_stays"] and isinstance(params["length_of_stays"], list):
         min_duration = params["length_of_stays"][0]
         max_duration = params["length_of_stays"][-1]
@@ -537,7 +443,6 @@ def test_compute_note_probe(data, params):
         assert set(note.predictor.length_of_stay.unique()).issubset(
             set(specialties_sets)
         )
->>>>>>> main
 
     # Note type
     if params["note_types"]:
@@ -590,11 +495,7 @@ def test_compute_condition_probe(data, params):
         care_site_specialties=params["care_site_specialties"],
         care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
-<<<<<<< HEAD
-        stay_durations=params["stay_durations"],
-=======
         length_of_stays=params["length_of_stays"],
->>>>>>> main
         diag_types=params["diag_types"],
         condition_types=params["condition_types"],
         source_systems=params["source_systems"],
@@ -710,25 +611,6 @@ def test_compute_condition_probe(data, params):
         assert condition.predictor.care_site_id.isin(care_site_filters).all()
 
     # Stay durations
-<<<<<<< HEAD
-    if params["stay_durations"]:
-        if isinstance(params["stay_durations"], list):
-            min_duration = params["stay_durations"][0]
-            max_duration = params["stay_durations"][-1]
-            length_of_stays = [
-                "Incomplete stay",
-                "<= {} days".format(min_duration),
-                ">= {} days".format(max_duration),
-            ]
-            n_duration = len(params["stay_durations"])
-            for i in range(0, n_duration - 1):
-                min = params["stay_durations"][i]
-                max = params["stay_durations"][i + 1]
-                length_of_stays.append("{} days - {} days".format(min, max))
-            assert set(condition.predictor.length_of_stay.unique()).issubset(
-                set(length_of_stays)
-            )
-=======
     if params["length_of_stays"] and isinstance(params["length_of_stays"], list):
         min_duration = params["length_of_stays"][0]
         max_duration = params["length_of_stays"][-1]
@@ -745,7 +627,6 @@ def test_compute_condition_probe(data, params):
         assert set(condition.predictor.length_of_stay.unique()).issubset(
             set(length_of_stays)
         )
->>>>>>> main
 
     # Diag type
     if params["diag_types"]:
@@ -802,14 +683,9 @@ def test_compute_biology_probe(data, params):
         care_site_specialties=params["care_site_specialties"],
         care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
-<<<<<<< HEAD
-        stay_durations=params["stay_durations"],
-        concepts_sets=params["concepts_sets"],
-=======
         length_of_stays=params["length_of_stays"],
         concepts_sets=params["concepts_sets"],
         concept_codes=params["concept_codes"],
->>>>>>> main
     )
 
     # Care site levels
@@ -901,25 +777,6 @@ def test_compute_biology_probe(data, params):
         assert biology.predictor.care_site_id.isin(care_site_filters).all()
 
     # Stay durations
-<<<<<<< HEAD
-    if params["stay_durations"]:
-        if isinstance(params["stay_durations"], list):
-            min_duration = params["stay_durations"][0]
-            max_duration = params["stay_durations"][-1]
-            length_of_stays = [
-                "Incomplete stay",
-                "<= {} days".format(min_duration),
-                ">= {} days".format(max_duration),
-            ]
-            n_duration = len(params["stay_durations"])
-            for i in range(0, n_duration - 1):
-                min = params["stay_durations"][i]
-                max = params["stay_durations"][i + 1]
-                length_of_stays.append("{} days - {} days".format(min, max))
-            assert set(biology.predictor.length_of_stay.unique()).issubset(
-                set(length_of_stays)
-            )
-=======
     if params["length_of_stays"] and isinstance(params["length_of_stays"], list):
         min_duration = params["length_of_stays"][0]
         max_duration = params["length_of_stays"][-1]
@@ -936,7 +793,6 @@ def test_compute_biology_probe(data, params):
         assert set(biology.predictor.length_of_stay.unique()).issubset(
             set(length_of_stays)
         )
->>>>>>> main
 
     # Concepts sets
     if params["concepts_sets"]:

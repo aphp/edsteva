@@ -19,10 +19,6 @@ from edsteva.viz.utils import (
 
 def fitted_probe_dashboard(
     predictor: pd.DataFrame,
-<<<<<<< HEAD
-    remove_singleton_bar_chart: bool,
-=======
->>>>>>> main
     legend_predictor: str,
     legend_model: str,
     x_axis_title: str,
@@ -41,12 +37,6 @@ def fitted_probe_dashboard(
     ----------
     predictor : pd.DataFrame
         $c(t)$ computed in the Probe with its prediction $\hat{c}(t)$
-<<<<<<< HEAD
-    remove_singleton_bar_chart : bool, optional
-        If set to True, remove the bar charts with only one element
-        **EXAMPLE**: `True`
-=======
->>>>>>> main
     legend_predictor: str, optional,
         Label name for the predictor legend.
     legend_model: str, optional,
@@ -83,19 +73,11 @@ def fitted_probe_dashboard(
         base=base,
         horizontal_bar_charts_config=horizontal_bar_charts_config,
         predictor=predictor,
-<<<<<<< HEAD
-        remove_singleton_bar_chart=remove_singleton_bar_chart,
-=======
->>>>>>> main
     )
     vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
         base=base,
         vertical_bar_charts_config=vertical_bar_charts_config,
         predictor=predictor,
-<<<<<<< HEAD
-        remove_singleton_bar_chart=remove_singleton_bar_chart,
-=======
->>>>>>> main
     )
 
     selections = dict(
@@ -114,10 +96,7 @@ def fitted_probe_dashboard(
 
     index_selection, index_fields = create_groupby_selection(
         indexes=vertical_bar_charts_config["x"] + horizontal_bar_charts_config["y"],
-<<<<<<< HEAD
-=======
         predictor=predictor,
->>>>>>> main
     )
     main_chart = generate_main_chart(
         base=base,
@@ -138,21 +117,11 @@ def fitted_probe_dashboard(
 
     main_chart = probe_line + model_line
     if index_selection:
-<<<<<<< HEAD
-        main_chart = main_chart.add_selection(index_selection)
-=======
         main_chart = main_chart.add_params(index_selection)
->>>>>>> main
     chart = concatenate_charts(
         main_chart=main_chart,
         time_line=time_line,
         horizontal_bar_charts=horizontal_bar_charts,
         vertical_bar_charts=vertical_bar_charts,
     )
-<<<<<<< HEAD
-    chart = configure_style(chart=chart, chart_style=chart_style)
-
-    return chart
-=======
     return configure_style(chart=chart, chart_style=chart_style)
->>>>>>> main

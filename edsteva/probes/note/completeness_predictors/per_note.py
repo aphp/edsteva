@@ -9,10 +9,7 @@ from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
     prepare_note,
     prepare_note_care_site,
-<<<<<<< HEAD
     prepare_person,
-=======
->>>>>>> main
     prepare_visit_occurrence,
 )
 from edsteva.probes.utils.utils import (
@@ -40,16 +37,11 @@ def compute_completeness_predictor_per_note(
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     extra_data: Data,
-<<<<<<< HEAD
-    stay_durations: List[float],
     note_types: Union[str, Dict[str, str]],
     age_list: List[int],
     provenance_source: Union[str, Dict[str, str]],
     pmsi_type: Union[str, Dict[str, str]],
-=======
     length_of_stays: List[float],
-    note_types: Union[str, Dict[str, str]],
->>>>>>> main
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -72,24 +64,17 @@ def compute_completeness_predictor_per_note(
         note_types=note_types,
     )
 
-<<<<<<< HEAD
     person = prepare_person(data) if age_list else None
 
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         stay_types=stay_types,
-        stay_durations=stay_durations,
-        provenance_source=provenance_source,
         pmsi_type=pmsi_type,
+        length_of_stays=length_of_stays,
+        provenance_source=provenance_source,
         person=person,
         age_list=age_list,
-=======
-    visit_occurrence = prepare_visit_occurrence(
-        data=data,
-        stay_types=stay_types,
-        length_of_stays=length_of_stays,
->>>>>>> main
-    ).drop(columns=["visit_occurrence_source_value", "date"])
+        ).drop(columns=["visit_occurrence_source_value", "date"])
 
     care_site = prepare_care_site(
         data=data,
@@ -144,11 +129,7 @@ def compute_completeness(
     self,
     note_predictor: DataFrame,
 ):
-<<<<<<< HEAD
-    partition_cols = self._index.copy() + ["date"]
-=======
     partition_cols = [*self._index.copy(), "date"]
->>>>>>> main
 
     n_note = (
         note_predictor.groupby(
@@ -187,13 +168,7 @@ def compute_completeness(
         note_predictor["max_n_note"] == 0,
         note_predictor["n_note"] / note_predictor["max_n_note"],
     )
-<<<<<<< HEAD
-    note_predictor = note_predictor.drop(columns="max_n_note")
-
-    return note_predictor
-=======
     return note_predictor.drop(columns="max_n_note")
->>>>>>> main
 
 
 def get_hospital_note(

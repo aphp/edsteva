@@ -55,15 +55,9 @@ def loss_minimization(
     min_rect_month_width : int, optional
         Min number of months between $t_0$ and $t_1$.
     """
-<<<<<<< HEAD
-    check_columns(df=predictor, required_columns=index + [x_col, y_col, n_col])
+    check_columns(df=predictor, required_columns=[*index, x_col, y_col, n_col])
     predictor = predictor.sort_values(x_col)
-    cols = index + [x_col, y_col, n_col]
-=======
-    check_columns(df=predictor, required_columns=[*index, x_col, y_col])
-    predictor = predictor.sort_values(x_col)
-    cols = [*index, x_col, y_col]
->>>>>>> main
+    cols = [*index, x_col, y_col, n_col]
     iter = predictor[cols].groupby(index)
     results = []
     for partition, group in tqdm.tqdm(iter):

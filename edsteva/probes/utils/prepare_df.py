@@ -9,16 +9,10 @@ from edsteva.utils.framework import get_framework, is_koalas, to
 from edsteva.utils.typing import Data, DataFrame
 
 from .filter_df import (
-<<<<<<< HEAD
     filter_table_by_age,
-    filter_table_by_care_site,
     filter_table_by_date,
-    filter_table_by_stay_duration,
-=======
     filter_table_by_care_site,
-    filter_table_by_date,
     filter_table_by_length_of_stay,
->>>>>>> main
     filter_table_by_type,
     filter_valid_observations,
 )
@@ -27,19 +21,13 @@ from .filter_df import (
 def prepare_visit_occurrence(
     data: Data,
     stay_types: Union[str, Dict[str, str]],
-<<<<<<< HEAD
-    stay_durations: List[float],
     pmsi_type: Union[str, Dict[str, str]],
     provenance_source: Union[str, Dict[str, str]],
+    length_of_stays: List[float],
+    age_list: List[int] = None,
     start_date: datetime = None,
     end_date: datetime = None,
     person: DataFrame = None,
-    age_list: List[int] = None,
-=======
-    length_of_stays: List[float],
-    start_date: datetime = None,
-    end_date: datetime = None,
->>>>>>> main
 ):
     required_columns = [
         "visit_occurrence_id",
@@ -48,17 +36,12 @@ def prepare_visit_occurrence(
         "visit_end_datetime",
         "care_site_id",
         "row_status_source_value",
-<<<<<<< HEAD
         "stay_source_value",
         "visit_occurrence_source_value",
         "provenance_source_value",
         "person_id",
     ]
 
-=======
-        "visit_occurrence_source_value",
-    ]
->>>>>>> main
     check_columns(
         data.visit_occurrence,
         required_columns=required_columns,
@@ -66,7 +49,6 @@ def prepare_visit_occurrence(
     )
     visit_occurrence = data.visit_occurrence[required_columns]
 
-<<<<<<< HEAD
     visit_occurrence = filter_table_by_type(
         table=visit_occurrence,
         table_name="visit_occurrence",
@@ -83,24 +65,16 @@ def prepare_visit_occurrence(
         target_col="provenance_source",
     )
 
-    visit_occurrence = filter_table_by_stay_duration(
-        visit_occurrence=visit_occurrence, stay_durations=stay_durations
-    )
-
     visit_occurrence = visit_occurrence.rename(
         columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
     )
 
-=======
->>>>>>> main
     visit_occurrence = filter_valid_observations(
         table=visit_occurrence,
         table_name="visit_occurrence",
         invalid_naming="supprimé",
     )
 
-<<<<<<< HEAD
-=======
     if length_of_stays:
         visit_occurrence = filter_table_by_length_of_stay(
             visit_occurrence=visit_occurrence, length_of_stays=length_of_stays
@@ -110,7 +84,6 @@ def prepare_visit_occurrence(
         columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
     )
 
->>>>>>> main
     visit_occurrence = filter_table_by_date(
         table=visit_occurrence,
         table_name="visit_occurrence",
@@ -127,7 +100,6 @@ def prepare_visit_occurrence(
             target_col="stay_type",
         )
 
-<<<<<<< HEAD
     if age_list:
         visit_occurrence = visit_occurrence.merge(
             person, left_on="person_id", right_on="person_id"
@@ -137,8 +109,6 @@ def prepare_visit_occurrence(
             age_list=age_list,
         )
 
-=======
->>>>>>> main
     return visit_occurrence
 
 
@@ -476,13 +446,7 @@ def prepare_note_care_site(extra_data: Data, note: DataFrame):  # pragma: no cov
         value_name="care_site_source_value",
     )
     note_ref = note_ref.merge(care_site_ref, on="care_site_source_value")
-<<<<<<< HEAD
-    note = note.merge(note_ref[["note_id", "care_site_id"]], on="note_id")
-
-    return note
-=======
     return note.merge(note_ref[["note_id", "care_site_id"]], on="note_id")
->>>>>>> main
 
 
 def prepare_visit_detail(
@@ -511,22 +475,13 @@ def prepare_visit_detail(
         table=visit_detail, table_name="visit_detail", valid_naming="Actif"
     )
 
-<<<<<<< HEAD
-    visit_detail = filter_table_by_date(
-=======
     return filter_table_by_date(
->>>>>>> main
         table=visit_detail,
         table_name="visit_detail",
         start_date=start_date,
         end_date=end_date,
     )
 
-<<<<<<< HEAD
-    return visit_detail
-
-=======
->>>>>>> main
 
 def prepare_care_site_relationship(data: Data) -> pd.DataFrame:
     """Computes hierarchical care site structure
@@ -724,7 +679,6 @@ def prepare_biology_relationship(
             "GLIMS",
         )
     return biology_relationship
-<<<<<<< HEAD
 
 
 def prepare_person(
@@ -746,5 +700,3 @@ def prepare_person(
     person = data.person[person_columns]
 
     return person
-=======
->>>>>>> main

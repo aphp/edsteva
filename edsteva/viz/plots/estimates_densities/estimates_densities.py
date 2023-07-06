@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-import uuid
-=======
->>>>>>> main
 from copy import deepcopy
 from datetime import datetime
 from functools import reduce
@@ -32,10 +28,6 @@ def estimates_densities_plot(
     end_date: Union[datetime, str] = None,
     care_site_short_name: List[int] = None,
     save_path: str = None,
-<<<<<<< HEAD
-    remove_singleton_bar_chart: bool = True,
-=======
->>>>>>> main
     vertical_bar_charts_config: Dict[str, str] = None,
     horizontal_bar_charts_config: Dict[str, str] = None,
     chart_style: Dict[str, float] = None,
@@ -66,12 +58,6 @@ def estimates_densities_plot(
         **EXAMPLE**: `"HOSPITAL XXXX"`
     save_path : str, optional
         Folder path where to save the chart in HTML format.
-<<<<<<< HEAD
-    remove_singleton_bar_chart : bool, optional
-        If set to True, remove the bar charts with only one element
-        **EXAMPLE**: `True`
-=======
->>>>>>> main
     vertical_bar_charts_config: Dict[str, str], optional
         Configuration used to construct the vertical bar charts.
     horizontal_bar_charts_config: Dict[str, str], optional
@@ -96,27 +82,11 @@ def estimates_densities_plot(
         **kwargs,
     )
     estimates = fitted_model.estimates.copy()
-<<<<<<< HEAD
-    predictor = filter_predictor(
-        predictor=predictor,
-        care_site_level=care_site_level,
-        stay_type=stay_type,
-        care_site_id=care_site_id,
-        care_site_short_name=care_site_short_name,
-        start_date=None,
-        end_date=None,
-        **kwargs,
-    )
-    estimates = estimates.merge(
-        predictor[probe._index + ["care_site_short_name"]].drop_duplicates(),
-        on=probe._index,
-=======
     estimates = estimates.merge(
         predictor[
             predictor.columns.intersection(set([*probe._index, "care_site_short_name"]))
         ].drop_duplicates(),
         on=list(predictor.columns.intersection(set(probe._index))),
->>>>>>> main
     )
     probe_config = deepcopy(probe.get_viz_config("estimates_densities_plot"))
     if not vertical_bar_charts_config:
@@ -129,10 +99,7 @@ def estimates_densities_plot(
     quantitative_estimates = []
     time_estimates = []
 
-<<<<<<< HEAD
-=======
     base_estimate = alt.Chart(estimates)
->>>>>>> main
     for estimate in fitted_model._coefs + fitted_model._metrics:
         if estimates[estimate].dtype == float or estimates[estimate].dtype == int:
             max_value = estimates[estimate].max()
@@ -143,12 +110,7 @@ def estimates_densities_plot(
                 alt.vconcat(
                     (
                         (
-<<<<<<< HEAD
-                            alt.Chart(estimates)
-                            .transform_density(
-=======
                             base_estimate.transform_density(
->>>>>>> main
                                 estimate,
                                 as_=[estimate, "Density"],
                                 extent=[min_value, max_value],
@@ -159,38 +121,20 @@ def estimates_densities_plot(
                                 y=alt.Y("Density:Q", title=y_axis_title),
                             )
                         )
-<<<<<<< HEAD
-                        + alt.Chart(estimates)
-                        .mark_rule(color="red")
-                        .encode(
-=======
                         + base_estimate.mark_rule(color="red").encode(
->>>>>>> main
                             x="median({}):Q".format(estimate),
                             tooltip=alt.Tooltip("median({}):Q".format(estimate)),
                         )
                     ).properties(width=800, height=300),
                     (
-<<<<<<< HEAD
-                        alt.Chart(estimates)
-                        .mark_tick()
-                        .encode(x=alt.X("{}:Q".format(estimate), axis=None))
-=======
                         base_estimate.mark_tick().encode(
                             x=alt.X("{}:Q".format(estimate), axis=None)
                         )
->>>>>>> main
                     ),
                     spacing=0,
                 )
                 & (
-<<<<<<< HEAD
-                    alt.Chart(estimates)
-                    .mark_boxplot()
-                    .encode(
-=======
                     base_estimate.mark_boxplot().encode(
->>>>>>> main
                         x="{}:Q".format(estimate),
                     )
                 )
@@ -201,14 +145,9 @@ def estimates_densities_plot(
             estimates[estimate] = estimates[estimate].astype("datetime64[ns]")
             estimate_density = (
                 (
-<<<<<<< HEAD
-                    alt.Chart(estimates)
-                    .transform_timeunit(estimate="yearmonth({})".format(estimate))
-=======
                     base_estimate.transform_timeunit(
                         estimate="yearmonth({})".format(estimate)
                     )
->>>>>>> main
                     .mark_bar(size=10)
                     .encode(
                         x=alt.X(
@@ -227,13 +166,7 @@ def estimates_densities_plot(
                         ),
                     )
                 )
-<<<<<<< HEAD
-                + alt.Chart(estimates)
-                .mark_rule(color="red")
-                .encode(
-=======
                 + base_estimate.mark_rule(color="red").encode(
->>>>>>> main
                     x="median({}):T".format(estimate),
                     tooltip=alt.Tooltip("median({}):T".format(estimate)),
                 )
@@ -241,14 +174,6 @@ def estimates_densities_plot(
             time_estimates.append(estimate_density)
 
     estimates_densities = time_estimates + quantitative_estimates
-<<<<<<< HEAD
-    care_site_level_selection = alt.selection_single(
-        fields=["care_site_level"],
-        bind=alt.binding_select(
-            name="Care site level : ", options=estimates["care_site_level"].unique()
-        ),
-        init={"care_site_level": estimates["care_site_level"].unique()[0]},
-=======
     care_site_level_dropdwon = alt.binding_select(
         options=estimates["care_site_level"].unique(), name="Care site level : "
     )
@@ -256,38 +181,23 @@ def estimates_densities_plot(
         fields=["care_site_level"],
         bind=care_site_level_dropdwon,
         value=estimates["care_site_level"].unique()[0],
->>>>>>> main
     )
     main_chart = reduce(
         lambda estimate_density_1, estimate_density_2: estimate_density_1
         & estimate_density_2,
         estimates_densities,
-<<<<<<< HEAD
-    ).add_selection(care_site_level_selection)
-
-    base = alt.Chart(predictor)
-=======
     )
     base = alt.Chart(predictor).add_params(care_site_level_selection)
->>>>>>> main
 
     horizontal_bar_charts, y_variables_selections = generate_horizontal_bar_charts(
         base=base,
         horizontal_bar_charts_config=horizontal_bar_charts_config,
         predictor=predictor,
-<<<<<<< HEAD
-        remove_singleton_bar_chart=remove_singleton_bar_chart,
-=======
->>>>>>> main
     )
     vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
         base=base,
         vertical_bar_charts_config=vertical_bar_charts_config,
         predictor=predictor,
-<<<<<<< HEAD
-        remove_singleton_bar_chart=remove_singleton_bar_chart,
-=======
->>>>>>> main
     )
 
     selections = dict(
@@ -310,64 +220,6 @@ def estimates_densities_plot(
         spacing=0,
     )
     chart = configure_style(chart=chart, chart_style=chart_style)
-<<<<<<< HEAD
-
-    vis_threshold = "id" + uuid.uuid4().hex
-    new_sliders_threshold_id = "id" + uuid.uuid4().hex
-    old_sliders_threshold_id = "id" + uuid.uuid4().hex
-    html_chart = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <script src="https://cdn.jsdelivr.net/npm/vega@{alt.VEGA_VERSION}"></script>
-          <script src="https://cdn.jsdelivr.net/npm/vega-lite@{alt.VEGALITE_VERSION}"></script>
-          <script src="https://cdn.jsdelivr.net/npm/vega-embed@{alt.VEGAEMBED_VERSION}"></script>
-        </head>
-        <body>
-
-        <div class="container">
-          <div class="row">
-            <div style="width: -webkit-fill-available;">
-            <div id={new_sliders_threshold_id}>
-              <div id={old_sliders_threshold_id}></div>
-            </div>
-            </div>
-            <div>
-            <div id={vis_threshold}></div>
-            </div>
-
-          </div>
-        </div>
-
-        <script type="text/javascript">
-        vegaEmbed('#{vis_threshold}', {chart.to_json(indent=None)}).then(function(result) {{
-            const sliders = document.getElementsByClassName('vega-bindings');
-            const newestimate = document.getElementById('{new_sliders_threshold_id}');
-            const oldestimate = document.getElementById('{old_sliders_threshold_id}');
-            for (var i = 0; i < sliders.length; i++) {{
-                if (sliders[i].parentElement.parentElement.id == '{vis_threshold}') {{
-                    var estimate_slider = sliders[i]
-                    var index_slider = estimate_slider.querySelectorAll(".vega-bind")
-                    }}
-                }}
-            newestimate.replaceChild(estimate_slider, oldestimate);
-            for (var i = 0; i < index_slider.length; i++) {{
-                if (index_slider[i].firstChild.innerHTML == "Group by: ") {{
-                    var index_color = index_slider[i]}}
-                }}
-            }}).catch(console.error);
-        </script>
-        </body>
-        </html>
-        """
-    if save_path:
-        save_html(
-            obj=html_chart,
-            filename=save_path,
-        )
-
-    return html_chart
-=======
     if save_path:
         save_html(
             obj=chart,
@@ -375,4 +227,3 @@ def estimates_densities_plot(
         )
 
     return chart
->>>>>>> main

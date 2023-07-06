@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 import os
-=======
 from pathlib import Path
->>>>>>> main
 
 import pandas as pd
 import pytest
@@ -19,12 +16,6 @@ pytestmark = pytest.mark.filterwarnings("ignore")
 improve_performances()
 data_step = SyntheticData(seed=41, mode="step").generate()
 data_rect = SyntheticData(seed=41, mode="rect").generate()
-<<<<<<< HEAD
-
-
-def test_base_model():
-=======
-
 
 def test_base_model():
     data = data_step
@@ -79,7 +70,6 @@ def test_base_model():
 
 
 def test_step_function_visit_occurence():
->>>>>>> main
     data = data_step
     visit = VisitProbe()
     visit.compute(
@@ -99,7 +89,6 @@ def test_step_function_visit_occurence():
     with pytest.raises(TypeError):
         visit_model.fit(pd.DataFrame({"test": [1, 2]}))
 
-<<<<<<< HEAD
     visit_model.fit(probe=visit)
     with pytest.raises(Exception):
         visit_model.estimates = visit_model.estimates.iloc[0:0]
@@ -160,7 +149,6 @@ def test_step_function_visit_occurence():
         metric_functions="error_after_t0",
     )
 
-=======
     visit_model = StepFunction(algo="quantile")
     visit_model.fit(
         probe=visit,
@@ -177,7 +165,6 @@ def test_step_function_visit_occurence():
         metric_functions="error_after_t0",
     )
 
->>>>>>> main
     simulation = data.visit_occurrence[
         ["care_site_id", "t_0_min", "t_0_max"]
     ].drop_duplicates()

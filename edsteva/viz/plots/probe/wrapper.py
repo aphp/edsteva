@@ -29,10 +29,7 @@ def probe_plot(
     model_line_config: Dict[str, str] = None,
     probe_line_config: Dict[str, str] = None,
     chart_style: Dict[str, float] = None,
-<<<<<<< HEAD
-=======
     indexes_to_remove: List[str] = ["care_site_id"],
->>>>>>> main
     **kwargs,
 ):
     r"""
@@ -77,11 +74,8 @@ def probe_plot(
     chart_style: Dict[str, float], optional
         If not None, configuration used to configure the chart style.
         **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
-<<<<<<< HEAD
-=======
     indexes_to_remove: List[str], optional
         indexes to remove from the groupby selection.
->>>>>>> main
     """
     alt.data_transformers.enable("default")
     alt.data_transformers.disable_max_rows()
@@ -92,14 +86,10 @@ def probe_plot(
     if not chart_style:
         chart_style = probe_config["chart_style"]
     predictor = probe.predictor.copy()
-<<<<<<< HEAD
-    indexes = list(set(predictor.columns).difference(["date"] + probe._metrics))
-=======
     cols_to_remove = ["date", *probe._metrics]
     if indexes_to_remove:
         cols_to_remove.extend(indexes_to_remove)
     indexes = list(set(predictor.columns).difference(cols_to_remove))
->>>>>>> main
 
     if fitted_model:
         predictor = fitted_model.predict(probe).copy()
@@ -120,11 +110,7 @@ def probe_plot(
     indexes = [
         {"field": variable, "title": variable.replace("_", " ").capitalize()}
         for variable in indexes
-<<<<<<< HEAD
-        if len(predictor[variable].unique()) >= 2
-=======
         if variable in predictor.columns and len(predictor[variable].unique()) >= 2
->>>>>>> main
     ]
 
     if fitted_model:

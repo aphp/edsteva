@@ -313,15 +313,7 @@ class BaseModel(metaclass=ABCMeta):
                     predictor=predictor, estimates=estimates, index=index
                 )
             )
-<<<<<<< HEAD
-        metrics_df = reduce(
-            lambda left, right: pd.merge(left, right, on=index), metrics_df
-        )
-
-        return metrics_df
-=======
         return reduce(lambda left, right: left.merge(right, on=index), metrics_df)
->>>>>>> main
 
     def is_predictable_probe(
         self,

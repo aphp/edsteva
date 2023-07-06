@@ -29,11 +29,7 @@ A **Plot** is exportable in png or svg format and easy to integrate into a repor
 
     === "probe_dashboard()"
 
-<<<<<<< HEAD
-        The [``predictor_dashboard()``][edsteva.viz.dashboards.probe.wrapper] returns:
-=======
         The [``probe_dashboard()``][edsteva.viz.dashboards.probe.wrapper] returns:
->>>>>>> main
 
         - On the top, the aggregated variable is the average completeness predictor $c(t)$ over time $t$ with the prediction $\hat{c}(t)$ if the [fitted Model][model] is specified.
         - On the bottom, the interactive filters are all the columns included in the [Probe][probe] (such as time, care site, number of visits...etc.).
@@ -51,11 +47,7 @@ A **Plot** is exportable in png or svg format and easy to integrate into a repor
 
     === "normalized_probe_dashboard()"
 
-<<<<<<< HEAD
-        The [``estimates_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe] returns a representation of the overall deviation from the [Model][model]:
-=======
         The [``normalized_probe_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe] returns a representation of the overall deviation from the [Model][model]:
->>>>>>> main
 
         - On the top, the aggregated variable is a normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
         - On the bottom, the interactive filters are all the columns included in the [Probe][probe] (such as time, care site, number of visits...etc.) with all the [Model coefficients][model-coefficients] and [metrics][metrics] included in the [Model][model].
@@ -78,11 +70,7 @@ A **Plot** is exportable in png or svg format and easy to integrate into a repor
 
     === "probe_plot()"
 
-<<<<<<< HEAD
-        The [``plot_probe()``][edsteva.viz.plots.probe.wrapper] returns the top plot of the [``predictor_dashboard()``][edsteva.viz.dashboards.probe.wrapper] without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
-=======
         The [``probe_plot()``][edsteva.viz.plots.probe.wrapper] returns the top plot of the [``probe_dashboard()``][edsteva.viz.dashboards.probe.wrapper]: the normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
->>>>>>> main
 
         ```python
         from edsteva.viz.plots import probe_plot
@@ -104,11 +92,7 @@ A **Plot** is exportable in png or svg format and easy to integrate into a repor
 
     === "normalized_probe_plot()"
 
-<<<<<<< HEAD
-        The [``plot_normalized_probe()``][edsteva.viz.plots.normalized_probe] returns the top plot of the [``estimates_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe]. Consequently, you have to specify the filters in the inputs of the function.
-=======
         The [``normalized_probe_plot()``][edsteva.viz.plots.normalized_probe] returns the top plot of the [``normalized_probe_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe]. Consequently, you have to specify the filters in the inputs of the function.
->>>>>>> main
 
         ```python
         from edsteva.viz.plots import normalized_probe_plot

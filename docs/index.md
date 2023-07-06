@@ -243,11 +243,7 @@ probe_dashboard(
 Interactive dashboard is available [here](assets/charts/interactive_visit.html)
 ##### Static plot
 
-<<<<<<< HEAD
-If you need a static plot for a report, a paper or anything else, you can use the [`plot_probe()`][edsteva.viz.plots.probe.wrapper] function. It returns the top plot of the dashboard without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
-=======
 If you need a static plot for a report, a paper or anything else, you can use the [`probe_plot()`][edsteva.viz.plots.probe.wrapper] function. It returns the top plot of the dashboard without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
->>>>>>> main
 
 ```python
 from edsteva.viz.plots import probe_plot
@@ -340,11 +336,7 @@ probe_dashboard(
 Interactive dashboard is available [here](assets/charts/interactive_fitted_visit.html).
 ##### Static plot
 
-<<<<<<< HEAD
-If you need a static plot for a report, a paper or anything else, you can use the [`plot_probe()`][edsteva.viz.plots.probe.wrapper] function. It returns the top plot of the dashboard without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
-=======
 If you need a static plot for a report, a paper or anything else, you can use the [`probe_plot()`][edsteva.viz.plots.probe.wrapper] function. It returns the top plot of the dashboard without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
->>>>>>> main
 
 ```python
 from edsteva.viz.plots import probe_plot
@@ -479,11 +471,7 @@ The working example above describes the canonical usage workflow. However, you w
             | :----------------------- | :----------- | :------------------- | :----------- | :--------- | :------ | :---- |
             | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 2019-05-01 | 233.0   | 0.841 |
             | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 2021-04-01 | 393.0   | 0.640 |
-<<<<<<< HEAD
-            | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 2011-03-01 | 204.0   | 0.497 |
-=======
             | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 2017-03-01 | 204.0   | 0.497 |
->>>>>>> main
             | Pôle/DMU                 | 8312027648   | Care site 2          | 'Urg'        | 2018-08-01 | 22.0    | 0.274 |
             | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 2022-02-01 | 9746.0  | 0.769 |
 
@@ -528,11 +516,7 @@ The working example above describes the canonical usage workflow. However, you w
             | care_site_level          | care_site_id | care_site_short_name | stay_type    | note_type             | date       | n_visit | n_visit_with_note | c     |
             | :----------------------- | :----------- | :------------------- | :----------- | :-------------------- | :--------- | :------ | :---------------- | :---- |
             | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 'All'                 | 2019-05-01 | 233.0   | 196.0             | 0.841 |
-<<<<<<< HEAD
-            | Unité Fonctionnelle (UF) | 8653815660   | Care site 1          | 'Hospit'     | 'CRH'                 | 2011-04-01 | 393.0   | 252.0             | 0.640 |
-=======
             | Unité Fonctionnelle (UF) | 8653815660   | Care site 1          | 'Hospit'     | 'CRH'                 | 2017-04-01 | 393.0   | 252.0             | 0.640 |
->>>>>>> main
             | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 'CRH'                 | 2021-03-01 | 204.0   | 101.0             | 0.497 |
             | Pôle/DMU                 | 8312056379   | Care site 2          | 'Urg'        | 'Ordonnance'          | 2018-08-01 | 22.0    | 6.0               | 0.274 |
             | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 'CR Passage Urgences' | 2022-02-01 | 9746.0  | 7495.0            | 0.769 |
@@ -574,11 +558,7 @@ The working example above describes the canonical usage workflow. However, you w
             | care_site_level          | care_site_id | care_site_short_name | stay_type    | note_type             | date       | n_note | c     |
             | :----------------------- | :----------- | :------------------- | :----------- | :-------------------- | :--------- | :----- | :---- |
             | Unité Fonctionnelle (UF) | 8312056386   | Care site 1          | 'Urg'        | 'All'                 | 2019-05-01 | 233.0  | 0.841 |
-<<<<<<< HEAD
-            | Unité Fonctionnelle (UF) | 8653815660   | Care site 1          | 'Hospit'     | 'CRH'                 | 2011-04-01 | 393.0  | 0.640 |
-=======
             | Unité Fonctionnelle (UF) | 8653815660   | Care site 1          | 'Hospit'     | 'CRH'                 | 2017-04-01 | 393.0  | 0.640 |
->>>>>>> main
             | Pôle/DMU                 | 8312027648   | Care site 2          | 'Hospit'     | 'CRH'                 | 2021-03-01 | 204.0  | 0.497 |
             | Pôle/DMU                 | 8312056379   | Care site 2          | 'Urg'        | 'Ordonnance'          | 2018-08-01 | 22.0   | 0.274 |
             | Hôpital                  | 8312022130   | Care site 3          | 'Urg_Hospit' | 'CR Passage Urgences' | 2022-02-01 | 9746.0 | 0.769 |
@@ -629,11 +609,7 @@ The working example above describes the canonical usage workflow. However, you w
             | :----------------------- | :----------- | :------------------- | :-------- | :-------- | :------------------- | :------------- | :--------- | :------ | :--------------------- | :---- |
             | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2019-05-01 | 233.0   | 196.0                  | 0.841 |
             | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | AREM           | 2021-04-01 | 393.0   | 252.0                  | 0.640 |
-<<<<<<< HEAD
-            | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2011-03-01 | 204.0   | 101.0                  | 0.497 |
-=======
             | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2017-03-01 | 204.0   | 101.0                  | 0.497 |
->>>>>>> main
             | Unité Fonctionnelle (UF) | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'All'                | ORBIS          | 2018-08-01 | 22.0    | 6.0                    | 0.274 |
             | Pôle/DMU                 | 8312022130   | Care site 3          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | ORBIS          | 2022-02-01 | 9746.0  | 7495.0                 | 0.769 |
 
@@ -677,11 +653,7 @@ The working example above describes the canonical usage workflow. However, you w
             | :----------------------- | :----------- | :------------------- | :-------- | :-------- | :------------------- | :------------- | :--------- | :---------- | :---- |
             | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2019-05-01 | 233.0       | 0.841 |
             | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | AREM           | 2021-04-01 | 393.0       | 0.640 |
-<<<<<<< HEAD
-            | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2011-03-01 | 204.0       | 0.497 |
-=======
             | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'Pulmonary_embolism' | AREM           | 2017-03-01 | 204.0       | 0.497 |
->>>>>>> main
             | Unité Fonctionnelle (UF) | 8312027648   | Care site 2          | 'Hospit'  | 'All'     | 'All'                | ORBIS          | 2018-08-01 | 22.0        | 0.274 |
             | Pôle/DMU                 | 8312022130   | Care site 3          | 'Hospit'  | 'DP/DR'   | 'Pulmonary_embolism' | ORBIS          | 2022-02-01 | 9746.0      | 0.769 |
 
@@ -726,11 +698,7 @@ The working example above describes the canonical usage workflow. However, you w
             | :-------------- | :----------- | :------------------- | :-------- | :------------ | :--------- | :------ | :----------------------- | :---- |
             | Hôpital         | 8312057527   | Care site 1          | 'Hospit'  | 'Créatinine'  | 2019-05-01 | 233.0   | 196.0                    | 0.841 |
             | Hôpital         | 8312057527   | Care site 1          | 'Hospit'  | 'Leucocytes'  | 2021-04-01 | 393.0   | 252.0                    | 0.640 |
-<<<<<<< HEAD
-            | Hôpital         | 8312027648   | Care site 2          | 'Hospit'  | 'Créatinine'  | 2011-03-01 | 204.0   | 101.0                    | 0.497 |
-=======
             | Hôpital         | 8312027648   | Care site 2          | 'Hospit'  | 'Créatinine'  | 2017-03-01 | 204.0   | 101.0                    | 0.497 |
->>>>>>> main
             | Hôpital         | 8312027648   | Care site 2          | 'Hospit'  | 'Leucocytes'  | 2018-08-01 | 22.0    | 6.0                      | 0.274 |
             | Hôpital         | 8312022130   | Care site 3          | 'Hospit'  | 'Leucocytes'  | 2022-02-01 | 9746.0  | 7495.0                   | 0.769 |
 
@@ -771,11 +739,7 @@ The working example above describes the canonical usage workflow. However, you w
             | :----------------------- | :----------- | :------------------- | :-------- | :------------ | :--------- | :------------ | :---- |
             | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'Créatinine'  | 2019-05-01 | 233.0         | 0.841 |
             | Hôpital                  | 8312057527   | Care site 1          | 'Hospit'  | 'Leucocytes'  | 2021-04-01 | 393.0         | 0.640 |
-<<<<<<< HEAD
-            | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'Créatinine'  | 2011-03-01 | 204.0         | 0.497 |
-=======
             | Hôpital                  | 8312027648   | Care site 2          | 'Hospit'  | 'Créatinine'  | 2017-03-01 | 204.0         | 0.497 |
->>>>>>> main
             | Unité Fonctionnelle (UF) | 8312027648   | Care site 2          | 'Hospit'  | 'Leucocytes'  | 2018-08-01 | 22.0          | 0.274 |
             | Pôle/DMU                 | 8312022130   | Care site 3          | 'Hospit'  | 'Leucocytes'  | 2022-02-01 | 9746.0        | 0.769 |
 
@@ -954,11 +918,7 @@ The working example above describes the canonical usage workflow. However, you w
 
         === "probe_dashboard()"
 
-<<<<<<< HEAD
-            The [``predictor_dashboard()``][edsteva.viz.dashboards.probe.wrapper] returns:
-=======
             The [``probe_dashboard()``][edsteva.viz.dashboards.probe.wrapper] returns:
->>>>>>> main
 
             - On the top, the aggregated variable is the average completeness predictor $c(t)$ over time $t$ with the prediction $\hat{c}(t)$ if the [fitted Model][model] is specified.
             - On the bottom, the interactive filters are all the columns included in the [Probe][probe] (such as time, care site, number of visits...etc.).
@@ -976,11 +936,7 @@ The working example above describes the canonical usage workflow. However, you w
 
         === "normalized_probe_dashboard()"
 
-<<<<<<< HEAD
-            The [``estimates_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe] returns a representation of the overall deviation from the [Model][model]:
-=======
             The [``normalized_probe_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe] returns a representation of the overall deviation from the [Model][model]:
->>>>>>> main
 
             - On the top, the aggregated variable is a normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
             - On the bottom, the interactive filters are all the columns included in the [Probe][probe] (such as time, care site, number of visits...etc.) with all the [Model coefficients][model-coefficients] and [metrics][metrics] included in the [Model][model].
@@ -1003,11 +959,7 @@ The working example above describes the canonical usage workflow. However, you w
 
         === "probe_plot()"
 
-<<<<<<< HEAD
-            The [``plot_probe()``][edsteva.viz.plots.probe.wrapper] returns the top plot of the [``predictor_dashboard()``][edsteva.viz.dashboards.probe.wrapper]: the normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
-=======
             The [``probe_plot()``][edsteva.viz.plots.probe.wrapper] returns the top plot of the [``probe_dashboard()``][edsteva.viz.dashboards.probe.wrapper]: the normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
->>>>>>> main
 
             ```python
             from edsteva.viz.plots import probe_plot
@@ -1029,11 +981,7 @@ The working example above describes the canonical usage workflow. However, you w
 
         === "normalized_probe_plot()"
 
-<<<<<<< HEAD
-            The [``plot_normalized_probe()``][edsteva.viz.plots.normalized_probe] returns the top plot of the [``estimates_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe]. Consequently, you have to specify the filters in the inputs of the function.
-=======
             The [``normalized_probe_plot()``][edsteva.viz.plots.normalized_probe] returns the top plot of the [``normalized_probe_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe]. Consequently, you have to specify the filters in the inputs of the function.
->>>>>>> main
 
             ```python
             from edsteva.viz.plots import normalized_probe_plot

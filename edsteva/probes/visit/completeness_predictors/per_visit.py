@@ -6,10 +6,7 @@ import pandas as pd
 from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
-<<<<<<< HEAD
     prepare_person,
-=======
->>>>>>> main
     prepare_visit_detail,
     prepare_visit_occurrence,
 )
@@ -37,14 +34,10 @@ def compute_completeness_predictor_per_visit(
     care_site_specialties: List[str],
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
-<<<<<<< HEAD
-    stay_durations: List[float],
+    length_of_stays: List[float],
     age_list: List[int],
     provenance_source: Union[str, Dict[str, str]],
     pmsi_type: Union[str, Dict[str, str]],
-=======
-    length_of_stays: List[float],
->>>>>>> main
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -58,26 +51,19 @@ def compute_completeness_predictor_per_visit(
     Where $n_{visit}(t)$ is the number of administrative stays, $t$ is the month and $n_{max} = \max_{t}(n_{visit}(t))$.
     """
     self._metrics = ["c", "n_visit"]
-<<<<<<< HEAD
 
     person = prepare_person(data) if age_list else None
 
-=======
->>>>>>> main
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         start_date=start_date,
         end_date=end_date,
         stay_types=stay_types,
-<<<<<<< HEAD
-        stay_durations=stay_durations,
+        length_of_stays=length_of_stays,
         pmsi_type=pmsi_type,
         provenance_source=provenance_source,
         person=person,
         age_list=age_list,
-=======
-        length_of_stays=length_of_stays,
->>>>>>> main
     )
 
     care_site = prepare_care_site(
@@ -144,11 +130,7 @@ def compute_completeness(
     self,
     visit_predictor: DataFrame,
 ):
-<<<<<<< HEAD
     partition_cols = self._index.copy() + ["date"]
-=======
-    partition_cols = [*self._index.copy(), "date"]
->>>>>>> main
 
     n_visit = (
         visit_predictor.groupby(
@@ -187,13 +169,7 @@ def compute_completeness(
         visit_predictor["max_n_visit"] == 0,
         visit_predictor["n_visit"] / visit_predictor["max_n_visit"],
     )
-<<<<<<< HEAD
-    visit_predictor = visit_predictor.drop(columns="max_n_visit")
-
-    return visit_predictor
-=======
     return visit_predictor.drop(columns="max_n_visit")
->>>>>>> main
 
 
 def get_hospital_visit(
@@ -221,15 +197,11 @@ def get_uf_visit(
 ):
     uf_visit = visit_detail[visit_detail.visit_detail_type == VISIT_DETAIL_TYPE["UF"]]
     uf_visit = uf_visit.merge(
-<<<<<<< HEAD
-        visit_occurrence[["visit_occurrence_id", "length_of_stay", "stay_type"]],
-=======
         visit_occurrence[
             visit_occurrence.columns.intersection(
                 set(["visit_occurrence_id", "length_of_stay", "stay_type"])
             )
         ],
->>>>>>> main
         on="visit_occurrence_id",
     ).drop(columns="visit_occurrence_id")
     uf_visit = uf_visit.merge(care_site, on="care_site_id")
@@ -247,15 +219,11 @@ def get_uc_visit(
 ):
     uc_visit = visit_detail[visit_detail.visit_detail_type == VISIT_DETAIL_TYPE["UC"]]
     uc_visit = uc_visit.merge(
-<<<<<<< HEAD
-        visit_occurrence[["visit_occurrence_id", "length_of_stay", "stay_type"]],
-=======
         visit_occurrence[
             visit_occurrence.columns.intersection(
                 set(["visit_occurrence_id", "length_of_stay", "stay_type"])
             )
         ],
->>>>>>> main
         on="visit_occurrence_id",
     ).drop(columns="visit_occurrence_id")
     uc_visit = uc_visit.merge(care_site, on="care_site_id")
@@ -273,15 +241,11 @@ def get_uh_visit(
 ):
     uh_visit = visit_detail[visit_detail.visit_detail_type == VISIT_DETAIL_TYPE["UH"]]
     uh_visit = uh_visit.merge(
-<<<<<<< HEAD
-        visit_occurrence[["visit_occurrence_id", "length_of_stay", "stay_type"]],
-=======
         visit_occurrence[
             visit_occurrence.columns.intersection(
                 set(["visit_occurrence_id", "length_of_stay", "stay_type"])
             )
         ],
->>>>>>> main
         on="visit_occurrence_id",
     ).drop(columns="visit_occurrence_id")
     uh_visit = uh_visit.merge(care_site, on="care_site_id")

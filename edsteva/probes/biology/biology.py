@@ -55,19 +55,13 @@ class BiologyProbe(BaseProbe):
             "concepts_set",
             "stay_type",
             "length_of_stay",
-<<<<<<< HEAD
             "age_range",
-=======
->>>>>>> main
             "care_site_id",
             "care_site_specialty",
             "care_sites_set",
             "specialties_set",
-<<<<<<< HEAD
             "pmsi_type",
             "provenance_source",
-=======
->>>>>>> main
         ] + [
             "{}_concept_code".format(terminology)
             for terminology in standard_terminologies
@@ -101,11 +95,7 @@ class BiologyProbe(BaseProbe):
             "Glucose": "A1245|E7961|C8796|H7753|A8029|H7749|A0141|H7323|J7401|F2622|B9553|C7236|E7312|G9557|A7338|H7324|C0565|E9889|A8424|F6235|F5659|F2406",
             "Bicarbonate": "A0422|H9622|C6408|F4161",
         },
-<<<<<<< HEAD
-        stay_durations: List[float] = [1],
-=======
         length_of_stays: List[float] = [1],
->>>>>>> main
         source_terminologies: Dict[str, str] = {
             "ANALYSES_LABORATOIRE": r"Analyses Laboratoire",
             "GLIMS_ANABIO": r"GLIMS.{0,20}Anabio",
@@ -119,12 +109,9 @@ class BiologyProbe(BaseProbe):
             ("GLIMS_ANABIO", "ANABIO_ITM", "Mapped from"),
             ("ANABIO_ITM", "LOINC_ITM", "Maps to"),
         ],
-<<<<<<< HEAD
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
         pmsi_type: Union[str, Dict[str, str]] = {"MCO": "MCO"},
         age_list: List[int] = None,
-=======
->>>>>>> main
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -157,11 +144,7 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
         concepts_sets : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"Créatinine": "E3180|G1974|J1002|A7813|A0094|G1975|J1172|G7834|F9409|F9410|C0697|H4038|F2621", "Leucocytes": r"A0174|K3232|H6740|E4358|C9784|C8824|E6953"}`
-<<<<<<< HEAD
-        stay_durations : List[float], optional
-=======
         length_of_stays : List[float], optional
->>>>>>> main
             **EXAMPLE**: `[1, 30]`
         source_terminologies : Dict[str, str], optional
             Dictionary of regex used to detect terminology in the column `vocabulary_id`.
@@ -169,9 +152,8 @@ class BiologyProbe(BaseProbe):
         mapping : List[Tuple[str, str, str]], optional
             List of values to filter in the column `relationship_id` in order to map between 2 terminologies.
             **EXAMPLE**: `[("ANALYSES_LABORATOIRE", "GLIMS_ANABIO", "Maps to")]`
-<<<<<<< HEAD
         pmsi_type : Union[str, Dict[str, str]], optional
-            **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", MCO_PSY" : "MCO|Psychiatrie","MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
+            **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
         provenance_source : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
         age_list : List[int], optional
@@ -179,29 +161,18 @@ class BiologyProbe(BaseProbe):
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
-        if care_sites_sets is None and "care_sites_set" in self._index:
-            self._index.remove("care_sites_set")
-        if age_list is None and "age_range" in self._index:
-            self._index.remove("age_range")
-=======
-        """
-        if specialties_sets is None and "specialties_set" in self._index:
-            self._index.remove("specialties_set")
         if length_of_stays is None and "length_of_stay" in self._index:
             self._index.remove("length_of_stay")
+        if age_list is None and "age_range" in self._index:
+            self._index.remove("age_range")
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
->>>>>>> main
         if concepts_sets is None and "concepts_set" in self._index:
             self._index.remove("concepts_set")
         else:
             for terminology in self._standard_terminologies:
                 if "{}_concept_code".format(terminology) in self._index:
                     self._index.remove("{}_concept_code".format(terminology))
-<<<<<<< HEAD
-=======
-
->>>>>>> main
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -217,18 +188,12 @@ class BiologyProbe(BaseProbe):
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             concepts_sets=concepts_sets,
-<<<<<<< HEAD
-            stay_durations=stay_durations,
+            length_of_stays=length_of_stays,
             source_terminologies=source_terminologies,
             mapping=mapping,
             provenance_source=provenance_source,
             pmsi_type=pmsi_type,
             age_list=age_list,
-=======
-            length_of_stays=length_of_stays,
-            source_terminologies=source_terminologies,
-            mapping=mapping,
->>>>>>> main
             **kwargs,
         )
 

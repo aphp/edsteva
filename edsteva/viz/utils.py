@@ -15,11 +15,7 @@ from edsteva.probes.utils.utils import CARE_SITE_LEVEL_NAMES
 def generate_main_chart(
     base: alt.Chart,
     main_chart_config: Dict[str, str],
-<<<<<<< HEAD
-    index_selection: alt.Selection = None,
-=======
     index_selection: alt.SelectionParameter = None,
->>>>>>> main
     index_fields: List[str] = None,
     x_axis_title: str = None,
     y_axis_title: str = None,
@@ -47,10 +43,7 @@ def generate_main_chart(
             x=main_chart_config["encode"]["x"],
             y=main_chart_config["encode"]["y"],
         )
-<<<<<<< HEAD
-=======
 
->>>>>>> main
     return main_chart.properties(**main_chart_config["properties"])
 
 
@@ -69,12 +62,7 @@ def generate_model_line(
         for filter in model_line_config["filters"]:
             model_line = model_line.transform_filter(**filter)
     model_line = model_line.encode(**model_line_config["encode"])
-<<<<<<< HEAD
-
-    return model_line
-=======
     return add_selection_on_legend(model_line)
->>>>>>> main
 
 
 def generate_error_line(
@@ -84,11 +72,7 @@ def generate_error_line(
     error_line = main_chart.mark_errorband(
         **error_line_config["mark_errorband"]
     ).encode(**error_line_config["encode"])
-<<<<<<< HEAD
-    return error_line
-=======
     return add_selection_on_legend(error_line, opacity_true=0.3, opacity_false=0.05)
->>>>>>> main
 
 
 def generate_probe_line(
@@ -96,12 +80,7 @@ def generate_probe_line(
     probe_line_config: Dict[str, str],
 ):
     probe_line = main_chart.mark_line().encode(**probe_line_config["encode"])
-<<<<<<< HEAD
-
-    return probe_line
-=======
     return add_selection_on_legend(probe_line)
->>>>>>> main
 
 
 def generate_time_line(
@@ -110,13 +89,7 @@ def generate_time_line(
 ):
     time_selection = alt.selection_interval(encodings=["x"])
     time_line = (
-<<<<<<< HEAD
-        base.mark_line()
-        .encode(**time_line_config["encode"])
-        .add_selection(time_selection)
-=======
         base.mark_line().encode(**time_line_config["encode"]).add_params(time_selection)
->>>>>>> main
     ).properties(**time_line_config["properties"])
     return time_line, time_selection
 
@@ -125,38 +98,21 @@ def generate_horizontal_bar_charts(
     base: alt.Chart,
     horizontal_bar_charts_config: Dict[str, str],
     predictor: pd.DataFrame,
-<<<<<<< HEAD
-    remove_singleton_bar_chart: bool,
-=======
->>>>>>> main
 ):
     horizontal_bar_charts = {}
     y_variables_selections = {}
     for y_variable in horizontal_bar_charts_config["y"]:
-<<<<<<< HEAD
-        if y_variable["field"] not in predictor.columns or (
-            remove_singleton_bar_chart and predictor[y_variable["field"]].nunique() <= 1
-        ):
-            continue
-        y_variable_bar_charts = []
-        y_variable_selection = alt.selection_multi(fields=[y_variable["field"]])
-=======
         if y_variable["field"] not in predictor.columns:
             continue
         y_variable_bar_charts = []
         y_variable_selection = alt.selection_point(fields=[y_variable["field"]])
->>>>>>> main
         y_variables_selections[y_variable["field"]] = y_variable_selection
         y_variable_base_chart = (
             base.mark_bar()
             .encode(
                 y=alt.Y(**y_variable),
             )
-<<<<<<< HEAD
-            .add_selection(y_variable_selection)
-=======
             .add_params(y_variable_selection)
->>>>>>> main
         )
         for x_variable in horizontal_bar_charts_config["x"]:
             y_index_variable_color = alt.condition(
@@ -183,38 +139,21 @@ def generate_vertical_bar_charts(
     base: alt.Chart,
     vertical_bar_charts_config: Dict[str, str],
     predictor: pd.DataFrame,
-<<<<<<< HEAD
-    remove_singleton_bar_chart: bool,
-=======
->>>>>>> main
 ):
     vertical_bar_charts = {}
     x_variables_selections = {}
     for x_variable in vertical_bar_charts_config["x"]:
-<<<<<<< HEAD
-        if x_variable["field"] not in predictor.columns or (
-            remove_singleton_bar_chart and predictor[x_variable["field"]].nunique() <= 1
-        ):
-            continue
-        x_variable_bar_charts = []
-        x_variable_selection = alt.selection_multi(fields=[x_variable["field"]])
-=======
         if x_variable["field"] not in predictor.columns:
             continue
         x_variable_bar_charts = []
         x_variable_selection = alt.selection_point(fields=[x_variable["field"]])
->>>>>>> main
         x_variables_selections[x_variable["field"]] = x_variable_selection
         x_variable_base_chart = (
             base.mark_bar()
             .encode(
                 x=alt.X(**x_variable),
             )
-<<<<<<< HEAD
-            .add_selection(x_variable_selection)
-=======
             .add_params(x_variable_selection)
->>>>>>> main
         )
 
         for y_variable in vertical_bar_charts_config["y"]:
@@ -240,17 +179,9 @@ def generate_vertical_bar_charts(
 
 def add_interactive_selection(
     base: alt.Chart,
-<<<<<<< HEAD
-    selections: Dict[str, alt.Selection],
-    selection_charts: Dict[str, List[alt.Chart]] = None,
-):
-    if selection_charts is None:
-        selection_charts = {}
-=======
     selections: Dict[str, alt.SelectionParameter],
     selection_charts: Dict[str, List[alt.Chart]],
 ):
->>>>>>> main
     for selection_variable, selection in selections.items():
         base = base.transform_filter(selection)
         for chart_variable in selection_charts.keys():
@@ -262,11 +193,6 @@ def add_interactive_selection(
     return base
 
 
-<<<<<<< HEAD
-def add_estimates_filters(
-    base: alt.Chart,
-    estimates_filters: Dict[str, alt.Selection],
-=======
 def add_selection_on_legend(
     chart: alt.Chart, opacity_true: float = 1, opacity_false: float = 0.2
 ):
@@ -281,7 +207,6 @@ def add_selection_on_legend(
 def add_estimates_filters(
     base: alt.Chart,
     estimates_filters: Dict[str, alt.SelectionParameter],
->>>>>>> main
     selection_charts: Dict[str, List[alt.Chart]] = None,
 ):
     if selection_charts is None:
@@ -297,15 +222,6 @@ def add_estimates_filters(
     return base
 
 
-<<<<<<< HEAD
-def create_groupby_selection(
-    indexes: List[str],
-):
-    index_fields = [index["field"] for index in indexes]
-    if len(index_fields) >= 2:
-        index_labels = [index["title"] for index in indexes]
-        index_selection = alt.selection_single(
-=======
 def get_indexes_to_groupby(
     predictor_columns: List[str],
     predictor_metrics: List[str],
@@ -333,16 +249,11 @@ def create_groupby_selection(
             index["title"] for index in indexes if index["field"] in predictor.columns
         ]
         index_selection = alt.selection_point(
->>>>>>> main
             fields=["index"],
             bind=alt.binding_radio(
                 name="Group by: ", options=index_fields, labels=index_labels
             ),
-<<<<<<< HEAD
-            init={"index": index_fields[0]},
-=======
             value=index_fields[0],
->>>>>>> main
         )
     else:
         index_selection = None
@@ -353,17 +264,6 @@ def configure_style(
     chart: alt.Chart,
     chart_style: Dict[str, float],
 ):
-<<<<<<< HEAD
-    return chart.configure_axis(
-        labelFontSize=chart_style["labelFontSize"],
-        titleFontSize=chart_style["titleFontSize"],
-        labelLimit=500,
-    ).configure_legend(
-        labelFontSize=chart_style["labelFontSize"],
-        titleFontSize=chart_style["titleFontSize"],
-        labelLimit=500,
-    )
-=======
     if chart_style:
         chart = chart.configure_axis(
             labelFontSize=chart_style["labelFontSize"],
@@ -375,7 +275,6 @@ def configure_style(
             labelLimit=500,
         )
     return chart
->>>>>>> main
 
 
 def concatenate_charts(
@@ -489,14 +388,8 @@ def save_html(obj: alt.Chart, filename: str):
 def round_up(x: float, sig: int):
     if x == 0:
         return 0
-<<<<<<< HEAD
-    else:
-        decimals = sig - floor(log10(abs(x))) - 1
-        return ceil(x * 10**decimals) / 10**decimals
-=======
     decimals = sig - floor(log10(abs(x))) - 1
     return ceil(x * 10**decimals) / 10**decimals
->>>>>>> main
 
 
 def scale_it(x: float):
@@ -585,8 +478,6 @@ def filter_predictor(
             value,
         )
 
-<<<<<<< HEAD
-=======
     # Care site specialty
     if (
         "care_site_specialty" in predictor.columns
@@ -594,7 +485,6 @@ def filter_predictor(
     ):
         predictor = predictor.drop(columns="care_site_specialty")
 
->>>>>>> main
     if predictor.empty:
         raise TypeError("Empty predictor: no data to plot.")
     return predictor

@@ -126,10 +126,6 @@ OTHER_MEASUREMENT_COLUMNS = dict(
         ("Initial", 0.02),
     ],
 )
-<<<<<<< HEAD
-
-=======
->>>>>>> main
 
 
 def add_other_columns(
@@ -176,13 +172,6 @@ class SyntheticData:
 
     def __post_init__(self):
         if self.module not in ["pandas", "koalas"]:
-<<<<<<< HEAD
-            raise ValueError(
-                f"Unknown module {self.mode}, options are ('pandas', 'koalas')"
-            )
-        if self.mode not in ["step", "rect"]:
-            raise ValueError(f"Unknown mode {self.mode}, options are ('step', 'rect')")
-=======
             raise AttributeError(
                 f"Unknown module {self.mode}, options are ('pandas', 'koalas')"
             )
@@ -190,7 +179,6 @@ class SyntheticData:
             raise AttributeError(
                 f"Unknown mode {self.mode}, options are ('step', 'rect')"
             )
->>>>>>> main
 
     def generate(self):
         if self.seed:
@@ -234,12 +222,8 @@ class SyntheticData:
             care_site.care_site_type_source_value == "Unité de consultation (UC)"
         ][["care_site_id"]].reset_index(drop=True)
         uc_care_site = add_other_columns(
-<<<<<<< HEAD
-            uc_care_site,
-=======
             generator=self.generator,
             table=uc_care_site,
->>>>>>> main
             other_columns=dict(
                 place_of_service_source_value=[
                     ("CARDIO", 0.2),
@@ -252,12 +236,8 @@ class SyntheticData:
             care_site.care_site_type_source_value == "Unité d’hébergement (UH)"
         ][["care_site_id"]].reset_index(drop=True)
         uh_care_site = add_other_columns(
-<<<<<<< HEAD
-            uh_care_site,
-=======
             generator=self.generator,
             table=uh_care_site,
->>>>>>> main
             other_columns=dict(
                 place_of_service_source_value=[
                     ("REA ADULTE", 0.5),
@@ -268,11 +248,7 @@ class SyntheticData:
         care_site = care_site.merge(
             pd.concat([uc_care_site, uh_care_site]), on="care_site_id", how="left"
         )
-<<<<<<< HEAD
-        care_site.fillna("Non Renseigné", inplace=True)
-=======
         care_site = care_site.fillna("Non renseigné")
->>>>>>> main
         hospital_ids = list(
             care_site[care_site.care_site_type_source_value == "Hôpital"].care_site_id
         )
@@ -283,17 +259,10 @@ class SyntheticData:
         t_min = self.t_min.timestamp()
         t_max = self.t_max.timestamp()
         for care_site_id in hospital_ids:
-<<<<<<< HEAD
-            t_start = t_min + np.random.randint(0, (t_max - t_min) / 20)
-            t_end = t_max - np.random.randint(0, (t_max - t_min) / 20)
-            n_visits = np.random.normal(self.mean_visit, self.mean_visit / 5)
-            increase_time = np.random.randint(
-=======
             t_start = t_min + self.generator.integers(0, (t_max - t_min) / 20)
             t_end = t_max - self.generator.integers(0, (t_max - t_min) / 20)
             n_visits = self.generator.normal(self.mean_visit, self.mean_visit / 5)
             increase_time = self.generator.integers(
->>>>>>> main
                 (t_end - t_start) / 100, (t_end - t_start) / 10
             )
             increase_ratio = self.generator.uniform(150, 200)
@@ -316,13 +285,9 @@ class SyntheticData:
             self.date_col
         ] + pd.to_timedelta(
             pd.Series(
-<<<<<<< HEAD
-                np.random.choice([None] * 50 + list(range(100)), len(visit_occurrence))
-=======
                 self.generator.choice(
                     [None] * 50 + list(range(100)), len(visit_occurrence)
                 )
->>>>>>> main
             ),
             unit="days",
         )
@@ -334,11 +299,6 @@ class SyntheticData:
             other_columns=self.other_visit_columns,
         )
 
-<<<<<<< HEAD
-        return visit_occurrence
-
-=======
->>>>>>> main
     def _generate_visit_detail(self, visit_occurrence, care_site):
         t_min = self.t_min.timestamp()
         t_max = self.t_max.timestamp()
@@ -412,42 +372,6 @@ class SyntheticData:
         return pd.concat([uc_detail, uh_detail, uf_detail, rum_detail]).drop(
             columns=care_site_col
         )
-<<<<<<< HEAD
-        visit_detail = visit_detail.merge(care_site, on="care_site_id")
-        uc_detail = (
-            visit_detail[
-                visit_detail.care_site_type_source_value == "Unité de consultation (UC)"
-            ]
-            .copy()
-            .reset_index(drop=True)
-        )
-        uc_detail["visit_detail_type_source_value"] = "PASS UC"
-        uh_detail = (
-            visit_detail[
-                visit_detail.care_site_type_source_value == "Unité d’hébergement (UH)"
-            ]
-            .copy()
-            .reset_index(drop=True)
-        )
-        uh_detail["visit_detail_type_source_value"] = "PASS UH"
-        uf_detail = (
-            visit_detail[
-                visit_detail.care_site_type_source_value == "Unité Fonctionnelle (UF)"
-            ]
-            .copy()
-            .reset_index(drop=True)
-        )
-        uf_detail["visit_detail_type_source_value"] = "PASS UF"
-        rum_detail = uf_detail.copy()
-        rum_detail["visit_detail_type_source_value"] = "RUM"
-        care_site_col = list(care_site.columns)
-        care_site_col.remove("care_site_id")
-        visit_detail = pd.concat([uc_detail, uh_detail, uf_detail, rum_detail]).drop(
-            columns=care_site_col
-        )
-        return visit_detail
-=======
->>>>>>> main
 
     def _generate_condition_occurrence(self, visit_detail):
         visit_detail = visit_detail[
@@ -514,11 +438,7 @@ class SyntheticData:
             )
             for note_type in note_types:
                 params["note_type"] = note_type
-<<<<<<< HEAD
-                note = generate_note(visit_care_site, **params)
-=======
                 note = generate_note(visit_care_site=visit_care_site, **params)
->>>>>>> main
                 notes.append(note)
 
         notes = pd.concat(notes).reset_index(drop=True)

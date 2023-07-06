@@ -13,17 +13,9 @@ def get_normalized_probe_plot_config(self, predictor: DataFrame):
     c_0_min_selection, c_0_min_filter = get_c_0_min_selection(predictor=predictor)
     t_0_selection, t_0_min_filter = get_t_0_selection(predictor=predictor)
     error_max_selection, error_max_filter = get_error_max_selection(predictor=predictor)
-<<<<<<< HEAD
-    normalized_probe_dashboard_config = dict(
-=======
     return dict(
->>>>>>> main
         estimates_selections=[c_0_min_selection, t_0_selection, error_max_selection],
         estimates_filters=[c_0_min_filter, t_0_min_filter, error_max_filter],
         probe_line=normalized_probe_line,
         model_line=normalized_model_line,
     )
-<<<<<<< HEAD
-    return normalized_probe_dashboard_config
-=======
->>>>>>> main

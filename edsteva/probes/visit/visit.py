@@ -40,19 +40,13 @@ class VisitProbe(BaseProbe):
             "care_site_level",
             "stay_type",
             "length_of_stay",
-<<<<<<< HEAD
             "age_range",
-=======
->>>>>>> main
             "care_site_id",
             "care_site_specialty",
             "care_sites_set",
             "specialties_set",
-<<<<<<< HEAD
             "pmsi_type",
             "provenance_source",
-=======
->>>>>>> main
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -72,14 +66,10 @@ class VisitProbe(BaseProbe):
         care_site_specialties: List[str] = None,
         care_sites_sets: Union[str, Dict[str, str]] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
-<<<<<<< HEAD
-        stay_durations: List[float] = None,
+        length_of_stays: List[float] = None,
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
         pmsi_type: Union[str, Dict[str, str]] = {"MCO": "MCO"},
         age_list: List[int] = None,
-=======
-        length_of_stays: List[float] = None,
->>>>>>> main
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -108,8 +98,7 @@ class VisitProbe(BaseProbe):
             **EXAMPLE**: `{"All AP-HP": ".*"}` or `{"All AP-HP": ".*", "Pediatrics": r"debre|trousseau|necker"}`
         specialties_sets : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
-<<<<<<< HEAD
-        stay_durations : List[float], optional
+        length_of_stays : List[float], optional
             **EXAMPLE**: `[1, 30]`
         pmsi_type : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
@@ -124,17 +113,6 @@ class VisitProbe(BaseProbe):
             self._index.remove("care_sites_set")
         if age_list is None and "age_range" in self._index:
             self._index.remove("age_range")
-=======
-        length_of_stays : List[float], optional
-            **EXAMPLE**: `[1, 30]`
-        """
-        if specialties_sets is None and "specialties_set" in self._index:
-            self._index.remove("specialties_set")
-        if length_of_stays is None and "length_of_stay" in self._index:
-            self._index.remove("length_of_stay")
-        if care_sites_sets is None and "care_sites_set" in self._index:
-            self._index.remove("care_sites_set")
->>>>>>> main
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -148,14 +126,10 @@ class VisitProbe(BaseProbe):
             care_site_specialties=care_site_specialties,
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
-<<<<<<< HEAD
-            stay_durations=stay_durations,
+            length_of_stays=length_of_stays,
             provenance_source=provenance_source,
             pmsi_type=pmsi_type,
             age_list=age_list,
-=======
-            length_of_stays=length_of_stays,
->>>>>>> main
             **kwargs,
         )
 

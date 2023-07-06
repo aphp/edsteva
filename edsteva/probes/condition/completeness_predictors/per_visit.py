@@ -8,10 +8,7 @@ from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
     prepare_condition_occurrence,
-<<<<<<< HEAD
     prepare_person,
-=======
->>>>>>> main
     prepare_visit_detail,
     prepare_visit_occurrence,
 )
@@ -43,14 +40,10 @@ def compute_completeness_predictor_per_visit(
     diag_types: Union[str, Dict[str, str]],
     condition_types: Union[str, Dict[str, str]],
     source_systems: List[str],
-<<<<<<< HEAD
-    stay_durations: List[float],
+    length_of_stays: List[float],
     age_list: List[int],
     provenance_source: Union[str, Dict[str, str]],
     pmsi_type: Union[str, Dict[str, str]],
-=======
-    length_of_stays: List[float],
->>>>>>> main
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -72,25 +65,18 @@ def compute_completeness_predictor_per_visit(
     ):  # pragma: no cover
         logger.info("AREM claim data are only available at hospital level")
 
-<<<<<<< HEAD
     person = prepare_person(data) if age_list else None
 
-=======
->>>>>>> main
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         start_date=start_date,
         end_date=end_date,
         stay_types=stay_types,
-<<<<<<< HEAD
-        stay_durations=stay_durations,
+        length_of_stays=length_of_stays,
         provenance_source=provenance_source,
         pmsi_type=pmsi_type,
         person=person,
         age_list=age_list,
-=======
-        length_of_stays=length_of_stays,
->>>>>>> main
     )
 
     condition_occurrence = prepare_condition_occurrence(
@@ -154,11 +140,7 @@ def compute_completeness(
     condition_predictor: DataFrame,
 ):
     # Visit with diagnosis
-<<<<<<< HEAD
-    partition_cols = self._index.copy() + ["date"]
-=======
     partition_cols = [*self._index.copy(), "date"]
->>>>>>> main
     n_visit_with_condition = (
         condition_predictor.groupby(
             partition_cols,
@@ -257,15 +239,11 @@ def get_uf_visit(
     condition_uf["has_condition"] = True
 
     visit_detail = visit_detail.merge(
-<<<<<<< HEAD
-        visit_occurrence[["visit_occurrence_id", "stay_type", "length_of_stay"]],
-=======
         visit_occurrence[
             visit_occurrence.columns.intersection(
                 set(["visit_occurrence_id", "length_of_stay", "stay_type"])
             )
         ],
->>>>>>> main
         on="visit_occurrence_id",
     )
     uf_visit = visit_detail.merge(
