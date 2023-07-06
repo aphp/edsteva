@@ -72,8 +72,10 @@ def loss_minimization(
         row["t_0"] = t_0
         row["c_0"] = c_0
         row["t_1"] = t_1
-        row["visit_median"] = group[[n_col]][group[[n_col]] > 0].quantile(0.5).values[0]
-        row["visit_max"] = group[[n_col]][group[[n_col]] > 0].max().values[0]
+        row["visit_median"] = (
+            group[[n_col]][group[[n_col]] > 0].quantile(0.5).to_numpy()[0]
+        )
+        row["visit_max"] = group[[n_col]][group[[n_col]] > 0].max().to_numpy()[0]
         results.append(row)
 
     return pd.DataFrame(results)
