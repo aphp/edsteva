@@ -37,11 +37,11 @@ def compute_completeness_predictor_per_note(
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     extra_data: Data,
+    length_of_stays: List[float],
     note_types: Union[str, Dict[str, str]],
     age_list: List[int],
     provenance_source: Union[str, Dict[str, str]],
     pmsi_type: Union[str, Dict[str, str]],
-    length_of_stays: List[float],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]

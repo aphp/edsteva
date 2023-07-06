@@ -130,7 +130,7 @@ def compute_completeness(
     self,
     visit_predictor: DataFrame,
 ):
-    partition_cols = self._index.copy() + ["date"]
+    partition_cols = [*self._index.copy(), "date"]
 
     n_visit = (
         visit_predictor.groupby(
