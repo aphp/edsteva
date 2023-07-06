@@ -15,16 +15,26 @@ data_missing = SyntheticData(mean_visit=100, seed=41, mode="step").generate()
 
 
 def test_bad_params():
+<<<<<<< HEAD
     with pytest.raises(Exception):
         SyntheticData(mean_visit=100, seed=41, mode="fail").generate()
     with pytest.raises(Exception):
+=======
+    with pytest.raises(AttributeError):
+        SyntheticData(mean_visit=100, seed=41, mode="fail").generate()
+    with pytest.raises(AttributeError):
+>>>>>>> main
         SyntheticData(mean_visit=100, seed=41, module="fail").generate()
 
 
 def test_convert():
+<<<<<<< HEAD
     data_koalas = SyntheticData(
         mean_visit=100, seed=41, mode="step", module="koalas"
     ).generate()
+=======
+    data_koalas = SyntheticData(mean_visit=100, mode="step", module="koalas").generate()
+>>>>>>> main
     for table in data_koalas.available_tables:
         assert isinstance(getattr(data_koalas, table), type(ks.DataFrame()))
     data_koalas.convert_to_koalas()

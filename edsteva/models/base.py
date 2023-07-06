@@ -209,8 +209,7 @@ class BaseModel(metaclass=ABCMeta):
         predictor = probe.predictor
         index = probe._index
 
-        prediction = self.predict_process(predictor=predictor, index=index)
-        return prediction
+        return self.predict_process(predictor=predictor, index=index)
 
     def load(self, path=None) -> None:
         """Loads a Model from local
@@ -314,11 +313,15 @@ class BaseModel(metaclass=ABCMeta):
                     predictor=predictor, estimates=estimates, index=index
                 )
             )
+<<<<<<< HEAD
         metrics_df = reduce(
             lambda left, right: pd.merge(left, right, on=index), metrics_df
         )
 
         return metrics_df
+=======
+        return reduce(lambda left, right: left.merge(right, on=index), metrics_df)
+>>>>>>> main
 
     def is_predictable_probe(
         self,
@@ -348,10 +351,8 @@ class BaseModel(metaclass=ABCMeta):
             self.estimates, on=index, how="left", validate="many_to_one", indicator=True
         )
         if (prediction["_merge"] == "both").all():
-            prediction = prediction.drop(columns="_merge")
-            return prediction
+            return prediction.drop(columns="_merge")
 
-        else:
-            raise Exception(
-                "Some indexes have no associated estimates, the model must be fitted on an adequate probe"
-            )
+        raise Exception(
+            "Some indexes have no associated estimates, the model must be fitted on an adequate probe"
+        )

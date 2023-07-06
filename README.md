@@ -29,6 +29,9 @@
 <a href="https://www.python.org/" target="_blank">
     <img src="https://img.shields.io/badge/python-~3.7.1-brightgreen" alt="Supported Python versions">
 </a>
+<a href="https://github.com/astral-sh/ruff" target="_blank">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json" alt="Ruff">
+</a>
 </p>
 </div>
 
@@ -56,7 +59,7 @@ pip install edsteva
 We recommend pinning the library version in your projects, or use a strict package manager like [Poetry](https://python-poetry.org/).
 
 ```
-pip install edsteva==0.1.4
+pip install edsteva==0.2.3
 ```
 ## Example
 

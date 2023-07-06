@@ -5,6 +5,10 @@ import pandas as pd
 
 from edsteva.viz.utils import (
     add_interactive_selection,
+<<<<<<< HEAD
+=======
+    add_selection_on_legend,
+>>>>>>> main
     concatenate_charts,
     configure_style,
     create_groupby_selection,
@@ -17,7 +21,10 @@ from edsteva.viz.utils import (
 
 def probe_only_dashboard(
     predictor: pd.DataFrame,
+<<<<<<< HEAD
     remove_singleton_bar_chart: bool,
+=======
+>>>>>>> main
     x_axis_title: str,
     y_axis_title: str,
     main_chart_config: Dict[str, float],
@@ -32,9 +39,12 @@ def probe_only_dashboard(
     ----------
     predictor : pd.DataFrame
         $c(t)$ computed in the Probe.
+<<<<<<< HEAD
     remove_singleton_bar_chart : bool, optional
         If set to True, remove the bar charts with only one element
         **EXAMPLE**: `True`
+=======
+>>>>>>> main
     x_axis_title: str, optional,
         Label name for the x axis.
     y_axis_title: str, optional,
@@ -61,13 +71,19 @@ def probe_only_dashboard(
         base=base,
         horizontal_bar_charts_config=horizontal_bar_charts_config,
         predictor=predictor,
+<<<<<<< HEAD
         remove_singleton_bar_chart=remove_singleton_bar_chart,
+=======
+>>>>>>> main
     )
     vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
         base=base,
         vertical_bar_charts_config=vertical_bar_charts_config,
         predictor=predictor,
+<<<<<<< HEAD
         remove_singleton_bar_chart=remove_singleton_bar_chart,
+=======
+>>>>>>> main
     )
     selections = dict(
         date=time_selection,
@@ -84,6 +100,10 @@ def probe_only_dashboard(
 
     index_selection, index_fields = create_groupby_selection(
         indexes=vertical_bar_charts_config["x"] + horizontal_bar_charts_config["y"],
+<<<<<<< HEAD
+=======
+        predictor=predictor,
+>>>>>>> main
     )
     main_chart = generate_main_chart(
         base=base,
@@ -95,14 +115,24 @@ def probe_only_dashboard(
     )
 
     main_chart = main_chart.mark_line()
+<<<<<<< HEAD
     if index_selection:
         main_chart = main_chart.add_selection(index_selection)
+=======
+    main_chart = add_selection_on_legend(main_chart)
+    if index_selection:
+        main_chart = main_chart.add_params(index_selection)
+>>>>>>> main
     chart = concatenate_charts(
         main_chart=main_chart,
         time_line=time_line,
         horizontal_bar_charts=horizontal_bar_charts,
         vertical_bar_charts=vertical_bar_charts,
     )
+<<<<<<< HEAD
     chart = configure_style(chart=chart, chart_style=chart_style)
 
     return chart
+=======
+    return configure_style(chart=chart, chart_style=chart_style)
+>>>>>>> main

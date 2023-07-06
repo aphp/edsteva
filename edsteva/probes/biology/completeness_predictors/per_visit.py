@@ -8,7 +8,10 @@ from edsteva.probes.utils.prepare_df import (
     prepare_biology_relationship,
     prepare_care_site,
     prepare_measurement,
+<<<<<<< HEAD
     prepare_person,
+=======
+>>>>>>> main
     prepare_visit_occurrence,
 )
 from edsteva.probes.utils.utils import (
@@ -37,12 +40,18 @@ def compute_completeness_predictor_per_visit(
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     concepts_sets: Union[str, Dict[str, str]],
+<<<<<<< HEAD
     stay_durations: List[float],
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
     age_list: List[int],
     provenance_source: Union[str, Dict[str, str]],
     pmsi_type: Union[str, Dict[str, str]],
+=======
+    length_of_stays: List[float],
+    source_terminologies: Dict[str, str],
+    mapping: List[Tuple[str, str, str]],
+>>>>>>> main
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -58,12 +67,16 @@ def compute_completeness_predictor_per_visit(
     self._metrics = ["c", "n_measurement"]
     check_tables(
         data=data,
+<<<<<<< HEAD
         required_tables=[
             "measurement",
             "concept",
             "concept_relationship",
             "visit_occurrence",
         ],
+=======
+        required_tables=["measurement", "concept", "concept_relationship"],
+>>>>>>> main
     )
     standard_terminologies = self._standard_terminologies
     biology_relationship = prepare_biology_relationship(
@@ -76,18 +89,25 @@ def compute_completeness_predictor_per_visit(
     self.biology_relationship = biology_relationship
     root_terminology = mapping[0][0]
 
+<<<<<<< HEAD
     person = prepare_person(data) if age_list else None
 
+=======
+>>>>>>> main
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         start_date=start_date,
         end_date=end_date,
         stay_types=stay_types,
+<<<<<<< HEAD
         stay_durations=stay_durations,
         provenance_source=provenance_source,
         pmsi_type=pmsi_type,
         person=person,
         age_list=age_list,
+=======
+        length_of_stays=length_of_stays,
+>>>>>>> main
     )
     measurement = prepare_measurement(
         data=data,
@@ -128,6 +148,10 @@ def compute_completeness_predictor_per_visit(
         predictor_by_level=biology_predictor_by_level,
         care_site_levels=care_site_levels,
     )
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
     return compute_completeness(self, biology_predictor)
 
 
@@ -136,8 +160,12 @@ def compute_completeness(
     biology_predictor: DataFrame,
 ):
     # Visit with measurement
+<<<<<<< HEAD
     partition_cols = self._index.copy() + ["date"]
     print(partition_cols)
+=======
+    partition_cols = [*self._index.copy(), "date"]
+>>>>>>> main
     n_visit_with_measurement = (
         biology_predictor.groupby(
             partition_cols,
@@ -157,7 +185,11 @@ def compute_completeness(
         predictor=n_visit_with_measurement,
         partition_cols=partition_cols,
     )
+<<<<<<< HEAD
     print("Done.")
+=======
+
+>>>>>>> main
     # Visit total
     biology_columns = ["concepts_set"] + [
         "{}_concept_code".format(terminology)
@@ -202,7 +234,11 @@ def get_hospital_visit(
 ):
     hospital_measurement = measurement[
         set(measurement.columns).intersection(
+<<<<<<< HEAD
             set(["visit_occurrence_id"] + self._index)
+=======
+            set(["visit_occurrence_id", *self._index])
+>>>>>>> main
         )
     ].drop_duplicates()
     hospital_measurement["has_measurement"] = True

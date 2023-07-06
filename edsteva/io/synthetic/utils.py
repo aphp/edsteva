@@ -3,6 +3,10 @@ import pandas as pd
 
 
 def generate_events_before_t0(
+<<<<<<< HEAD
+=======
+    generator: np.random.Generator,
+>>>>>>> main
     t_start: int,
     t_end: int,
     n_events: int,
@@ -18,12 +22,20 @@ def generate_events_before_t0(
     )
 
     return pd.to_datetime(
+<<<<<<< HEAD
         pd.Series(np.random.randint(t_start, t0_before, n_before)),
+=======
+        pd.Series(generator.integers(t_start, t0_before, n_before)),
+>>>>>>> main
         unit="s",
     )
 
 
 def generate_events_after_t0(
+<<<<<<< HEAD
+=======
+    generator: np.random.Generator,
+>>>>>>> main
     t_start: int,
     t_end: int,
     n_events: int,
@@ -40,12 +52,20 @@ def generate_events_after_t0(
     )
 
     return pd.to_datetime(
+<<<<<<< HEAD
         pd.Series(np.random.randint(t0_after, t_end, n_after)),
+=======
+        pd.Series(generator.integers(t0_after, t_end, n_after)),
+>>>>>>> main
         unit="s",
     )
 
 
 def generate_events_around_t0(
+<<<<<<< HEAD
+=======
+    generator: np.random.Generator,
+>>>>>>> main
     t_start: int,
     t_end: int,
     n_events: int,
@@ -64,7 +84,11 @@ def generate_events_around_t0(
 
     return pd.to_datetime(
         pd.Series(
+<<<<<<< HEAD
             np.random.triangular(
+=======
+            generator.triangular(
+>>>>>>> main
                 left=t0_before, right=t0_after, mode=t0_after, size=n_middle
             )
         ),
@@ -73,6 +97,10 @@ def generate_events_around_t0(
 
 
 def generate_events_around_t1(
+<<<<<<< HEAD
+=======
+    generator: np.random.Generator,
+>>>>>>> main
     t_start: int,
     t_end: int,
     n_events: int,
@@ -91,7 +119,11 @@ def generate_events_around_t1(
 
     return pd.to_datetime(
         pd.Series(
+<<<<<<< HEAD
             np.random.triangular(
+=======
+            generator.triangular(
+>>>>>>> main
                 left=t1_before, right=t1_after, mode=t1_before, size=n_middle
             )
         ),
@@ -100,6 +132,10 @@ def generate_events_around_t1(
 
 
 def generate_events_after_t1(
+<<<<<<< HEAD
+=======
+    generator: np.random.Generator,
+>>>>>>> main
     t_start: int,
     t_end: int,
     n_events: int,
@@ -113,7 +149,11 @@ def generate_events_after_t1(
     )
 
     return pd.to_datetime(
+<<<<<<< HEAD
         pd.Series(np.random.randint(t1_after, t_end, n_after)),
+=======
+        pd.Series(generator.integers(t1_after, t_end, n_after)),
+>>>>>>> main
         unit="s",
     )
 

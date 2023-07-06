@@ -1,3 +1,7 @@
 pip install edsteva --no-cache-dir
+<<<<<<< HEAD
 pip install nb-black==1.0.7
+=======
+pip install nb-black==1.0.5
+>>>>>>> main
 pip install jupyterlab-rise==0.2.0

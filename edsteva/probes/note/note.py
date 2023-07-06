@@ -40,14 +40,20 @@ class NoteProbe(BaseProbe):
             "care_site_level",
             "stay_type",
             "length_of_stay",
+<<<<<<< HEAD
             "age_range",
+=======
+>>>>>>> main
             "note_type",
             "care_site_id",
             "care_site_specialty",
             "care_sites_set",
             "specialties_set",
+<<<<<<< HEAD
             "pmsi_type",
             "provenance_source",
+=======
+>>>>>>> main
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -68,15 +74,22 @@ class NoteProbe(BaseProbe):
         care_sites_sets: Union[str, Dict[str, str]] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
         extra_data: Data = None,
+<<<<<<< HEAD
         stay_durations: List[float] = None,
+=======
+        length_of_stays: List[float] = None,
+>>>>>>> main
         note_types: Union[str, Dict[str, str]] = {
             "Urgence": "urge",
             "Ordonnance": "ordo",
             "CRH": "crh",
         },
+<<<<<<< HEAD
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
         pmsi_type: Union[str, Dict[str, str]] = {"MCO": "MCO"},
         age_list: List[int] = None,
+=======
+>>>>>>> main
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -109,6 +122,7 @@ class NoteProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
         extra_data : Data
             Instantiated [``HiveData``][edsteva.io.hive.HiveData], [``PostgresData``][edsteva.io.postgres.PostgresData] or [``LocalData``][edsteva.io.files.LocalData]
+<<<<<<< HEAD
         stay_durations : List[float], optional
             **EXAMPLE**: `[1, 30]`
         note_types : Union[str, Dict[str, str]], optional
@@ -122,12 +136,26 @@ class NoteProbe(BaseProbe):
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
+=======
+        length_of_stays : List[float], optional
+            **EXAMPLE**: `[1, 30]`
+        note_types : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"CRH": "crh", "Urgence": "urge"}`
+        """
+        if specialties_sets is None and "specialties_set" in self._index:
+            self._index.remove("specialties_set")
+        if length_of_stays is None and "length_of_stay" in self._index:
+            self._index.remove("length_of_stay")
+>>>>>>> main
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
         if note_types is None and "note_type" in self._index:
             self._index.remove("note_type")
+<<<<<<< HEAD
         if age_list is None and "age_range" in self._index:
             self._index.remove("age_range")
+=======
+>>>>>>> main
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -143,10 +171,14 @@ class NoteProbe(BaseProbe):
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             note_types=note_types,
+<<<<<<< HEAD
             stay_durations=stay_durations,
             provenance_source=provenance_source,
             pmsi_type=pmsi_type,
             age_list=age_list,
+=======
+            length_of_stays=length_of_stays,
+>>>>>>> main
             **kwargs,
         )
 

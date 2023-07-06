@@ -115,6 +115,7 @@ def filter_table_by_date(
     return table
 
 
+<<<<<<< HEAD
 def filter_table_by_stay_duration(
     visit_occurrence: DataFrame, stay_durations: List[float]
 ):
@@ -160,6 +161,45 @@ def filter_table_by_stay_duration(
 
     else:
         visit_occurrence = visit_occurrence.assign(length_of_stay="All lengths")
+=======
+def filter_table_by_length_of_stay(
+    visit_occurrence: DataFrame, length_of_stays: List[float]
+):
+    visit_occurrence = visit_occurrence.assign(
+        length=(
+            visit_occurrence.visit_end_datetime - visit_occurrence.visit_start_datetime
+        )
+        / np.timedelta64(timedelta(days=1))
+    )
+
+    # Incomplete stays
+    visit_occurrence = visit_occurrence.assign(length_of_stay="Unknown")
+    visit_occurrence["length_of_stay"] = visit_occurrence.length_of_stay.mask(
+        visit_occurrence["visit_end_datetime"].isna(),
+        "Incomplete stay",
+    )
+
+    # Complete stays
+    min_duration = length_of_stays[0]
+    max_duration = length_of_stays[-1]
+    visit_occurrence["length_of_stay"] = visit_occurrence["length_of_stay"].mask(
+        (visit_occurrence["length"] <= min_duration),
+        "<= {} days".format(min_duration),
+    )
+    visit_occurrence["length_of_stay"] = visit_occurrence["length_of_stay"].mask(
+        (visit_occurrence["length"] >= max_duration),
+        ">= {} days".format(max_duration),
+    )
+    n_duration = len(length_of_stays)
+    for i in range(0, n_duration - 1):
+        min = length_of_stays[i]
+        max = length_of_stays[i + 1]
+        visit_occurrence["length_of_stay"] = visit_occurrence["length_of_stay"].mask(
+            (visit_occurrence["length"] >= min) & (visit_occurrence["length"] < max),
+            "{} days - {} days".format(min, max),
+        )
+    visit_occurrence = visit_occurrence.drop(columns="length")
+>>>>>>> main
 
     return visit_occurrence.drop(columns="visit_end_datetime")
 
@@ -232,6 +272,7 @@ def filter_table_by_care_site(
     ]
 
 
+<<<<<<< HEAD
 def filter_table_by_age(visit_occurrence: pd.DataFrame, age_list: List[int]):
     age_list.sort()
 
@@ -257,6 +298,8 @@ def filter_table_by_age(visit_occurrence: pd.DataFrame, age_list: List[int]):
     return visit_occurrence
 
 
+=======
+>>>>>>> main
 def convert_uf_to_pole(
     table: DataFrame,
     table_name: str,

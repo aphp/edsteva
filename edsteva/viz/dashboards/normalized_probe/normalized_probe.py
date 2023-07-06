@@ -1,6 +1,10 @@
 import uuid
 from copy import deepcopy
+<<<<<<< HEAD
 from typing import Dict
+=======
+from typing import Dict, List
+>>>>>>> main
 
 import altair as alt
 import pandas as pd
@@ -23,6 +27,10 @@ from edsteva.viz.utils import (
     generate_probe_line,
     generate_time_line,
     generate_vertical_bar_charts,
+<<<<<<< HEAD
+=======
+    get_indexes_to_groupby,
+>>>>>>> main
     month_diff,
     save_html,
 )
@@ -33,7 +41,10 @@ def normalized_probe_dashboard(
     fitted_model: BaseModel,
     care_site_level: str = CARE_SITE_LEVEL_NAMES["Hospital"],
     save_path: str = None,
+<<<<<<< HEAD
     remove_singleton_bar_chart: bool = True,
+=======
+>>>>>>> main
     x_axis_title: str = None,
     y_axis_title: str = None,
     main_chart_config: Dict[str, str] = None,
@@ -46,6 +57,10 @@ def normalized_probe_dashboard(
     horizontal_bar_charts_config: Dict[str, str] = None,
     time_line_config: Dict[str, str] = None,
     chart_style: Dict[str, float] = None,
+<<<<<<< HEAD
+=======
+    indexes_to_remove: List[str] = ["care_site_id", "care_site_level"],
+>>>>>>> main
     **kwargs,
 ):
     r"""Displays an interactive chart with:
@@ -65,9 +80,12 @@ def normalized_probe_dashboard(
         **EXAMPLE**: `"Hospital"`, `"Hôpital"` or `"UF"`
     save_path : str, optional
         Folder path where to save the chart in HTML format.
+<<<<<<< HEAD
     remove_singleton_bar_chart : bool, optional
         If set to True, remove the bar charts with only one element
         **EXAMPLE**: `True`
+=======
+>>>>>>> main
     x_axis_title: str, optional,
         Label name for the x axis.
     y_axis_title: str, optional,
@@ -93,6 +111,7 @@ def normalized_probe_dashboard(
     chart_style: Dict[str, float], optional
         If not None, configuration used to configure the chart style.
         **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
+<<<<<<< HEAD
     """
     alt.data_transformers.disable_max_rows()
 
@@ -111,6 +130,41 @@ def normalized_probe_dashboard(
     predictor["model"] = predictor["model"].where(predictor["normalized_date"] >= 0, 0)
 
     predictor.t_0 = predictor.t_0.dt.strftime("%Y-%m")
+=======
+    indexes_to_remove: List[str], optional
+        indexes to remove from the groupby selection.
+    """
+    alt.data_transformers.disable_max_rows()
+
+    # Pre-processing
+    predictor = probe.predictor.copy()
+    estimates = fitted_model.estimates.copy()
+    predictor_metrics = probe._metrics.copy()
+    indexes = get_indexes_to_groupby(
+        predictor_columns=predictor.columns,
+        predictor_metrics=predictor_metrics,
+        indexes_to_remove=indexes_to_remove,
+    )
+    predictor = predictor.merge(estimates, on=probe._index)
+    predictor["normalized_date"] = month_diff(
+        predictor["date"], predictor["t_0"]
+    ).astype(int)
+    for estimate in fitted_model._coefs + fitted_model._metrics:
+        if pd.api.types.is_datetime64_any_dtype(predictor[estimate]):
+            predictor[estimate] = predictor[estimate].dt.strftime("%Y-%m")
+    predictor["normalized_c"] = predictor["c"].where(
+        (predictor["normalized_date"] < 0) | (predictor["c_0"] == 0),
+        predictor["c"] / predictor["c_0"],
+    )
+    predictor["model"] = 1
+    predictor["model"] = predictor["model"].where(predictor["normalized_date"] >= 0, 0)
+    predictor["legend_model"] = type(fitted_model).__name__
+    predictor = filter_predictor(
+        predictor=predictor, care_site_level=care_site_level, **kwargs
+    )
+
+    # Get viz config
+>>>>>>> main
     probe_config = deepcopy(probe.get_viz_config("normalized_probe_dashboard"))
     model_config = deepcopy(
         fitted_model.get_viz_config("normalized_probe_dashboard", predictor=predictor)
@@ -143,6 +197,7 @@ def normalized_probe_dashboard(
     if not estimates_filters:
         estimates_filters = model_config["estimates_filters"]
 
+<<<<<<< HEAD
     predictor["legend_predictor"] = main_chart_config["legend_title"]
     predictor["legend_error_band"] = error_line_config["legend_title"]
     predictor["legend_model"] = type(fitted_model).__name__
@@ -153,6 +208,11 @@ def normalized_probe_dashboard(
         if pd.api.types.is_datetime64_any_dtype(predictor[estimate]):
             predictor[estimate] = predictor[estimate].dt.strftime("%Y-%m")
 
+=======
+    # Viz
+    predictor["legend_predictor"] = main_chart_config["legend_title"]
+    predictor["legend_error_band"] = error_line_config["legend_title"]
+>>>>>>> main
     base = alt.Chart(predictor)
     time_line, time_selection = generate_time_line(
         base=base,
@@ -163,15 +223,22 @@ def normalized_probe_dashboard(
         base=base,
         horizontal_bar_charts_config=horizontal_bar_charts_config,
         predictor=predictor,
+<<<<<<< HEAD
         remove_singleton_bar_chart=remove_singleton_bar_chart,
+=======
+>>>>>>> main
     )
     vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
         base=base,
         vertical_bar_charts_config=vertical_bar_charts_config,
         predictor=predictor,
+<<<<<<< HEAD
         remove_singleton_bar_chart=remove_singleton_bar_chart,
     )
 
+=======
+    )
+>>>>>>> main
     selections = dict(
         date=time_selection,
         **y_variables_selections,
@@ -181,7 +248,10 @@ def normalized_probe_dashboard(
         horizontal_bar_charts,
         **vertical_bar_charts,
     )
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
     base = add_interactive_selection(
         base=base,
         selection_charts=selection_charts,
@@ -193,7 +263,12 @@ def normalized_probe_dashboard(
         estimates_filters=estimates_filters,
     )
     index_selection, index_fields = create_groupby_selection(
+<<<<<<< HEAD
         indexes=vertical_bar_charts_config["x"] + horizontal_bar_charts_config["y"],
+=======
+        indexes=indexes,
+        predictor=predictor,
+>>>>>>> main
     )
     main_chart = generate_main_chart(
         base=base,
@@ -215,7 +290,11 @@ def normalized_probe_dashboard(
 
     main_chart = probe_line + error_line + model_line
     if index_selection:
+<<<<<<< HEAD
         main_chart = main_chart.add_selection(index_selection)
+=======
+        main_chart = main_chart.add_params(index_selection)
+>>>>>>> main
     chart = concatenate_charts(
         main_chart=main_chart,
         time_line=time_line,
@@ -225,7 +304,11 @@ def normalized_probe_dashboard(
     )
     chart = configure_style(chart=chart, chart_style=chart_style)
     for estimate_selection in estimates_selections:
+<<<<<<< HEAD
         chart = chart.add_selection(estimate_selection)
+=======
+        chart = chart.add_params(estimate_selection)
+>>>>>>> main
 
     vis_threshold = "id" + uuid.uuid4().hex
     new_sliders_threshold_id = "id" + uuid.uuid4().hex

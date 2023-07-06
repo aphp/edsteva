@@ -54,8 +54,8 @@ def error(
     | Pôle/DMU                 | 8312027648   | 'All'        | 0.014 |
     | Hôpital                  | 8312022130   | 'Urg_Hospit' | 0.027 |
     """
-    check_columns(df=estimates, required_columns=index + [y_0])
-    check_columns(df=predictor, required_columns=index + [x, y])
+    check_columns(df=estimates, required_columns=[*index, y_0])
+    check_columns(df=predictor, required_columns=[*index, x, y])
 
     fitted_predictor = predictor.merge(estimates, on=index)
 

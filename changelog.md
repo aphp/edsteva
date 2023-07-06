@@ -1,4 +1,19 @@
 # Changelog
+## v0.2.3 - 04-07-2023
+
+- Viz: Fix dashboards
+## v0.2.2 - 03-07-2023
+
+- Viz: Fix normalized probe
+## v0.2.1 - 03-07-2023
+
+- Linting: Improve code style with ruff.
+## v0.2.0 - 30-06-2023
+
+- BiologyProbe: Create a brand new probe for biology data.
+- Registry: Introduce registry for completeness predictor and visualization.
+- Altair: Upgrade to v5.
+- Tests: Improve coverage to 99%.
 ## v0.1.4 - 02-02-2023
 
 - ConditionProbe: Take UF and Pole into account for ORBIS source system.

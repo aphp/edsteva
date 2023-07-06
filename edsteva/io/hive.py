@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Union
 
 import pandas
@@ -199,7 +199,7 @@ class HiveData:  # pragma: no cover
     def _prepare_person_ids(self, list_of_person_ids) -> Optional[SparkDataFrame]:
         if list_of_person_ids is None:
             return None
-        elif hasattr(list_of_person_ids, "to_list"):
+        if hasattr(list_of_person_ids, "to_list"):
             # Useful when list_of_person_ids are Koalas (or Pandas) Series
             unique_ids = set(list_of_person_ids.to_list())
         else:
@@ -208,10 +208,9 @@ class HiveData:  # pragma: no cover
         logger.info("Number of unique patients: {}", len(unique_ids))
         schema = StructType([StructField("person_id", LongType(), True)])
 
-        filtering_df = self.spark_session.createDataFrame(
+        return self.spark_session.createDataFrame(
             [(int(p),) for p in unique_ids], schema=schema
         )
-        return filtering_df
 
     def _read_table(self, table_name, person_ids=None) -> DataFrame:
         assert table_name in self.available_tables
@@ -271,11 +270,11 @@ class HiveData:  # pragma: no cover
         ]
         if unknown_tables:
             raise ValueError(
-                f"The following tables are not available : {str(unknown_tables)}"
+                f"The following tables are not available : {unknown_tables}"
             )
 
-        folder = os.path.abspath(folder)
-        assert os.path.exists(folder) and os.path.isdir(
+        folder = Path.resolve(folder)
+        assert Path.exists(folder) and Path.is_dir(
             folder
         ), f"Folder {folder} not found."
 
@@ -283,7 +282,7 @@ class HiveData:  # pragma: no cover
             person_ids = self._prepare_person_ids(person_ids)
 
         for table in tables:
-            filepath = os.path.join(folder, f"{table}.parquet")
+            filepath = folder / f"{table}.parquet"
             df = self._read_table(table, person_ids=person_ids)
             self._write_df_to_parquet(df, filepath)
 
@@ -292,8 +291,8 @@ class HiveData:  # pragma: no cover
         df: DataFrame,
         filepath: str,
     ) -> None:
-        assert os.path.isabs(filepath)
-        print(f"writing {filepath}")
+        assert Path.is_absolute(filepath)
+        logger.info(f"writing {filepath}")
         spark_filepath = "file://" + filepath
         df.to_parquet(spark_filepath, mode="overwrite")
 
@@ -303,8 +302,7 @@ class HiveData:  # pragma: no cover
             table = self._read_table(table_name)
             setattr(self, table_name, table)
             return getattr(self, table_name)
-        else:
-            raise AttributeError(f"Table '{table_name}' unknown")
+        raise AttributeError(f"Table '{table_name}' unknown")
 
     def __dir__(self) -> List[str]:
         return list(set(list(super().__dir__()) + self.available_tables))

@@ -4,6 +4,10 @@ from loguru import logger
 
 
 def generate_note(
+<<<<<<< HEAD
+=======
+    generator: np.random.Generator,
+>>>>>>> main
     visit_care_site: pd.DataFrame,
     note_type: str,
     note_date_col: str,
@@ -16,6 +20,10 @@ def generate_note(
 ):
     if mode == "step":
         return _generate_note_step(
+<<<<<<< HEAD
+=======
+            generator=generator,
+>>>>>>> main
             visit_care_site=visit_care_site,
             note_type=note_type,
             note_date_col=note_date_col,
@@ -26,8 +34,14 @@ def generate_note(
             date_col=date_col,
         )
 
+<<<<<<< HEAD
     elif mode == "rect":
         return _generate_note_rect(
+=======
+    if mode == "rect":
+        return _generate_note_rect(
+            generator=generator,
+>>>>>>> main
             visit_care_site=visit_care_site,
             note_type=note_type,
             note_date_col=note_date_col,
@@ -40,6 +54,10 @@ def generate_note(
 
 
 def _generate_note_step(
+<<<<<<< HEAD
+=======
+    generator: np.random.Generator,
+>>>>>>> main
     visit_care_site,
     note_type,
     care_site_id,
@@ -50,9 +68,15 @@ def _generate_note_step(
     t0_visit,
 ):
     t_end = visit_care_site[date_col].max()
+<<<<<<< HEAD
     t0 = np.random.randint(t0_visit, t_end)
     c_before = np.random.uniform(0, 0.2)
     c_after = np.random.uniform(0.8, 1)
+=======
+    t0 = generator.integers(t0_visit, t_end)
+    c_before = generator.uniform(0, 0.2)
+    c_after = generator.uniform(0.8, 1)
+>>>>>>> main
     note_before_t0_visit = (
         visit_care_site[visit_care_site[date_col] <= t0_visit][[id_visit_col, date_col]]
         .sample(frac=c_before)
@@ -87,6 +111,10 @@ def _generate_note_step(
 
 
 def _generate_note_rect(
+<<<<<<< HEAD
+=======
+    generator: np.random.Generator,
+>>>>>>> main
     visit_care_site,
     note_type,
     care_site_id,
@@ -97,10 +125,17 @@ def _generate_note_rect(
     t0_visit,
 ):
     t1_visit = visit_care_site["t_1_min"].max()
+<<<<<<< HEAD
     t0 = np.random.randint(t0_visit, t0_visit + (t1_visit - t0_visit) / 3)
     t1 = np.random.randint(t0_visit + 2 * (t1_visit - t0_visit) / 3, t1_visit)
     c_out = np.random.uniform(0, 0.1)
     c_in = np.random.uniform(0.8, 1)
+=======
+    t0 = generator.integers(t0_visit, t0_visit + (t1_visit - t0_visit) / 3)
+    t1 = generator.integers(t0_visit + 2 * (t1_visit - t0_visit) / 3, t1_visit)
+    c_out = generator.uniform(0, 0.1)
+    c_in = generator.uniform(0.8, 1)
+>>>>>>> main
 
     note_before_t0 = (
         visit_care_site[visit_care_site[date_col] <= t0][[id_visit_col, date_col]]

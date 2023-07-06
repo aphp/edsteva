@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import List, Tuple
 
 import pandas as pd
@@ -50,9 +51,11 @@ class LocalData:  # pragma: no cover
         tables_paths = {}
         known_omop_tables = settings.tables_to_load.keys()
         for filename in os.listdir(folder):
-            table_name, extension = os.path.splitext(filename)
+            file = Path(folder) / filename
+            table_name = file.stem
+            extension = file.suffix
             if extension == ".parquet":
-                abspath = os.path.abspath(os.path.join(folder, filename))
+                abspath = Path.resolve(file)
                 tables_paths[table_name] = abspath
                 available_tables.append(table_name)
                 if table_name in known_omop_tables:
@@ -67,10 +70,7 @@ class LocalData:  # pragma: no cover
     def __getattr__(self, table_name: str) -> pd.DataFrame:
         if table_name in self.available_tables:
             return self._read_table(table_name)
-        else:
-            raise AttributeError(
-                f"Table '{table_name}' does is not available in chosen folder."
-            )
+        raise AttributeError(f"Table '{table_name}' is not available in chosen folder.")
 
     def __dir__(self) -> List[str]:
         return list(super().__dir__()) + list(self.available_tables)

@@ -56,6 +56,14 @@ def get_horizontal_bar_charts(standard_terminologies: List[str]):
                 "field": "specialties_set",
                 "sort": "-x",
             },
+<<<<<<< HEAD
+=======
+            {
+                "title": "Care sites-set",
+                "field": "care_sites_set",
+                "sort": "-x",
+            },
+>>>>>>> main
             {"title": "Concepts-set", "field": "concepts_set", "sort": "-x"},
         ]
         + [
@@ -104,6 +112,16 @@ main_chart = dict(
             sort={"field": "n_measurement", "op": "sum", "order": "descending"},
             title=None,
         ),
+<<<<<<< HEAD
+=======
+        tooltip=[
+            alt.Tooltip("value:N", title="Index"),
+            alt.Tooltip("yearmonth(date):T", title="Date"),
+            alt.Tooltip(
+                "sum(n_measurement):Q", title="Number of measurements", format=","
+            ),
+        ],
+>>>>>>> main
     ),
     properties=dict(
         height=300,
@@ -112,6 +130,7 @@ main_chart = dict(
 )
 
 normalized_main_chart = dict(
+<<<<<<< HEAD
     aggregates=[
         dict(
             sum_measurement="sum(n_measurement)",
@@ -128,6 +147,8 @@ normalized_main_chart = dict(
             / alt.datum.c_0
         )
     ],
+=======
+>>>>>>> main
     legend_title="Mean",
     encode=dict(
         x=alt.X(

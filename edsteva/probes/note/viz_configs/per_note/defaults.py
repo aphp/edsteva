@@ -59,6 +59,14 @@ horizontal_bar_charts = dict(
             "field": "specialties_set",
             "sort": "-x",
         },
+<<<<<<< HEAD
+=======
+        {
+            "title": "Care sites-set",
+            "field": "care_sites_set",
+            "sort": "-x",
+        },
+>>>>>>> main
     ],
     x=[
         dict(
@@ -81,6 +89,7 @@ horizontal_bar_charts = dict(
 )
 
 normalized_main_chart = dict(
+<<<<<<< HEAD
     aggregates=[
         dict(
             sum_note="sum(n_note)",
@@ -94,6 +103,8 @@ normalized_main_chart = dict(
     calculates=[
         dict(normalized_c=(alt.datum.sum_note / alt.datum.max_note) / alt.datum.c_0)
     ],
+=======
+>>>>>>> main
     legend_title="Mean",
     encode=dict(
         x=alt.X(
@@ -156,6 +167,14 @@ main_chart = dict(
             },
             title=None,
         ),
+<<<<<<< HEAD
+=======
+        tooltip=[
+            alt.Tooltip("value:N", title="Index"),
+            alt.Tooltip("yearmonth(date):T", title="Date"),
+            alt.Tooltip("completeness:Q", title="c(t)", format=".2f"),
+        ],
+>>>>>>> main
     ),
     properties=dict(
         height=300,

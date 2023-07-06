@@ -17,7 +17,11 @@ def get_normalized_probe_dashboard_config(self, predictor: DataFrame):
     t_0_selection, t_0_min_filter = get_t_0_selection(predictor=predictor)
     t_1_selection, t_1_min_filter = get_t_1_selection(predictor=predictor)
     error_max_selection, error_max_filter = get_error_max_selection(predictor=predictor)
+<<<<<<< HEAD
     normalized_probe_plot_config = dict(
+=======
+    return dict(
+>>>>>>> main
         estimates_selections=[
             t_0_selection,
             t_1_selection,
@@ -35,4 +39,7 @@ def get_normalized_probe_dashboard_config(self, predictor: DataFrame):
         extra_horizontal_bar_charts=[horizontal_min_c0, horizontal_max_error],
         extra_vertical_bar_charts=[],
     )
+<<<<<<< HEAD
     return normalized_probe_plot_config
+=======
+>>>>>>> main

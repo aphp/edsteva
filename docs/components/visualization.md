@@ -27,17 +27,21 @@ A **Plot** is exportable in png or svg format and easy to integrate into a repor
 
     The library provides interactive dashboards that let you set any combination of care sites, stay types and other columns if included in the Probe. You can only export a dashboard in HTML format.
 
-    === "predictor_dashboard()"
+    === "probe_dashboard()"
 
+<<<<<<< HEAD
         The [``predictor_dashboard()``][edsteva.viz.dashboards.probe.wrapper] returns:
+=======
+        The [``probe_dashboard()``][edsteva.viz.dashboards.probe.wrapper] returns:
+>>>>>>> main
 
         - On the top, the aggregated variable is the average completeness predictor $c(t)$ over time $t$ with the prediction $\hat{c}(t)$ if the [fitted Model][model] is specified.
         - On the bottom, the interactive filters are all the columns included in the [Probe][probe] (such as time, care site, number of visits...etc.).
 
         ```python
-        from edsteva.viz.dashboards import predictor_dashboard
+        from edsteva.viz.dashboards import probe_dashboard
 
-        predictor_dashboard(
+        probe_dashboard(
             probe=probe,
             fitted_model=step_function_model,
             care_site_level=care_site_level,
@@ -45,39 +49,45 @@ A **Plot** is exportable in png or svg format and easy to integrate into a repor
         ```
         An example is available [here](../assets/charts/interactive_fitted_visit.html).
 
-    === "estimates_dashboard()"
+    === "normalized_probe_dashboard()"
 
+<<<<<<< HEAD
         The [``estimates_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe] returns a representation of the overall deviation from the [Model][model]:
+=======
+        The [``normalized_probe_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe] returns a representation of the overall deviation from the [Model][model]:
+>>>>>>> main
 
         - On the top, the aggregated variable is a normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
         - On the bottom, the interactive filters are all the columns included in the [Probe][probe] (such as time, care site, number of visits...etc.) with all the [Model coefficients][model-coefficients] and [metrics][metrics] included in the [Model][model].
 
         ```python
-        from edsteva.viz.dashboards import estimates_dashboard
+        from edsteva.viz.dashboards import normalized_probe_dashboard
 
-        threshold_dashboard(
+        normalized_probe_dashboard(
             probe=probe,
             fitted_model=step_function_model,
             care_site_level=care_site_level,
         )
         ```
 
-        <!-- ![Image title](assets/charts/threshold.gif) -->
-
-        An example is available [here](../assets/charts/threshold_dashboard.html).
+        An example is available [here](../assets/charts/normalized_probe_dashboard.html).
 
 === "Plot"
 
     The library provides static plots that you can export in png or svg. As it is less interactive, you may specify the filters in the inputs of the functions.
 
-    === "plot_probe()"
+    === "probe_plot()"
 
+<<<<<<< HEAD
         The [``plot_probe()``][edsteva.viz.plots.probe.wrapper] returns the top plot of the [``predictor_dashboard()``][edsteva.viz.dashboards.probe.wrapper] without the interactive filters. Consequently, you have to specify the filters in the inputs of the function.
+=======
+        The [``probe_plot()``][edsteva.viz.plots.probe.wrapper] returns the top plot of the [``probe_dashboard()``][edsteva.viz.dashboards.probe.wrapper]: the normalized completeness predictor $\frac{c(t)}{c_0}$ over normalized time $t - t_0$.
+>>>>>>> main
 
         ```python
-        from edsteva.viz.plots import plot_probe
+        from edsteva.viz.plots import probe_plot
 
-        plot_probe(
+        probe_plot(
             probe=probe,
             fitted_model=step_function_model,
             care_site_level=care_site_level,
@@ -92,40 +102,45 @@ A **Plot** is exportable in png or svg format and easy to integrate into a repor
         }
         ```
 
-    === "plot_normalized_probe()"
+    === "normalized_probe_plot()"
 
+<<<<<<< HEAD
         The [``plot_normalized_probe()``][edsteva.viz.plots.normalized_probe] returns the top plot of the [``estimates_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe]. Consequently, you have to specify the filters in the inputs of the function.
+=======
+        The [``normalized_probe_plot()``][edsteva.viz.plots.normalized_probe] returns the top plot of the [``normalized_probe_dashboard()``][edsteva.viz.dashboards.normalized_probe.normalized_probe]. Consequently, you have to specify the filters in the inputs of the function.
+>>>>>>> main
 
         ```python
-        from edsteva.viz.plots import plot_normalized_probe
+        from edsteva.viz.plots import normalized_probe_plot
 
-        plot_normalized_probe(
+        normalized_probe_plot(
             probe=probe,
             fitted_model=step_function_model,
-            care_site_level=care_site_level,
-            stay_type=stay_type,
+            t_min=-15,
+            t_max=15,
             save_path=plot_path,
         )
         ```
         ```vegalite
         {
-        "schema-url": "../../assets/charts/normalized_plot.json"
+        "schema-url": "../../assets/charts/normalized_probe.json"
         }
         ```
 
-    === "plot_estimates_densities()"
 
-        The [``plot_estimates_densities()``][edsteva.viz.plots.estimates_densities] returns the density plot and the median of each estimate. It can help you to set the thresholds.
+    === "estimates_densities_plot()"
+
+        The [``estimates_densities_plot()``][edsteva.viz.plots.estimates_densities] returns the density plot and the median of each estimate. It can help you to set the thresholds.
 
         ```python
-        from edsteva.viz.plots import plot_estimates_densities
+        from edsteva.viz.plots import estimates_densities_plot
 
-        plot_estimates_densities(
+        estimates_densities_plot(
             fitted_model=step_function_model,
         )
         ```
         ```vegalite
         {
-        "schema-url": "../../assets/charts/distributions.json"
+        "schema-url": "../../assets/charts/estimates_densities.json"
         }
         ```

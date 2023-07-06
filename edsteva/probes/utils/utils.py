@@ -29,15 +29,27 @@ def impute_missing_dates(
     partition_cols: List[str],
 ):
     # Generate all available dates
+<<<<<<< HEAD
+=======
+    closed = "left"
+>>>>>>> main
     if not start_date:
         start_date = predictor["date"].min()
     if not end_date:
         end_date = predictor["date"].max()
+<<<<<<< HEAD
+=======
+        closed = None
+>>>>>>> main
     date_index = pd.date_range(
         start=start_date,
         end=end_date,
         freq="MS",
+<<<<<<< HEAD
         closed="left",
+=======
+        closed=closed,
+>>>>>>> main
     )
     date_index = pd.DataFrame({"date": date_index})
 
@@ -47,12 +59,19 @@ def impute_missing_dates(
         .drop_duplicates()
         .merge(date_index, how="cross")
     )
+<<<<<<< HEAD
     filled_predictor = all_partitions.merge(
+=======
+    return all_partitions.merge(
+>>>>>>> main
         predictor,
         on=partition_cols,
         how="left",
     ).fillna({col: 0 for col in set(predictor.columns) - set(partition_cols)})
+<<<<<<< HEAD
     return filled_predictor
+=======
+>>>>>>> main
 
 
 def hospital_only(care_site_levels: List[str]):
@@ -205,7 +224,11 @@ def get_child_and_parent_cs(
             }
         )
 
+<<<<<<< HEAD
     extended_care_site_id_to_filter = pd.concat(
         extended_care_site_id_to_filter
     ).drop_duplicates()
     return extended_care_site_id_to_filter
+=======
+    return pd.concat(extended_care_site_id_to_filter).drop_duplicates()
+>>>>>>> main

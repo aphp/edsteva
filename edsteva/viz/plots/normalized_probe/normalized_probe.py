@@ -16,6 +16,10 @@ from edsteva.viz.utils import (
     generate_main_chart,
     generate_model_line,
     generate_probe_line,
+<<<<<<< HEAD
+=======
+    get_indexes_to_groupby,
+>>>>>>> main
     month_diff,
     save_html,
 )
@@ -42,6 +46,10 @@ def normalized_probe_plot(
     estimates_selections: Dict[str, str] = None,
     estimates_filters: Dict[str, str] = None,
     chart_style: Dict[str, float] = None,
+<<<<<<< HEAD
+=======
+    indexes_to_remove: List[str] = ["care_site_id"],
+>>>>>>> main
     **kwargs,
 ):
     r"""Displays a chart with the aggregated normalized completeness predictor $\frac{c(\Delta t)}{c_0}$ over normalized time $\Delta t = t - t_0$. It represents the overall deviation from the Model.
@@ -93,6 +101,7 @@ def normalized_probe_plot(
     chart_style: Dict[str, float], optional
         If not None, configuration used to configure the chart style.
         **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
+<<<<<<< HEAD
     """
 
     predictor = probe.predictor.copy()
@@ -101,6 +110,53 @@ def normalized_probe_plot(
     indexes = list(set(predictor.columns).difference(["date"] + probe._metrics))
     predictor = predictor.merge(estimates, on=probe._index)
 
+=======
+    indexes_to_remove: List[str], optional
+        indexes to remove from the groupby selection.
+    """
+
+    alt.data_transformers.disable_max_rows()
+
+    # Pre-processing
+    predictor = probe.predictor.copy()
+    predictor_metrics = probe._metrics.copy()
+    estimates = fitted_model.estimates.copy()
+    indexes = get_indexes_to_groupby(
+        predictor_columns=predictor.columns,
+        predictor_metrics=predictor_metrics,
+        indexes_to_remove=indexes_to_remove,
+    )
+    predictor = predictor.merge(estimates, on=probe._index)
+    predictor["normalized_date"] = month_diff(
+        predictor["date"], predictor["t_0"]
+    ).astype(int)
+    for estimate in fitted_model._coefs + fitted_model._metrics:
+        if pd.api.types.is_datetime64_any_dtype(predictor[estimate]):
+            predictor[estimate] = predictor[estimate].dt.strftime("%Y-%m")
+    predictor["normalized_c"] = predictor["c"].where(
+        (predictor["normalized_date"] < 0) | (predictor["c_0"] == 0),
+        predictor["c"] / predictor["c_0"],
+    )
+    predictor["model"] = 1
+    predictor["model"] = predictor["model"].where(predictor["normalized_date"] >= 0, 0)
+    predictor["legend_model"] = type(fitted_model).__name__
+    predictor = filter_predictor(
+        predictor=predictor,
+        care_site_level=care_site_level,
+        stay_type=stay_type,
+        care_site_id=care_site_id,
+        care_site_short_name=care_site_short_name,
+        start_date=start_date,
+        end_date=end_date,
+        **kwargs,
+    )
+    if t_min:
+        predictor = predictor[predictor.normalized_date >= t_min]
+    if t_max:
+        predictor = predictor[predictor.normalized_date <= t_max]
+
+    # Get viz config
+>>>>>>> main
     probe_config = deepcopy(probe.get_viz_config("normalized_probe_plot"))
     model_config = deepcopy(
         fitted_model.get_viz_config("normalized_probe_plot", predictor=predictor)
@@ -120,6 +176,7 @@ def normalized_probe_plot(
     if not chart_style:
         chart_style = probe_config["chart_style"]
 
+<<<<<<< HEAD
     predictor["normalized_date"] = month_diff(
         predictor["date"], predictor["t_0"]
     ).astype(int)
@@ -157,6 +214,14 @@ def normalized_probe_plot(
 
     index_selection, index_fields = create_groupby_selection(
         indexes=indexes,
+=======
+    # Viz
+    predictor["legend_predictor"] = main_chart_config["legend_title"]
+    predictor["legend_error_band"] = error_line_config["legend_title"]
+    index_selection, index_fields = create_groupby_selection(
+        indexes=indexes,
+        predictor=predictor,
+>>>>>>> main
     )
     base = alt.Chart(predictor)
     base = add_estimates_filters(
@@ -182,10 +247,17 @@ def normalized_probe_plot(
     )
     main_chart = probe_line + error_line + model_line
     if index_selection:
+<<<<<<< HEAD
         main_chart = main_chart.add_selection(index_selection)
 
     for estimate_selection in estimates_selections:
         main_chart = main_chart.add_selection(estimate_selection)
+=======
+        main_chart = main_chart.add_params(index_selection)
+
+    for estimate_selection in estimates_selections:
+        main_chart = main_chart.add_params(estimate_selection)
+>>>>>>> main
 
     main_chart = configure_style(chart=main_chart, chart_style=chart_style)
 
