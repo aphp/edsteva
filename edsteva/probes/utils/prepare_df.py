@@ -665,6 +665,7 @@ def prepare_biology_relationship(
             ].isna(),
             biology_relationship["GLIMS_{}_concept_name".format(standard_terminology)],
         )
+
         biology_relationship["{}_vocabulary".format(standard_terminology)] = "ITM"
         biology_relationship[
             "{}_vocabulary".format(standard_terminology)
@@ -674,7 +675,17 @@ def prepare_biology_relationship(
             ].isna(),
             "GLIMS",
         )
-    return biology_relationship
+
+    return biology_relationship.drop_duplicates(
+        [
+            "{}_concept_name".format(standard_terminology)
+            for standard_terminology in standard_terminologies
+        ]
+        + [
+            "{}_concept_code".format(standard_terminology)
+            for standard_terminology in standard_terminologies
+        ],
+    )
 
 
 def prepare_person(

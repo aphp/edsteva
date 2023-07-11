@@ -89,15 +89,6 @@ def compute_completeness_predictor_per_visit(
         person=person,
         age_list=age_list,
     )
-    measurement = prepare_measurement(
-        data=data,
-        biology_relationship=biology_relationship,
-        concept_codes=concept_codes,
-        concepts_sets=concepts_sets,
-        root_terminology=root_terminology,
-        standard_terminologies=standard_terminologies,
-        per_visit=True,
-    )
 
     care_site = prepare_care_site(
         data=data,
@@ -107,6 +98,16 @@ def compute_completeness_predictor_per_visit(
         care_sites_sets=care_sites_sets,
         specialties_sets=specialties_sets,
         care_site_relationship=care_site_relationship,
+    )
+
+    measurement = prepare_measurement(
+        data=data,
+        biology_relationship=biology_relationship,
+        concept_codes=concept_codes,
+        concepts_sets=concepts_sets,
+        root_terminology=root_terminology,
+        standard_terminologies=standard_terminologies,
+        per_visit=True,
     )
 
     hospital_visit = get_hospital_visit(
@@ -128,6 +129,7 @@ def compute_completeness_predictor_per_visit(
         predictor_by_level=biology_predictor_by_level,
         care_site_levels=care_site_levels,
     )
+
     return compute_completeness(self, biology_predictor)
 
 

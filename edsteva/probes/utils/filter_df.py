@@ -211,13 +211,16 @@ def filter_table_by_care_site(
         )
 
     extended_care_site_id_to_filter = list(
-        extended_care_site_id_to_filter[
-            (
-                extended_care_site_id_to_filter.care_site_level.isin(
-                    CARE_SITE_LEVEL_NAMES.values()
+        map(
+            int,
+            extended_care_site_id_to_filter[
+                (
+                    extended_care_site_id_to_filter.care_site_level.isin(
+                        CARE_SITE_LEVEL_NAMES.values()
+                    )
                 )
-            )
-        ].care_site_id.unique()
+            ].care_site_id.unique(),
+        )
     )
 
     return table_to_filter[
