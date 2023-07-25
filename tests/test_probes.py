@@ -53,7 +53,7 @@ params = [
         module="koalas",
         pmsi_type={"MCO": "MCO", "MCO_PSY_SSR": "MCO|Psychiatrie|SSR"},
         provenance_source={"All": ".*"},
-        age_list=[18, 64],
+        age_list=[40],
     ),
     dict(
         visit_predictor="per_visit_default",
