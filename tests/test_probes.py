@@ -20,6 +20,7 @@ improve_performances()
 data_step = SyntheticData(mean_visit=100, seed=41, mode="step").generate()
 data_rect = SyntheticData(mean_visit=100, seed=41, mode="rect").generate()
 
+
 params = [
     dict(
         visit_predictor="per_visit_default",
@@ -50,6 +51,9 @@ params = [
         end_date=datetime(2020, 1, 1),
         test_save=False,
         module="koalas",
+        pmsi_type={"MCO": "MCO", "MCO_PSY_SSR": "MCO|Psychiatrie|SSR"},
+        provenance_source={"All": ".*"},
+        age_list=[18, 64],
     ),
     dict(
         visit_predictor="per_visit_default",
@@ -74,6 +78,8 @@ params = [
         end_date=None,
         test_save=False,
         module="koalas",
+        pmsi_type={"MCO": "MCO", "MCO_PSY_SSR": "MCO|Psychiatrie|SSR"},
+        provenance_source={"urgence": "service d'urgence"},
     ),
     dict(
         visit_predictor="per_visit_default",
@@ -98,6 +104,8 @@ params = [
         end_date=datetime(2020, 1, 1),
         test_save=True,
         module="pandas",
+        pmsi_type={"All": ".*"},
+        provenance_source={"All": ".*"},
     ),
 ]
 
