@@ -9,6 +9,7 @@ from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
     prepare_note,
     prepare_note_care_site,
+    prepare_person,
     prepare_visit_detail,
     prepare_visit_occurrence,
 )
