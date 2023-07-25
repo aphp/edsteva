@@ -73,7 +73,6 @@ OTHER_VISIT_COLUMNS = dict(
         ("SSR", 0.1),
         ("SLD", 0.1),
     ],
-    person_id=[(str(i), 0.01) for i in range(100)],
     provenance_source_value=[("service d'urgence", 0.2), ("non renseigné", 0.8)],
 )
 
@@ -304,8 +303,8 @@ class SyntheticData:
 
         visit_occurrence[self.id_person_col] = self.generator.integers(
             0,
-            int(self.mean_visit * self.persons_column.ratio_of_visits),
-            self.mean_visit,
+            int(self.mean_visit * self.persons_column["ratio_of_visits"]),
+            len(visit_occurrence),
         )
 
         return add_other_columns(
@@ -683,7 +682,9 @@ class SyntheticData:
         persons = persons.rename(columns={self.date_col: self.birth_date_col})
         persons[self.birth_date_col] = persons[self.birth_date_col] - pd.to_timedelta(
             self.generator.normal(
-                self.persons_column.age_mean, self.persons_column.age_std, len(persons)
+                self.persons_column["age_mean"],
+                self.persons_column["age_std"],
+                len(persons),
             )
             * 365,
             unit="D",
