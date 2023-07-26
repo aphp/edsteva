@@ -358,7 +358,6 @@ def prepare_care_site(
             source_col="care_site_short_name",
             target_col="care_sites_set",
         )
-
     # Add specialties_set
     if specialties_sets:
         care_site = filter_table_by_type(

@@ -83,7 +83,6 @@ def compute_completeness_predictor_per_visit(
 
     hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
     visit_predictor_by_level = {hospital_name: hospital_visit}
-
     if not hospital_only(care_site_levels=care_site_levels):
         visit_detail = prepare_visit_detail(data, start_date, end_date)
 
