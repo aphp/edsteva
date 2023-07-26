@@ -49,7 +49,7 @@ params = [
         start_date=None,
         end_date=datetime(2020, 1, 1),
         test_save=False,
-        module="pandas",
+        module="koalas",
         pmsi_type={"MCO": "MCO", "MCO_PSY_SSR": "MCO|Psychiatrie|SSR"},
         provenance_source={"All": ".*"},
         age_list=[18],
@@ -79,7 +79,7 @@ params = [
         pmsi_type={"MCO": "MCO"},
         provenance_source={"All": ".*"},
         age_list=None,
-        module="pandas",
+        module="koalas",
     ),
     dict(
         visit_predictor="per_visit_default",
