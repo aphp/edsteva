@@ -55,11 +55,13 @@ def _generate_note_step(
 ):
     t_end = visit_care_site[date_col].max()
     t0 = generator.integers(t0_visit, t_end)
-    c_before = generator.uniform(0, 0.2)
+    c_before = generator.uniform(0, 0.01)
     c_after = generator.uniform(0.8, 1)
+    sample_seed = generator.integers(0, 100)
+
     note_before_t0_visit = (
         visit_care_site[visit_care_site[date_col] <= t0_visit][[id_visit_col, date_col]]
-        .sample(frac=c_before)
+        .sample(frac=c_before, random_state=sample_seed)
         .rename(columns={date_col: note_date_col})
     )
     # Stratify visit between t0_visit and t0 to
@@ -69,13 +71,13 @@ def _generate_note_step(
         visit_care_site[
             (visit_care_site[date_col] <= t0) & (visit_care_site[date_col] > t0_visit)
         ][[id_visit_col, date_col]]
-        .sample(frac=c_before)
+        .sample(frac=c_before, random_state=sample_seed)
         .rename(columns={date_col: note_date_col})
     )
 
     note_after_t0 = (
         visit_care_site[visit_care_site[date_col] > t0][[id_visit_col, date_col]]
-        .sample(frac=c_after)
+        .sample(frac=c_after, random_state=sample_seed)
         .rename(columns={date_col: note_date_col})
     )
 
@@ -85,6 +87,7 @@ def _generate_note_step(
     note[note_type_col] = note_type
     note["care_site_id"] = care_site_id
     note["t_0"] = t0
+
     logger.debug("Generate synthetic note deploying as step function")
 
     return note
@@ -106,23 +109,24 @@ def _generate_note_rect(
     t1 = generator.integers(t0_visit + 2 * (t1_visit - t0_visit) / 3, t1_visit)
     c_out = generator.uniform(0, 0.1)
     c_in = generator.uniform(0.8, 1)
+    sample_seed = generator.integers(0, 100)
 
     note_before_t0 = (
         visit_care_site[visit_care_site[date_col] <= t0][[id_visit_col, date_col]]
-        .sample(frac=c_out)
+        .sample(frac=c_out, random_state=sample_seed)
         .rename(columns={date_col: note_date_col})
     )
     note_between_t0_t1 = (
         visit_care_site[
             (visit_care_site[date_col] > t0) & (visit_care_site[date_col] <= t1)
         ][[id_visit_col, date_col]]
-        .sample(frac=c_in)
+        .sample(frac=c_in, random_state=sample_seed)
         .rename(columns={date_col: note_date_col})
     )
 
     note_after_t1 = (
         visit_care_site[(visit_care_site[date_col] > t1)][[id_visit_col, date_col]]
-        .sample(frac=c_out)
+        .sample(frac=c_out, random_state=sample_seed)
         .rename(columns={date_col: note_date_col})
     )
 

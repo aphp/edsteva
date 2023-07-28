@@ -174,9 +174,12 @@ def test_step_function_note():
         end_date=data.t_max,
     )
 
-    simulation = data.note[
-        ["care_site_id", "t_0", "note_class_source_value"]
-    ].drop_duplicates()
+    simulation = data_step.note[["care_site_id", "t_0", "note_class_source_value"]]
+    simulation = (
+        simulation.sort_values("t_0")
+        .groupby(["care_site_id", "note_class_source_value"], as_index=False)
+        .first()
+    )
     simulation = simulation.rename(columns={"note_class_source_value": "note_type"})
     simulation["t_0_min"] = pd.to_datetime(simulation["t_0"], unit="s") - pd.DateOffset(
         months=2
