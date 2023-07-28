@@ -81,9 +81,9 @@ def probe_plot(
     alt.data_transformers.disable_max_rows()
 
     probe_config = deepcopy(probe.get_viz_config("probe_plot"))
-    if not main_chart_config:
+    if main_chart_config is None:
         main_chart_config = probe_config["main_chart"]
-    if not chart_style:
+    if chart_style is None:
         chart_style = probe_config["chart_style"]
     predictor = probe.predictor.copy()
     cols_to_remove = ["date", *probe._metrics]
@@ -115,9 +115,9 @@ def probe_plot(
 
     if fitted_model:
         model_config = deepcopy(fitted_model.get_viz_config("probe_plot"))
-        if not model_line_config:
+        if model_line_config is None:
             model_line_config = model_config["model_line"]
-        if not probe_line_config:
+        if probe_line_config is None:
             probe_line_config = model_config["probe_line"]
         chart = fitted_probe_line(
             predictor=predictor,

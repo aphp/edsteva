@@ -143,20 +143,19 @@ def normalized_probe_plot(
     model_config = deepcopy(
         fitted_model.get_viz_config("normalized_probe_plot", predictor=predictor)
     )
-    if not probe_line_config:
+    if probe_line_config is None:
         probe_line_config = model_config["probe_line"]
-    if not model_line_config:
+    if model_line_config is None:
         model_line_config = model_config["model_line"]
-    if not error_line_config:
+    if error_line_config is None:
         error_line_config = model_config["error_line"]
-    if not estimates_selections:
+    if estimates_selections is None:
         estimates_selections = model_config["estimates_selections"]
-    if not estimates_filters:
+    if estimates_filters is None:
         estimates_filters = model_config["estimates_filters"]
-    if not main_chart_config:
+    if main_chart_config is None:
         main_chart_config = probe_config["main_chart"]
-
-    if not chart_style:
+    if chart_style is None:
         chart_style = probe_config["chart_style"]
 
     # Viz

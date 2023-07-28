@@ -94,11 +94,11 @@ def estimates_densities_plot(
         )
         estimates = probe.add_names_columns(estimates)
         probe_config = deepcopy(probe.get_viz_config("estimates_densities_plot"))
-        if not vertical_bar_charts_config:
+        if vertical_bar_charts_config is None:
             vertical_bar_charts_config = probe_config["vertical_bar_charts"]
-        if not horizontal_bar_charts_config:
+        if horizontal_bar_charts_config is None:
             horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
-        if not chart_style:
+        if chart_style is None:
             chart_style = probe_config["chart_style"]
 
     quantitative_estimates = []
