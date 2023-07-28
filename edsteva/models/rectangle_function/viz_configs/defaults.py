@@ -69,6 +69,7 @@ def get_t_1_selection(predictor: DataFrame):
 
 
 normalized_probe_line = dict(
+    legend_title="Mean",
     encode=dict(
         strokeDash=alt.StrokeDash(
             "legend_predictor",
@@ -81,7 +82,7 @@ normalized_probe_line = dict(
                 orient="top",
             ),
         )
-    )
+    ),
 )
 probe_line = dict(
     encode=dict(
@@ -153,6 +154,25 @@ model_line = dict(
         ),
     ],
     filters=[dict(filter=alt.datum.t_0 == alt.datum.max_t0)],
+)
+
+error_line = dict(
+    legend_title="Standard deviation",
+    mark_errorband=dict(
+        extent="stdev",
+    ),
+    encode=dict(
+        stroke=alt.Stroke(
+            "legend_error_band",
+            title="Error band",
+            legend=alt.Legend(
+                symbolType="square",
+                orient="top",
+                labelFontSize=12,
+                labelFontStyle="bold",
+            ),
+        ),
+    ),
 )
 
 horizontal_min_c0 = dict(

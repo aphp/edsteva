@@ -398,8 +398,9 @@ def scale_it(x: float):
     return 10 ** ceil(log10(x))
 
 
-def filter_predictor(
-    predictor: pd.DataFrame,
+def filter_data(
+    data: pd.DataFrame,
+    table_name: str = "predictor",
     care_site_level: str = None,
     stay_type: List[str] = None,
     care_site_id: List[int] = None,
@@ -409,12 +410,13 @@ def filter_predictor(
     **kwargs
 ):
     # Time
-    predictor = filter_table_by_date(
-        table=predictor,
-        table_name="predictor",
-        start_date=start_date,
-        end_date=end_date,
-    )
+    if "date" in data.columns:
+        data = filter_table_by_date(
+            table=data,
+            table_name=table_name,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
     # Care site level
     if care_site_level:
@@ -424,16 +426,17 @@ def filter_predictor(
         for care_site_lvl in care_site_level:
             if care_site_lvl in CARE_SITE_LEVEL_NAMES.keys():
                 care_site_lvl = CARE_SITE_LEVEL_NAMES[care_site_lvl]
-            if care_site_lvl not in predictor.care_site_level.unique():
+            if care_site_lvl not in data.care_site_level.unique():
                 raise AttributeError(
                     "The selected care site level {} is not part of the computed care site levels {}".format(
-                        care_site_level, list(predictor.care_site_level.unique())
+                        care_site_level, list(data.care_site_level.unique())
                     )
                 )
             care_site_levels.append(care_site_lvl)
-        predictor = predictor[predictor.care_site_level.isin(care_site_levels)]
+        data = data[data.care_site_level.isin(care_site_levels)]
         logger.debug(
-            "Predictor has been filtered on the selected care site level : {}",
+            "{} has been filtered on the selected care site level : {}",
+            table_name.capitalize(),
             care_site_levels,
         )
 
@@ -441,9 +444,10 @@ def filter_predictor(
     if stay_type:
         if not isinstance(stay_type, list):
             stay_type = [stay_type]
-        predictor = predictor[predictor.stay_type.isin(stay_type)]
+        data = data[data.stay_type.isin(stay_type)]
         logger.debug(
-            "Predictor has been filtered on the selected stay type : {}",
+            "{} has been filtered on the selected stay type : {}",
+            table_name.capitalize(),
             stay_type,
         )
 
@@ -451,9 +455,10 @@ def filter_predictor(
     if care_site_id:
         if not isinstance(care_site_id, list):
             care_site_id = [care_site_id]
-        predictor = predictor[predictor.care_site_id.isin(care_site_id)]
+        data = data[data.care_site_id.isin(care_site_id)]
         logger.debug(
-            "Predictor has been filtered on the selected care site id : {}",
+            "{} has been filtered on the selected care site id : {}",
+            table_name.capitalize(),
             care_site_id,
         )
 
@@ -461,9 +466,10 @@ def filter_predictor(
     if care_site_short_name:
         if not isinstance(care_site_short_name, list):
             care_site_short_name = [care_site_short_name]
-        predictor = predictor[predictor.care_site_short_name.isin(care_site_short_name)]
+        data = data[data.care_site_short_name.isin(care_site_short_name)]
         logger.debug(
-            "Predictor has been filtered on the selected care site short name : {}",
+            "{} has been filtered on the selected care site short name : {}",
+            table_name.capitalize(),
             care_site_short_name,
         )
 
@@ -471,20 +477,22 @@ def filter_predictor(
     for key, value in kwargs.items():
         if not isinstance(value, list):
             value = [value]
-        predictor = predictor[predictor[key].isin(value)]
-        logger.debug(
-            "Predictor has been filtered on the selected {} : {}",
-            key,
-            value,
-        )
+        if key in data.columns:
+            data = data[data[key].isin(value)]
+            logger.debug(
+                "{} has been filtered on the selected {} : {}",
+                table_name.capitalize(),
+                key,
+                value,
+            )
 
     # Care site specialty
     if (
-        "care_site_specialty" in predictor.columns
-        and predictor[~(predictor.care_site_specialty == "Non renseigné")].empty
+        "care_site_specialty" in data.columns
+        and data[~(data.care_site_specialty == "Non renseigné")].empty
     ):
-        predictor = predictor.drop(columns="care_site_specialty")
+        data = data.drop(columns="care_site_specialty")
 
-    if predictor.empty:
-        raise TypeError("Empty predictor: no data to plot.")
-    return predictor
+    if data.empty:
+        raise TypeError("Empty {}: no data to plot.".format(table_name))
+    return data

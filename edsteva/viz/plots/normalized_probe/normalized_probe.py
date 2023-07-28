@@ -11,7 +11,7 @@ from edsteva.viz.utils import (
     add_estimates_filters,
     configure_style,
     create_groupby_selection,
-    filter_predictor,
+    filter_data,
     generate_error_line,
     generate_main_chart,
     generate_model_line,
@@ -123,9 +123,8 @@ def normalized_probe_plot(
     )
     predictor["model"] = 1
     predictor["model"] = predictor["model"].where(predictor["normalized_date"] >= 0, 0)
-    predictor["legend_model"] = type(fitted_model).__name__
-    predictor = filter_predictor(
-        predictor=predictor,
+    predictor = filter_data(
+        data=predictor,
         care_site_level=care_site_level,
         stay_type=stay_type,
         care_site_id=care_site_id,
@@ -144,23 +143,28 @@ def normalized_probe_plot(
     model_config = deepcopy(
         fitted_model.get_viz_config("normalized_probe_plot", predictor=predictor)
     )
-    if not probe_line_config:
+    if probe_line_config is None:
         probe_line_config = model_config["probe_line"]
-    if not model_line_config:
+    if model_line_config is None:
         model_line_config = model_config["model_line"]
-    if not estimates_selections:
+    if error_line_config is None:
+        error_line_config = model_config["error_line"]
+    if estimates_selections is None:
         estimates_selections = model_config["estimates_selections"]
-    if not estimates_filters:
+    if estimates_filters is None:
         estimates_filters = model_config["estimates_filters"]
-    if not main_chart_config:
+    if main_chart_config is None:
         main_chart_config = probe_config["main_chart"]
-    if not error_line_config:
-        error_line_config = probe_config["error_line"]
-    if not chart_style:
+    if chart_style is None:
         chart_style = probe_config["chart_style"]
 
     # Viz
-    predictor["legend_predictor"] = main_chart_config["legend_title"]
+    predictor["legend_model"] = (
+        model_line_config.get("legend_title")
+        if model_line_config.get("legend_title")
+        else type(fitted_model).__name__
+    )
+    predictor["legend_predictor"] = probe_line_config["legend_title"]
     predictor["legend_error_band"] = error_line_config["legend_title"]
     index_selection, index_fields = create_groupby_selection(
         indexes=indexes,
