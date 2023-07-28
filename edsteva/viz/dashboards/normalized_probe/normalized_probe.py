@@ -15,7 +15,7 @@ from edsteva.viz.utils import (
     concatenate_charts,
     configure_style,
     create_groupby_selection,
-    filter_predictor,
+    filter_data,
     generate_error_line,
     generate_horizontal_bar_charts,
     generate_main_chart,
@@ -118,10 +118,7 @@ def normalized_probe_dashboard(
     )
     predictor["model"] = 1
     predictor["model"] = predictor["model"].where(predictor["normalized_date"] >= 0, 0)
-    predictor["legend_model"] = type(fitted_model).__name__
-    predictor = filter_predictor(
-        predictor=predictor, care_site_level=care_site_level, **kwargs
-    )
+    predictor = filter_data(data=predictor, care_site_level=care_site_level, **kwargs)
 
     # Get viz config
     probe_config = deepcopy(probe.get_viz_config("normalized_probe_dashboard"))
@@ -132,8 +129,6 @@ def normalized_probe_dashboard(
         main_chart_config = probe_config["main_chart"]
     if not time_line_config:
         time_line_config = probe_config["time_line"]
-    if not error_line_config:
-        error_line_config = probe_config["error_line"]
     if not vertical_bar_charts_config:
         vertical_bar_charts_config = probe_config["vertical_bar_charts"]
         vertical_bar_charts_config["y"] = (
@@ -151,13 +146,20 @@ def normalized_probe_dashboard(
         probe_line_config = model_config["probe_line"]
     if not model_line_config:
         model_line_config = model_config["model_line"]
+    if not error_line_config:
+        error_line_config = probe_config["error_line"]
     if not estimates_selections:
         estimates_selections = model_config["estimates_selections"]
     if not estimates_filters:
         estimates_filters = model_config["estimates_filters"]
 
     # Viz
-    predictor["legend_predictor"] = main_chart_config["legend_title"]
+    predictor["legend_model"] = (
+        model_line_config.get("legend_title")
+        if model_line_config.get("legend_title")
+        else type(fitted_model).__name__
+    )
+    predictor["legend_predictor"] = probe_line_config["legend_title"]
     predictor["legend_error_band"] = error_line_config["legend_title"]
     base = alt.Chart(predictor)
     time_line, time_selection = generate_time_line(

@@ -9,7 +9,7 @@ from edsteva.models.base import BaseModel
 from edsteva.probes.base import BaseProbe
 from edsteva.viz.dashboards.probe.fitted_probe import fitted_probe_dashboard
 from edsteva.viz.dashboards.probe.probe import probe_only_dashboard
-from edsteva.viz.utils import filter_predictor, save_html
+from edsteva.viz.utils import filter_data, save_html
 
 
 def probe_dashboard(
@@ -105,8 +105,8 @@ def probe_dashboard(
         chart_style = probe_config["chart_style"]
 
     predictor = fitted_model.predict(probe) if fitted_model else probe.predictor.copy()
-    predictor = filter_predictor(
-        predictor=predictor,
+    predictor = filter_data(
+        data=predictor,
         care_site_level=care_site_level,
         **kwargs,
     )

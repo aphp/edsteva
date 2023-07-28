@@ -55,7 +55,7 @@ def _generate_note_step(
 ):
     t_end = visit_care_site[date_col].max()
     t0 = generator.integers(t0_visit, t_end)
-    c_before = generator.uniform(0, 0.2)
+    c_before = generator.uniform(0, 0.01)
     c_after = generator.uniform(0.8, 1)
     note_before_t0_visit = (
         visit_care_site[visit_care_site[date_col] <= t0_visit][[id_visit_col, date_col]]

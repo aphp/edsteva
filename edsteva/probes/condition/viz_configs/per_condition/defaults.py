@@ -98,7 +98,6 @@ horizontal_bar_charts = dict(
 )
 
 normalized_main_chart = dict(
-    legend_title="Mean",
     encode=dict(
         x=alt.X(
             "normalized_date:Q",
@@ -138,7 +137,7 @@ main_chart = dict(
         ),
     ],
     calculates=[
-        dict(completeness=alt.datum.sum_condition / alt.datum.max_condition),
+        dict(c=alt.datum.sum_condition / alt.datum.max_condition),
     ],
     encode=dict(
         x=alt.X(
@@ -147,7 +146,7 @@ main_chart = dict(
             axis=alt.Axis(tickCount="month", labelAngle=0, grid=True),
         ),
         y=alt.Y(
-            "completeness:Q",
+            "c:Q",
             title="Completeness predictor c(t)",
             axis=alt.Axis(grid=True),
         ),
@@ -163,7 +162,7 @@ main_chart = dict(
         tooltip=[
             alt.Tooltip("value:N", title="Index"),
             alt.Tooltip("yearmonth(date):T", title="Date"),
-            alt.Tooltip("completeness:Q", title="c(t)", format=".2f"),
+            alt.Tooltip("c:Q", title="c(t)", format=".2f"),
         ],
     ),
     properties=dict(

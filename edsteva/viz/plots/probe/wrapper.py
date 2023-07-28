@@ -8,7 +8,7 @@ from edsteva.models.base import BaseModel
 from edsteva.probes.base import BaseProbe
 from edsteva.viz.plots.probe.fitted_probe import fitted_probe_line
 from edsteva.viz.plots.probe.probe import probe_line
-from edsteva.viz.utils import configure_style, filter_predictor, save_html
+from edsteva.viz.utils import configure_style, filter_data, save_html
 
 
 def probe_plot(
@@ -96,8 +96,8 @@ def probe_plot(
     else:
         predictor = probe.predictor.copy()
 
-    predictor = filter_predictor(
-        predictor=predictor,
+    predictor = filter_data(
+        data=predictor,
         care_site_level=care_site_level,
         stay_type=stay_type,
         care_site_id=care_site_id,

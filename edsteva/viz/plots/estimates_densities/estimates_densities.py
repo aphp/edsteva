@@ -11,7 +11,7 @@ from edsteva.viz.utils import (
     add_interactive_selection,
     concatenate_charts,
     configure_style,
-    filter_predictor,
+    filter_data,
     generate_horizontal_bar_charts,
     generate_vertical_bar_charts,
     save_html,
@@ -19,8 +19,8 @@ from edsteva.viz.utils import (
 
 
 def estimates_densities_plot(
-    probe: BaseProbe,
     fitted_model: BaseModel,
+    probe: BaseProbe = None,
     care_site_level: str = None,
     stay_type: List[str] = None,
     care_site_id: List[int] = None,
@@ -70,31 +70,36 @@ def estimates_densities_plot(
     """
     alt.data_transformers.disable_max_rows()
 
-    predictor = probe.predictor.copy()
-    predictor = filter_predictor(
-        predictor=predictor,
+    estimates = fitted_model.estimates.copy()
+    estimates = filter_data(
+        data=estimates,
+        table_name="estimates",
         care_site_level=care_site_level,
         stay_type=stay_type,
         care_site_id=care_site_id,
         care_site_short_name=care_site_short_name,
-        start_date=start_date,
-        end_date=end_date,
         **kwargs,
     )
-    estimates = fitted_model.estimates.copy()
-    estimates = estimates.merge(
-        predictor[
-            predictor.columns.intersection(set([*probe._index, "care_site_short_name"]))
-        ].drop_duplicates(),
-        on=list(predictor.columns.intersection(set(probe._index))),
-    )
-    probe_config = deepcopy(probe.get_viz_config("estimates_densities_plot"))
-    if not vertical_bar_charts_config:
-        vertical_bar_charts_config = probe_config["vertical_bar_charts"]
-    if not horizontal_bar_charts_config:
-        horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
-    if not chart_style:
-        chart_style = probe_config["chart_style"]
+    if probe is not None:
+        predictor = probe.predictor.copy()
+        # Filter data in predictor not in estimates
+        predictor = predictor.merge(
+            estimates[list(estimates.columns.intersection(set(predictor.columns)))],
+            on=list(estimates.columns.intersection(set(predictor.columns))),
+        )
+        predictor = filter_data(
+            data=predictor,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        estimates = probe.add_names_columns(estimates)
+        probe_config = deepcopy(probe.get_viz_config("estimates_densities_plot"))
+        if not vertical_bar_charts_config:
+            vertical_bar_charts_config = probe_config["vertical_bar_charts"]
+        if not horizontal_bar_charts_config:
+            horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
+        if not chart_style:
+            chart_style = probe_config["chart_style"]
 
     quantitative_estimates = []
     time_estimates = []
@@ -182,44 +187,46 @@ def estimates_densities_plot(
         bind=care_site_level_dropdwon,
         value=estimates["care_site_level"].unique()[0],
     )
-    main_chart = reduce(
+    chart = reduce(
         lambda estimate_density_1, estimate_density_2: estimate_density_1
         & estimate_density_2,
         estimates_densities,
     )
-    base = alt.Chart(predictor).add_params(care_site_level_selection)
+    if probe is not None:
+        base = alt.Chart(predictor).add_params(care_site_level_selection)
 
-    horizontal_bar_charts, y_variables_selections = generate_horizontal_bar_charts(
-        base=base,
-        horizontal_bar_charts_config=horizontal_bar_charts_config,
-        predictor=predictor,
-    )
-    vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
-        base=base,
-        vertical_bar_charts_config=vertical_bar_charts_config,
-        predictor=predictor,
-    )
+        horizontal_bar_charts, y_variables_selections = generate_horizontal_bar_charts(
+            base=base,
+            horizontal_bar_charts_config=horizontal_bar_charts_config,
+            predictor=predictor,
+        )
+        vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
+            base=base,
+            vertical_bar_charts_config=vertical_bar_charts_config,
+            predictor=predictor,
+        )
 
-    selections = dict(
-        y_variables_selections,
-        **x_variables_selections,
-        **dict(cares_site_level=care_site_level_selection),
-    )
-    selection_charts = dict(
-        horizontal_bar_charts,
-        **vertical_bar_charts,
-    )
-    main_chart = add_interactive_selection(
-        base=main_chart, selection_charts=selection_charts, selections=selections
-    )
+        selections = dict(
+            y_variables_selections,
+            **x_variables_selections,
+            **dict(cares_site_level=care_site_level_selection),
+        )
+        selection_charts = dict(
+            horizontal_bar_charts,
+            **vertical_bar_charts,
+        )
+        chart = add_interactive_selection(
+            base=chart, selection_charts=selection_charts, selections=selections
+        )
 
-    chart = concatenate_charts(
-        main_chart=main_chart,
-        horizontal_bar_charts=horizontal_bar_charts,
-        vertical_bar_charts=vertical_bar_charts,
-        spacing=0,
-    )
-    chart = configure_style(chart=chart, chart_style=chart_style)
+        chart = concatenate_charts(
+            main_chart=chart,
+            horizontal_bar_charts=horizontal_bar_charts,
+            vertical_bar_charts=vertical_bar_charts,
+            spacing=0,
+        )
+    if chart_style:
+        chart = configure_style(chart=chart, chart_style=chart_style)
     if save_path:
         save_html(
             obj=chart,
