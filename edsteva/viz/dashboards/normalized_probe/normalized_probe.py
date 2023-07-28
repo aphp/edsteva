@@ -147,7 +147,7 @@ def normalized_probe_dashboard(
     if model_line_config is None:
         model_line_config = model_config["model_line"]
     if error_line_config is None:
-        error_line_config = probe_config["error_line"]
+        error_line_config = model_config["error_line"]
     if estimates_selections is None:
         estimates_selections = model_config["estimates_selections"]
     if estimates_filters is None:
