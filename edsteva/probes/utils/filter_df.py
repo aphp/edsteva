@@ -1,4 +1,3 @@
-import itertools
 from datetime import datetime, timedelta
 from typing import Dict, List, Union
 
@@ -19,6 +18,7 @@ def filter_table_by_type(
     type_groups: Union[str, Dict],
     source_col: str,
     target_col: str,
+    Fitertoo,
 ):
     if isinstance(type_groups, str):
         type_groups = {type_groups: type_groups}
@@ -237,7 +237,7 @@ def filter_table_by_age(visit_occurrence: pd.DataFrame, age_list: List[int]):
         visit_occurrence.age <= age_list[0], "age_range"
     ] = f"age <= {age_list[0]}"
 
-    for age_min, age_max in itertools.pairwise(age_list[:-1], age_list[1:]):
+    for age_min, age_max in zip(age_list[:-1], age_list[1:]):
         in_range = (visit_occurrence.age > age_min) & (visit_occurrence.age <= age_max)
         visit_occurrence.loc[in_range, "age_range"] = f"{age_min} < age <= {age_max}"
 
