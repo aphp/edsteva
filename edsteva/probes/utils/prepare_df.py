@@ -21,7 +21,7 @@ from .filter_df import (
 def prepare_visit_occurrence(
     data: Data,
     stay_types: Union[str, Dict[str, str]],
-    pmsi_type: Union[str, Dict[str, str]],
+    stay_source: Union[str, Dict[str, str]],
     provenance_source: Union[str, Dict[str, str]],
     length_of_stays: List[float],
     age_list: List[int] = None,
@@ -58,9 +58,9 @@ def prepare_visit_occurrence(
     visit_occurrence = filter_table_by_type(
         table=visit_occurrence,
         table_name="visit_occurrence",
-        type_groups=pmsi_type,
+        type_groups=stay_source,
         source_col="stay_source_value",
-        target_col="pmsi_type",
+        target_col="stay_source",
     )
 
     visit_occurrence = filter_table_by_type(

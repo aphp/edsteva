@@ -45,7 +45,7 @@ class VisitProbe(BaseProbe):
             "care_site_specialty",
             "care_sites_set",
             "specialties_set",
-            "pmsi_type",
+            "stay_source",
             "provenance_source",
         ]
         super().__init__(
@@ -68,7 +68,7 @@ class VisitProbe(BaseProbe):
         specialties_sets: Union[str, Dict[str, str]] = None,
         length_of_stays: List[float] = None,
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
-        pmsi_type: Union[str, Dict[str, str]] = {"MCO": "MCO"},
+        stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
         age_list: List[int] = None,
         **kwargs,
     ):
@@ -100,7 +100,7 @@ class VisitProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
         length_of_stays : List[float], optional
             **EXAMPLE**: `[1, 30]`
-        pmsi_type : Union[str, Dict[str, str]], optional
+        stay_source : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
         provenance_source : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
@@ -115,8 +115,8 @@ class VisitProbe(BaseProbe):
             self._index.remove("care_sites_set")
         if age_list is None and "age_range" in self._index:
             self._index.remove("age_range")
-        if pmsi_type is None and "pmsi_type" in self._index:
-            self._index.remove("pmsi_type")
+        if stay_source is None and "stay_source" in self._index:
+            self._index.remove("stay_source")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -132,7 +132,7 @@ class VisitProbe(BaseProbe):
             specialties_sets=specialties_sets,
             length_of_stays=length_of_stays,
             provenance_source=provenance_source,
-            pmsi_type=pmsi_type,
+            stay_source=stay_source,
             age_list=age_list,
             **kwargs,
         )

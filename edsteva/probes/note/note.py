@@ -46,7 +46,7 @@ class NoteProbe(BaseProbe):
             "care_site_specialty",
             "care_sites_set",
             "specialties_set",
-            "pmsi_type",
+            "stay_source",
             "provenance_source",
         ]
         super().__init__(
@@ -75,7 +75,7 @@ class NoteProbe(BaseProbe):
             "CRH": "crh",
         },
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
-        pmsi_type: Union[str, Dict[str, str]] = {"MCO": "MCO"},
+        stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
         age_list: List[int] = None,
         **kwargs,
     ):
@@ -113,7 +113,7 @@ class NoteProbe(BaseProbe):
             **EXAMPLE**: `[1, 30]`
         note_types : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"CRH": "crh", "Urgence": "urge"}`
-        pmsi_type : Union[str, Dict[str, str]], optional
+        stay_source : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
         provenance_source : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
@@ -130,8 +130,8 @@ class NoteProbe(BaseProbe):
             self._index.remove("length_of_stay")
         if age_list is None and "age_range" in self._index:
             self._index.remove("age_range")
-        if pmsi_type is None and "pmsi_type" in self._index:
-            self._index.remove("pmsi_type")
+        if stay_source is None and "stay_source" in self._index:
+            self._index.remove("stay_source")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -149,7 +149,7 @@ class NoteProbe(BaseProbe):
             note_types=note_types,
             length_of_stays=length_of_stays,
             provenance_source=provenance_source,
-            pmsi_type=pmsi_type,
+            stay_source=stay_source,
             age_list=age_list,
             **kwargs,
         )

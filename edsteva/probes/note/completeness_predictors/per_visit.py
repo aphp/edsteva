@@ -42,7 +42,7 @@ def compute_completeness_predictor_per_visit(
     note_types: Union[str, Dict[str, str]],
     age_list: List[int],
     provenance_source: Union[str, Dict[str, str]],
-    pmsi_type: Union[str, Dict[str, str]],
+    stay_source: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -68,7 +68,7 @@ def compute_completeness_predictor_per_visit(
         stay_types=stay_types,
         length_of_stays=length_of_stays,
         provenance_source=provenance_source,
-        pmsi_type=pmsi_type,
+        stay_source=stay_source,
         person=person,
         age_list=age_list,
     )
