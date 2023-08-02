@@ -18,7 +18,6 @@ def filter_table_by_type(
     type_groups: Union[str, Dict],
     source_col: str,
     target_col: str,
-    Fitertoo,
 ):
     if isinstance(type_groups, str):
         type_groups = {type_groups: type_groups}
