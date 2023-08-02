@@ -78,7 +78,7 @@ params = [
         test_save=False,
         stay_source={"MCO": "MCO"},
         provenance_source={"All": ".*"},
-        age_list=None,
+        age_list=[18],
         module="koalas",
     ),
     dict(
@@ -103,7 +103,7 @@ params = [
         start_date=datetime(2010, 5, 10),
         end_date=datetime(2020, 1, 1),
         test_save=True,
-        stay_source={"MCO": "MCO"},
+        stay_source=None,
         provenance_source={"All": ".*", "urgence": "service d'urgence"},
         age_list=None,
         module="pandas",
@@ -194,6 +194,10 @@ def test_compute_visit_probe(data, params):
         care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
         length_of_stays=params["length_of_stays"],
+        stay_source=params["stay_source"],
+        provenance_source=params["provenance_source"],
+        age_list=params["age_list"],
+
     )
 
     # Care site levels
@@ -345,6 +349,9 @@ def test_compute_note_probe(data, params):
         specialties_sets=params["specialties_sets"],
         length_of_stays=params["length_of_stays"],
         note_types=params["note_types"],
+        stay_source=params["stay_source"],
+        provenance_source=params["provenance_source"],
+        age_list=params["age_list"],
     )
 
     # Care site levels
@@ -508,6 +515,9 @@ def test_compute_condition_probe(data, params):
         diag_types=params["diag_types"],
         condition_types=params["condition_types"],
         source_systems=params["source_systems"],
+        stay_source=params["stay_source"],
+        provenance_source=params["provenance_source"],
+        age_list=params["age_list"],
     )
 
     # Care site levels
@@ -695,6 +705,10 @@ def test_compute_biology_probe(data, params):
         length_of_stays=params["length_of_stays"],
         concepts_sets=params["concepts_sets"],
         concept_codes=params["concept_codes"],
+        stay_source=params["stay_source"],
+        provenance_source=params["provenance_source"],
+        age_list=params["age_list"],
+
     )
 
     # Care site levels
