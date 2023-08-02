@@ -40,7 +40,7 @@ class VisitProbe(BaseProbe):
             "care_site_level",
             "stay_type",
             "length_of_stay",
-            "age_range",
+            "age_list",
             "care_site_id",
             "care_site_specialty",
             "care_sites_set",
