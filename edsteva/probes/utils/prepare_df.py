@@ -675,16 +675,7 @@ def prepare_biology_relationship(
             "GLIMS",
         )
 
-    return biology_relationship.drop_duplicates(
-        [
-            "{}_concept_name".format(standard_terminology)
-            for standard_terminology in standard_terminologies
-        ]
-        + [
-            "{}_concept_code".format(standard_terminology)
-            for standard_terminology in standard_terminologies
-        ],
-    )
+    return biology_relationship
 
 
 def prepare_person(
