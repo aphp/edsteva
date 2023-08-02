@@ -129,7 +129,7 @@ def test_custom_config(tmp_dir):
             ),
         ),
         calculates=[
-            dict(completeness=alt.datum.error + 0.01),
+            dict(c_hat=alt.datum.error + 0.01),
         ],
     )
     normalized_probe_dashboard(

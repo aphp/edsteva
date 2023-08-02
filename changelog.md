@@ -1,4 +1,7 @@
 # Changelog
+## v0.2.4 - 28-07-2023
+
+- Viz: Simplify normalized probe plot
 ## v0.2.3 - 04-07-2023
 
 - Viz: Fix dashboards

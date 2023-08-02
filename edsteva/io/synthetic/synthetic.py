@@ -187,6 +187,7 @@ class SyntheticData:
 
     def generate(self):
         if self.seed:
+            np.random.seed(self.seed)
             self.generator = np.random.default_rng(self.seed)
         else:
             self.generator = np.random.default_rng()
@@ -652,7 +653,10 @@ class SyntheticData:
                 ]
                 measurement[self.id_visit_col] = (
                     visit_care_site[self.id_visit_col]
-                    .sample(n=measurement.shape[0], replace=True)
+                    .sample(
+                        n=measurement.shape[0],
+                        replace=True,
+                    )
                     .reset_index(drop=True)
                 )
                 measurement["value_as_number"] = [None] * missing_value + list(

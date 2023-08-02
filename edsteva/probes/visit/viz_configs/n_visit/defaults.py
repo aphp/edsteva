@@ -80,7 +80,6 @@ horizontal_bar_charts = dict(
 )
 
 normalized_main_chart = dict(
-    legend_title="Mean",
     encode=dict(
         x=alt.X(
             "normalized_date:Q",

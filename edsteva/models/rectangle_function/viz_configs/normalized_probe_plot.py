@@ -1,6 +1,7 @@
 from edsteva.utils.typing import DataFrame
 
 from .defaults import (
+    error_line,
     get_c_0_min_selection,
     get_error_max_selection,
     get_t_0_selection,
@@ -28,6 +29,7 @@ def get_normalized_probe_plot_config(self, predictor: DataFrame):
             c_0_min_filter,
             error_max_filter,
         ],
-        probe_line=normalized_probe_line,
+        error_line=error_line,
         model_line=normalized_model_line,
+        probe_line=normalized_probe_line,
     )
