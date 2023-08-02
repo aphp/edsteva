@@ -127,7 +127,7 @@ OTHER_MEASUREMENT_COLUMNS = dict(
     ],
 )
 
-PERSONS_COLUMN = dict(ratio_of_visits=0.9, age_mean=45, age_std=25)
+PERSON_COLUMN = dict(ratio_of_visits=0.9, age_mean=45, age_std=25)
 
 
 def add_other_columns(
@@ -171,7 +171,7 @@ class SyntheticData:
     other_measurement_columns: Dict = field(
         default_factory=lambda: OTHER_MEASUREMENT_COLUMNS
     )
-    persons_column: Dict = field(default_factory=lambda: PERSONS_COLUMN)
+    person_column: Dict = field(default_factory=lambda: PERSON_COLUMN)
     seed: int = None
     mode: str = "step"
 
@@ -204,7 +204,7 @@ class SyntheticData:
             hospital_ids=hospital_ids,
             src_concept_name=src_concept_name,
         )
-        persons = self._generate_person(visit_occurrence)
+        person = self._generate_person(visit_occurrence)
 
         self.care_site = care_site
         self.visit_occurrence = visit_occurrence
@@ -215,7 +215,7 @@ class SyntheticData:
         self.concept = concept
         self.concept_relationship = concept_relationship
         self.measurement = measurement
-        self.persons = persons
+        self.person = person
 
         self.list_available_tables()
 
@@ -303,7 +303,7 @@ class SyntheticData:
 
         visit_occurrence[self.id_person_col] = self.generator.integers(
             0,
-            int(self.mean_visit * self.persons_column["ratio_of_visits"]),
+            int(self.mean_visit * self.person_column["ratio_of_visits"]),
             len(visit_occurrence),
         )
 
@@ -676,21 +676,21 @@ class SyntheticData:
         )
 
     def _generate_person(self, visit_occurrence):
-        persons = visit_occurrence.groupby(self.id_person_col, as_index=False)[
+        person = visit_occurrence.groupby(self.id_person_col, as_index=False)[
             self.date_col
         ].min()
-        persons = persons.rename(columns={self.date_col: self.birth_date_col})
-        persons[self.birth_date_col] = persons[self.birth_date_col] - pd.to_timedelta(
+        person = person.rename(columns={self.date_col: self.birth_date_col})
+        person[self.birth_date_col] = person[self.birth_date_col] - pd.to_timedelta(
             self.generator.normal(
-                self.persons_column["age_mean"],
-                self.persons_column["age_std"],
-                len(persons),
+                self.person_column["age_mean"],
+                self.person_column["age_std"],
+                len(person),
             )
             * 365,
             unit="D",
         )
 
-        return persons
+        return person
 
     def convert_to_koalas(self):
         if isinstance(self.care_site, ks.frame.DataFrame):
@@ -705,7 +705,7 @@ class SyntheticData:
         self.concept = ks.DataFrame(self.concept)
         self.concept_relationship = ks.DataFrame(self.concept_relationship)
         self.measurement = ks.DataFrame(self.measurement)
-        self.persons = ks.DataFrame(self.persons)
+        self.person = ks.DataFrame(self.person)
         self.module = "koalas"
 
     def reset_to_pandas(self):
@@ -721,7 +721,7 @@ class SyntheticData:
         self.concept = self.concept.to_pandas()
         self.concept_relationship = self.concept_relationship.to_pandas()
         self.measurement = self.measurement.to_pandas()
-        self.persons = self.persons.to_pandas()
+        self.person = self.person.to_pandas()
         self.module = "pandas"
 
     def delete_table(self, table_name: str) -> None:
