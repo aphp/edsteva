@@ -197,7 +197,6 @@ def test_compute_visit_probe(data, params):
         stay_source=params["stay_source"],
         provenance_source=params["provenance_source"],
         age_list=params["age_list"],
-
     )
 
     # Care site levels
@@ -708,7 +707,6 @@ def test_compute_biology_probe(data, params):
         stay_source=params["stay_source"],
         provenance_source=params["provenance_source"],
         age_list=params["age_list"],
-
     )
 
     # Care site levels
