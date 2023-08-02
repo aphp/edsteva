@@ -78,7 +78,7 @@ params = [
         test_save=False,
         stay_source={"MCO": "MCO"},
         provenance_source={"All": ".*"},
-        age_list=None,
+        age_list=[18],
         module="koalas",
     ),
     dict(
@@ -103,7 +103,7 @@ params = [
         start_date=datetime(2010, 5, 10),
         end_date=datetime(2020, 1, 1),
         test_save=True,
-        stay_source={"MCO": "MCO"},
+        stay_source=None,
         provenance_source={"All": ".*", "urgence": "service d'urgence"},
         age_list=None,
         module="pandas",
