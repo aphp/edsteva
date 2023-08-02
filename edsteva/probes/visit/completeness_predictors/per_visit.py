@@ -37,7 +37,7 @@ def compute_completeness_predictor_per_visit(
     length_of_stays: List[float],
     age_list: List[int],
     provenance_source: Union[str, Dict[str, str]],
-    pmsi_type: Union[str, Dict[str, str]],
+    stay_source: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -60,7 +60,7 @@ def compute_completeness_predictor_per_visit(
         end_date=end_date,
         stay_types=stay_types,
         length_of_stays=length_of_stays,
-        pmsi_type=pmsi_type,
+        stay_source=stay_source,
         provenance_source=provenance_source,
         person=person,
         age_list=age_list,
@@ -204,7 +204,7 @@ def get_uf_visit(
                         "visit_occurrence_id",
                         "length_of_stay",
                         "stay_type",
-                        "pmsi_type",
+                        "stay_source",
                         "provenance_source",
                     ]
                 )
@@ -234,7 +234,7 @@ def get_uc_visit(
                         "visit_occurrence_id",
                         "length_of_stay",
                         "stay_type",
-                        "pmsi_type",
+                        "stay_source",
                         "provenance_source",
                     ]
                 )
@@ -264,7 +264,7 @@ def get_uh_visit(
                         "visit_occurrence_id",
                         "length_of_stay",
                         "stay_type",
-                        "pmsi_type",
+                        "stay_source",
                         "provenance_source",
                     ]
                 )

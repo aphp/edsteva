@@ -60,7 +60,7 @@ class BiologyProbe(BaseProbe):
             "care_site_specialty",
             "care_sites_set",
             "specialties_set",
-            "pmsi_type",
+            "stay_source",
             "provenance_source",
         ] + [
             "{}_concept_code".format(terminology)
@@ -110,7 +110,7 @@ class BiologyProbe(BaseProbe):
             ("ANABIO_ITM", "LOINC_ITM", "Maps to"),
         ],
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
-        pmsi_type: Union[str, Dict[str, str]] = {"MCO": "MCO"},
+        stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
         age_list: List[int] = None,
         **kwargs,
     ):
@@ -152,7 +152,7 @@ class BiologyProbe(BaseProbe):
         mapping : List[Tuple[str, str, str]], optional
             List of values to filter in the column `relationship_id` in order to map between 2 terminologies.
             **EXAMPLE**: `[("ANALYSES_LABORATOIRE", "GLIMS_ANABIO", "Maps to")]`
-        pmsi_type : Union[str, Dict[str, str]], optional
+        stay_source : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
         provenance_source : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
@@ -165,8 +165,8 @@ class BiologyProbe(BaseProbe):
             self._index.remove("length_of_stay")
         if age_list is None and "age_range" in self._index:
             self._index.remove("age_range")
-        if pmsi_type is None and "pmsi_type" in self._index:
-            self._index.remove("pmsi_type")
+        if stay_source is None and "stay_source" in self._index:
+            self._index.remove("stay_source")
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
         if concepts_sets is None and "concepts_set" in self._index:
@@ -194,7 +194,7 @@ class BiologyProbe(BaseProbe):
             source_terminologies=source_terminologies,
             mapping=mapping,
             provenance_source=provenance_source,
-            pmsi_type=pmsi_type,
+            stay_source=stay_source,
             age_list=age_list,
             **kwargs,
         )
