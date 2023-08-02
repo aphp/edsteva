@@ -76,7 +76,7 @@ def compute_completeness_predictor_per_measurement(
     self.biology_relationship = biology_relationship
     root_terminology = mapping[0][0]
 
-    person = prepare_person(data) if age_list else None
+    person = prepare_person(data)
 
     measurement = prepare_measurement(
         data=data,

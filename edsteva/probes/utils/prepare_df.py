@@ -693,5 +693,4 @@ def prepare_person(
         required_columns=person_columns,
         df_name="person",
     )
-
     return data.person[person_columns]

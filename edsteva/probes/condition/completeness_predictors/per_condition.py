@@ -65,7 +65,7 @@ def compute_completeness_predictor_per_condition(
     ):  # pragma: no cover
         logger.info("AREM claim data are only available at hospital level")
 
-    person = prepare_person(data) if age_list else None
+    person = prepare_person(data)
 
     visit_occurrence = prepare_visit_occurrence(
         data=data,
