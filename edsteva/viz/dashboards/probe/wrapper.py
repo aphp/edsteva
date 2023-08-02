@@ -9,7 +9,7 @@ from edsteva.models.base import BaseModel
 from edsteva.probes.base import BaseProbe
 from edsteva.viz.dashboards.probe.fitted_probe import fitted_probe_dashboard
 from edsteva.viz.dashboards.probe.probe import probe_only_dashboard
-from edsteva.viz.utils import filter_predictor, save_html
+from edsteva.viz.utils import filter_data, save_html
 
 
 def probe_dashboard(
@@ -79,34 +79,34 @@ def probe_dashboard(
     probe_config = deepcopy(probe.get_viz_config("probe_dashboard"))
     if fitted_model:
         model_config = deepcopy(fitted_model.get_viz_config("probe_dashboard"))
-        if not model_line_config:
+        if model_line_config is None:
             model_line_config = model_config["model_line"]
-        if not probe_line_config:
+        if probe_line_config is None:
             probe_line_config = model_config["probe_line"]
-    if not main_chart_config:
+    if main_chart_config is None:
         main_chart_config = probe_config["main_chart"]
-    if not time_line_config:
+    if time_line_config is None:
         time_line_config = probe_config["time_line"]
-    if not vertical_bar_charts_config:
+    if vertical_bar_charts_config is None:
         vertical_bar_charts_config = probe_config["vertical_bar_charts"]
         if fitted_model:
             vertical_bar_charts_config["y"] = (
                 vertical_bar_charts_config["y"]
                 + model_config["extra_vertical_bar_charts"]
             )
-    if not horizontal_bar_charts_config:
+    if horizontal_bar_charts_config is None:
         horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
         if fitted_model:
             horizontal_bar_charts_config["x"] = (
                 horizontal_bar_charts_config["x"]
                 + model_config["extra_horizontal_bar_charts"]
             )
-    if not chart_style:
+    if chart_style is None:
         chart_style = probe_config["chart_style"]
 
     predictor = fitted_model.predict(probe) if fitted_model else probe.predictor.copy()
-    predictor = filter_predictor(
-        predictor=predictor,
+    predictor = filter_data(
+        data=predictor,
         care_site_level=care_site_level,
         **kwargs,
     )

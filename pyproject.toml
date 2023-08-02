@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "edsteva"
-version = "0.2.3"
+version = "0.2.4"
 description = "EDS-TeVa provides a set of tools that aims at modeling the adoption over time and across space of the Electronic Health Records."
 authors = ["Adam Remaki <adam.remaki@aphp.fr>", "Vicent Maladiere <vincent.maladiere-ext@aphp.fr>", "Benoit Playe <benoit.playe@aphp.fr>", "Romain Bey <romain.bey@aphp.fr>", "Paul Bernard <paul.bernard@aphp.fr>"]
 keywords = ["OMOP", "Data Analysis", "Electronic health record"]
@@ -48,6 +48,7 @@ jupyterlab = "^3.0.0"
 [tool.poetry.group.docs.dependencies]
 pypandoc = "1.7.5"
 markdown = "^3.3.4"
+mkdocs = "<1.5.0"
 mkdocs-autorefs = "0.4.1"
 mkdocs-bibtex = "^2.0.1"
 mkdocs-charts-plugin = "0.0.9"
@@ -74,7 +75,7 @@ pylic = "^3.4.0"
 
 [tool.ruff]
 select = ["E", "F", "I", "W", "B", "RUF", "NPY", "PD", "ERA", "PTH", "SIM", "RET", "RSE", "T20", "PIE"]
-ignore = ["E501", "B006", "B905", "B017", "W605", "RUF001", "RUF013", "PD901", "SIM118", "RET503"]
+ignore = ["E501", "B006", "B905", "B017", "W605", "RUF001", "RUF013", "NPY002", "PD901", "SIM118", "RET503"]
 # Exclude a variety of commonly ignored directories.
 exclude = [
     ".eggs",

@@ -8,7 +8,7 @@ from edsteva.models.base import BaseModel
 from edsteva.probes.base import BaseProbe
 from edsteva.viz.plots.probe.fitted_probe import fitted_probe_line
 from edsteva.viz.plots.probe.probe import probe_line
-from edsteva.viz.utils import configure_style, filter_predictor, save_html
+from edsteva.viz.utils import configure_style, filter_data, save_html
 
 
 def probe_plot(
@@ -81,9 +81,9 @@ def probe_plot(
     alt.data_transformers.disable_max_rows()
 
     probe_config = deepcopy(probe.get_viz_config("probe_plot"))
-    if not main_chart_config:
+    if main_chart_config is None:
         main_chart_config = probe_config["main_chart"]
-    if not chart_style:
+    if chart_style is None:
         chart_style = probe_config["chart_style"]
     predictor = probe.predictor.copy()
     cols_to_remove = ["date", *probe._metrics]
@@ -96,8 +96,8 @@ def probe_plot(
     else:
         predictor = probe.predictor.copy()
 
-    predictor = filter_predictor(
-        predictor=predictor,
+    predictor = filter_data(
+        data=predictor,
         care_site_level=care_site_level,
         stay_type=stay_type,
         care_site_id=care_site_id,
@@ -115,9 +115,9 @@ def probe_plot(
 
     if fitted_model:
         model_config = deepcopy(fitted_model.get_viz_config("probe_plot"))
-        if not model_line_config:
+        if model_line_config is None:
             model_line_config = model_config["model_line"]
-        if not probe_line_config:
+        if probe_line_config is None:
             probe_line_config = model_config["probe_line"]
         chart = fitted_probe_line(
             predictor=predictor,

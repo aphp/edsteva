@@ -15,7 +15,7 @@ from edsteva.viz.utils import (
     concatenate_charts,
     configure_style,
     create_groupby_selection,
-    filter_predictor,
+    filter_data,
     generate_error_line,
     generate_horizontal_bar_charts,
     generate_main_chart,
@@ -118,46 +118,48 @@ def normalized_probe_dashboard(
     )
     predictor["model"] = 1
     predictor["model"] = predictor["model"].where(predictor["normalized_date"] >= 0, 0)
-    predictor["legend_model"] = type(fitted_model).__name__
-    predictor = filter_predictor(
-        predictor=predictor, care_site_level=care_site_level, **kwargs
-    )
+    predictor = filter_data(data=predictor, care_site_level=care_site_level, **kwargs)
 
     # Get viz config
     probe_config = deepcopy(probe.get_viz_config("normalized_probe_dashboard"))
     model_config = deepcopy(
         fitted_model.get_viz_config("normalized_probe_dashboard", predictor=predictor)
     )
-    if not main_chart_config:
+    if main_chart_config is None:
         main_chart_config = probe_config["main_chart"]
-    if not time_line_config:
+    if time_line_config is None:
         time_line_config = probe_config["time_line"]
-    if not error_line_config:
-        error_line_config = probe_config["error_line"]
-    if not vertical_bar_charts_config:
+    if vertical_bar_charts_config is None:
         vertical_bar_charts_config = probe_config["vertical_bar_charts"]
         vertical_bar_charts_config["y"] = (
             vertical_bar_charts_config["y"] + model_config["extra_vertical_bar_charts"]
         )
-    if not horizontal_bar_charts_config:
+    if horizontal_bar_charts_config is None:
         horizontal_bar_charts_config = probe_config["horizontal_bar_charts"]
         horizontal_bar_charts_config["x"] = (
             horizontal_bar_charts_config["x"]
             + model_config["extra_horizontal_bar_charts"]
         )
-    if not chart_style:
+    if chart_style is None:
         chart_style = probe_config["chart_style"]
-    if not probe_line_config:
+    if probe_line_config is None:
         probe_line_config = model_config["probe_line"]
-    if not model_line_config:
+    if model_line_config is None:
         model_line_config = model_config["model_line"]
-    if not estimates_selections:
+    if error_line_config is None:
+        error_line_config = model_config["error_line"]
+    if estimates_selections is None:
         estimates_selections = model_config["estimates_selections"]
-    if not estimates_filters:
+    if estimates_filters is None:
         estimates_filters = model_config["estimates_filters"]
 
     # Viz
-    predictor["legend_predictor"] = main_chart_config["legend_title"]
+    predictor["legend_model"] = (
+        model_line_config.get("legend_title")
+        if model_line_config.get("legend_title")
+        else type(fitted_model).__name__
+    )
+    predictor["legend_predictor"] = probe_line_config["legend_title"]
     predictor["legend_error_band"] = error_line_config["legend_title"]
     base = alt.Chart(predictor)
     time_line, time_selection = generate_time_line(

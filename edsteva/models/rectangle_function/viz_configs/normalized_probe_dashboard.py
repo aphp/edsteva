@@ -1,6 +1,7 @@
 from edsteva.utils.typing import DataFrame
 
 from .defaults import (
+    error_line,
     get_c_0_min_selection,
     get_error_max_selection,
     get_t_0_selection,
@@ -30,6 +31,7 @@ def get_normalized_probe_dashboard_config(self, predictor: DataFrame):
             c_0_min_filter,
             error_max_filter,
         ],
+        error_line=error_line,
         probe_line=normalized_probe_line,
         model_line=normalized_model_line,
         extra_horizontal_bar_charts=[horizontal_min_c0, horizontal_max_error],
