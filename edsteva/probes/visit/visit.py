@@ -115,8 +115,6 @@ class VisitProbe(BaseProbe):
             self._index.remove("care_sites_set")
         if age_list is None and "age_range" in self._index:
             self._index.remove("age_range")
-        if stay_source is None and "stay_source" in self._index:
-            self._index.remove("stay_source")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
