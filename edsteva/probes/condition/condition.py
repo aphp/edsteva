@@ -130,30 +130,29 @@ class ConditionProbe(BaseProbe):
             self._index.remove("condition_type")
         if age_list is None and "age_range" in self._index:
             self._index.remove("age_range")
-
-            return completeness_predictors.get(self._completeness_predictor)(
-                self,
-                data=data,
-                care_site_relationship=care_site_relationship,
-                start_date=start_date,
-                end_date=end_date,
-                care_site_levels=care_site_levels,
-                stay_types=stay_types,
-                care_site_ids=care_site_ids,
-                extra_data=extra_data,
-                care_site_short_names=care_site_short_names,
-                care_site_specialties=care_site_specialties,
-                care_sites_sets=care_sites_sets,
-                specialties_sets=specialties_sets,
-                diag_types=diag_types,
-                source_systems=source_systems,
-                provenance_source=provenance_source,
-                length_of_stays=length_of_stays,
-                condition_types=condition_types,
-                stay_source=stay_source,
-                age_list=age_list,
-                **kwargs,
-            )
+        return completeness_predictors.get(self._completeness_predictor)(
+            self,
+            data=data,
+            care_site_relationship=care_site_relationship,
+            start_date=start_date,
+            end_date=end_date,
+            care_site_levels=care_site_levels,
+            stay_types=stay_types,
+            care_site_ids=care_site_ids,
+            extra_data=extra_data,
+            care_site_short_names=care_site_short_names,
+            care_site_specialties=care_site_specialties,
+            care_sites_sets=care_sites_sets,
+            specialties_sets=specialties_sets,
+            diag_types=diag_types,
+            source_systems=source_systems,
+            provenance_source=provenance_source,
+            length_of_stays=length_of_stays,
+            condition_types=condition_types,
+            stay_source=stay_source,
+            age_list=age_list,
+            **kwargs,
+        )
 
     def get_viz_config(self, viz_type: str, **kwargs):
         if viz_type in viz_configs.keys():
