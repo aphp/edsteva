@@ -52,7 +52,7 @@ params = [
         module="koalas",
         stay_source={"MCO": "MCO", "MCO_PSY_SSR": "MCO|Psychiatrie|SSR"},
         provenance_source={"All": ".*"},
-        age_list=[18],
+        age_list=[18, 64],
     ),
     dict(
         visit_predictor="per_visit_default",
@@ -103,7 +103,7 @@ params = [
         start_date=datetime(2010, 5, 10),
         end_date=datetime(2020, 1, 1),
         test_save=True,
-        stay_source={"MCO": "MCO"},
+        stay_source=None,
         provenance_source={"All": ".*", "urgence": "service d'urgence"},
         age_list=None,
         module="pandas",
