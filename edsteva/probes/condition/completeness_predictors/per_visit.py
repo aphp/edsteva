@@ -248,6 +248,7 @@ def get_uf_visit(
                         "stay_type",
                         "stay_source",
                         "provenance_source",
+                        "age_range",
                     ]
                 )
             )
