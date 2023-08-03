@@ -197,6 +197,7 @@ visit.compute(
 visit.save(path=probe_path)  # (3)
 visit.predictor.head()
 ```
+
 1. The stay_types argument expects a python dictionary with labels as keys and regex as values.
 2. The care sites are articulated into levels (cf. [AP-HP's reference structure](https://doc-new.eds.aphp.fr/donnees_dispo/donnees_par_domaine/R%C3%A9f%C3%A9rentielsStructures)).
 3. Saving the Probe after computation saves you from having to compute it again. You just use `VisitProbe.load(path=probe_path)`.

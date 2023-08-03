@@ -85,6 +85,8 @@ def concatenate_predictor_by_level(
                     selected_levels.append(level)
                 else:
                     unavailable_levels.append(level)
+            elif level in CARE_SITE_LEVEL_NAMES.values():
+                unavailable_levels.append(level)
             else:
                 unknown_levels.append(level)
 
@@ -94,7 +96,7 @@ def concatenate_predictor_by_level(
         )
         if unknown_levels:
             logger.warning(
-                "Unrecognized levels {}.the only supported levels are: {}",
+                "Unrecognized levels {}. The only supported levels are: {}",
                 unknown_levels,
                 list(CARE_SITE_LEVEL_NAMES.values())
                 + list(CARE_SITE_LEVEL_NAMES.keys()),
