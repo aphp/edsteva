@@ -231,7 +231,7 @@ def filter_table_by_age(visit_occurrence: pd.DataFrame, age_list: List[int]):
         visit_occurrence["date"] - visit_occurrence["birth_datetime"]
     ) / (np.timedelta64(timedelta(days=1)) * 356)
 
-    visit_occurrence["age_range"] = "Unkown"
+    visit_occurrence["age_range"] = "Not specified"
     visit_occurrence.loc[
         visit_occurrence.age <= age_list[0], "age_range"
     ] = f"age <= {age_list[0]}"

@@ -55,21 +55,23 @@ def prepare_visit_occurrence(
         invalid_naming="supprimé",
     )
 
-    visit_occurrence = filter_table_by_type(
-        table=visit_occurrence,
-        table_name="visit_occurrence",
-        type_groups=stay_source,
-        source_col="stay_source_value",
-        target_col="stay_source",
-    )
+    if stay_source:
+        visit_occurrence = filter_table_by_type(
+            table=visit_occurrence,
+            table_name="visit_occurrence",
+            type_groups=stay_source,
+            source_col="stay_source_value",
+            target_col="stay_source",
+            )
 
-    visit_occurrence = filter_table_by_type(
-        table=visit_occurrence,
-        table_name="visit_occurrence",
-        type_groups=provenance_source,
-        source_col="provenance_source_value",
-        target_col="provenance_source",
-    )
+    if provenance_source:
+        visit_occurrence = filter_table_by_type(
+            table=visit_occurrence,
+            table_name="visit_occurrence",
+            type_groups=provenance_source,
+            source_col="provenance_source_value",
+            target_col="provenance_source",
+            )
 
     if length_of_stays:
         visit_occurrence = filter_table_by_length_of_stay(
@@ -98,7 +100,7 @@ def prepare_visit_occurrence(
 
     if age_list:
         visit_occurrence = visit_occurrence.merge(
-            person, left_on="person_id", right_on="person_id"
+            person, on="person_id"
         )
         visit_occurrence = filter_table_by_age(
             visit_occurrence=visit_occurrence,
