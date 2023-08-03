@@ -39,7 +39,7 @@ def compute_completeness_predictor_per_note(
     extra_data: Data,
     length_of_stays: List[float],
     note_types: Union[str, Dict[str, str]],
-    age_list: List[int],
+    age_range: List[int],
     provenance_source: Union[str, Dict[str, str]],
     stay_source: Union[str, Dict[str, str]],
     **kwargs
@@ -73,7 +73,7 @@ def compute_completeness_predictor_per_note(
         length_of_stays=length_of_stays,
         provenance_source=provenance_source,
         person=person,
-        age_list=age_list,
+        age_range=age_range,
     ).drop(columns=["visit_occurrence_source_value", "date"])
 
     care_site = prepare_care_site(

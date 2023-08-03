@@ -24,7 +24,7 @@ def prepare_visit_occurrence(
     stay_source: Union[str, Dict[str, str]],
     provenance_source: Union[str, Dict[str, str]],
     length_of_stays: List[float],
-    age_list: List[int] = None,
+    age_range: List[int] = None,
     start_date: datetime = None,
     end_date: datetime = None,
     person: DataFrame = None,
@@ -98,13 +98,13 @@ def prepare_visit_occurrence(
             target_col="stay_type",
         )
 
-    if age_list:
+    if age_range:
         visit_occurrence = visit_occurrence.merge(
             person, on="person_id"
         )
         visit_occurrence = filter_table_by_age(
             visit_occurrence=visit_occurrence,
-            age_list=age_list,
+            age_range=age_range,
         )
 
     return visit_occurrence

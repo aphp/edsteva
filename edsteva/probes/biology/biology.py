@@ -111,7 +111,7 @@ class BiologyProbe(BaseProbe):
         ],
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
         stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
-        age_list: List[int] = None,
+        age_range: List[int] = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -156,14 +156,14 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
         provenance_source : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
-        age_list : List[int], optional
+        age_range : List[int], optional
             **EXAMPLE**: `[18, 64]`
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
         if length_of_stays is None and "length_of_stay" in self._index:
             self._index.remove("length_of_stay")
-        if age_list is None and "age_range" in self._index:
+        if age_range is None and "age_range" in self._index:
             self._index.remove("age_range")
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
@@ -193,7 +193,7 @@ class BiologyProbe(BaseProbe):
             mapping=mapping,
             provenance_source=provenance_source,
             stay_source=stay_source,
-            age_list=age_list,
+            age_range=age_range,
             **kwargs,
         )
 

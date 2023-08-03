@@ -76,7 +76,7 @@ class NoteProbe(BaseProbe):
         },
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
         stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
-        age_list: List[int] = None,
+        age_range: List[int] = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -117,7 +117,7 @@ class NoteProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
         provenance_source : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
-        age_list : List[int], optional
+        age_range : List[int], optional
             **EXAMPLE**: `[18, 64]`
         """
         if specialties_sets is None and "specialties_set" in self._index:
@@ -128,7 +128,7 @@ class NoteProbe(BaseProbe):
             self._index.remove("note_type")
         if length_of_stays is None and "length_of_stay" in self._index:
             self._index.remove("length_of_stay")
-        if age_list is None and "age_range" in self._index:
+        if age_range is None and "age_range" in self._index:
             self._index.remove("age_range")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
@@ -148,7 +148,7 @@ class NoteProbe(BaseProbe):
             length_of_stays=length_of_stays,
             provenance_source=provenance_source,
             stay_source=stay_source,
-            age_list=age_list,
+            age_range=age_range,
             **kwargs,
         )
 

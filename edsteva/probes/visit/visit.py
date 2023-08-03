@@ -69,7 +69,7 @@ class VisitProbe(BaseProbe):
         length_of_stays: List[float] = None,
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
         stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
-        age_list: List[int] = None,
+        age_range: List[int] = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -104,7 +104,7 @@ class VisitProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
         provenance_source : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
-        age_list : List[int], optional
+        age_range : List[int], optional
             **EXAMPLE**: `[18, 64]`
         """
         if specialties_sets is None and "specialties_set" in self._index:
@@ -113,7 +113,7 @@ class VisitProbe(BaseProbe):
             self._index.remove("length_of_stay")
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
-        if age_list is None and "age_range" in self._index:
+        if age_range is None and "age_range" in self._index:
             self._index.remove("age_range")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
@@ -131,7 +131,7 @@ class VisitProbe(BaseProbe):
             length_of_stays=length_of_stays,
             provenance_source=provenance_source,
             stay_source=stay_source,
-            age_list=age_list,
+            age_range=age_range,
             **kwargs,
         )
 

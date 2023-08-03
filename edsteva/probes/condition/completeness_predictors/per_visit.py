@@ -41,7 +41,7 @@ def compute_completeness_predictor_per_visit(
     condition_types: Union[str, Dict[str, str]],
     source_systems: List[str],
     length_of_stays: List[float],
-    age_list: List[int],
+    age_range: List[int],
     provenance_source: Union[str, Dict[str, str]],
     stay_source: Union[str, Dict[str, str]],
     **kwargs
@@ -76,7 +76,7 @@ def compute_completeness_predictor_per_visit(
         provenance_source=provenance_source,
         stay_source=stay_source,
         person=person,
-        age_list=age_list,
+        age_range=age_range,
     )
 
     condition_occurrence = prepare_condition_occurrence(

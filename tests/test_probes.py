@@ -52,7 +52,7 @@ params = [
         module="koalas",
         stay_source={"MCO": "MCO", "MCO_PSY_SSR": "MCO|Psychiatrie|SSR"},
         provenance_source={"All": ".*"},
-        age_list=[18, 64],
+        age_range=[18, 64],
     ),
     dict(
         visit_predictor="per_visit_default",
@@ -78,7 +78,7 @@ params = [
         test_save=False,
         stay_source={"MCO": "MCO"},
         provenance_source={"All": ".*"},
-        age_list=[18],
+        age_range=[18],
         module="koalas",
     ),
     dict(
@@ -105,7 +105,7 @@ params = [
         test_save=True,
         stay_source={"MCO": "MCO"},
         provenance_source={"All": ".*", "urgence": "service d'urgence"},
-        age_list=None,
+        age_range=None,
         module="pandas",
     ),
 ]
@@ -196,7 +196,7 @@ def test_compute_visit_probe(data, params):
         length_of_stays=params["length_of_stays"],
         stay_source=params["stay_source"],
         provenance_source=params["provenance_source"],
-        age_list=params["age_list"],
+        age_range=params["age_range"],
     )
 
     # Care site levels
@@ -350,7 +350,7 @@ def test_compute_note_probe(data, params):
         note_types=params["note_types"],
         stay_source=params["stay_source"],
         provenance_source=params["provenance_source"],
-        age_list=params["age_list"],
+        age_range=params["age_range"],
     )
 
     # Care site levels
@@ -516,7 +516,7 @@ def test_compute_condition_probe(data, params):
         source_systems=params["source_systems"],
         stay_source=params["stay_source"],
         provenance_source=params["provenance_source"],
-        age_list=params["age_list"],
+        age_range=params["age_range"],
     )
 
     # Care site levels
@@ -706,7 +706,7 @@ def test_compute_biology_probe(data, params):
         concept_codes=params["concept_codes"],
         stay_source=params["stay_source"],
         provenance_source=params["provenance_source"],
-        age_list=params["age_list"],
+        age_range=params["age_range"],
     )
 
     # Care site levels

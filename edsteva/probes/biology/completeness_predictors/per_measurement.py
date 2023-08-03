@@ -40,7 +40,7 @@ def compute_completeness_predictor_per_measurement(
     length_of_stays: List[float],
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
-    age_list: List[int],
+    age_range: List[int],
     provenance_source: Union[str, Dict[str, str]],
     stay_source: Union[str, Dict[str, str]],
     **kwargs
@@ -62,7 +62,6 @@ def compute_completeness_predictor_per_measurement(
             "measurement",
             "concept",
             "concept_relationship",
-            "visit_occurrence",
         ],
     )
     standard_terminologies = self._standard_terminologies
@@ -99,7 +98,7 @@ def compute_completeness_predictor_per_measurement(
         provenance_source=provenance_source,
         stay_source=stay_source,
         person=person,
-        age_list=age_list,
+        age_range=age_range,
     ).drop(columns=["visit_occurrence_source_value", "date"])
 
     care_site = prepare_care_site(
