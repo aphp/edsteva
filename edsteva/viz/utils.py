@@ -407,7 +407,7 @@ def filter_data(
     care_site_short_name: List[int] = None,
     start_date: Union[datetime, str] = None,
     end_date: Union[datetime, str] = None,
-    **kwargs
+    **kwargs,
 ):
     # Time
     if "date" in data.columns:
