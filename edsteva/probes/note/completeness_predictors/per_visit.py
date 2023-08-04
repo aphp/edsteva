@@ -9,6 +9,7 @@ from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
     prepare_note,
     prepare_note_care_site,
+    prepare_person,
     prepare_visit_detail,
     prepare_visit_occurrence,
 )
@@ -39,6 +40,9 @@ def compute_completeness_predictor_per_visit(
     extra_data: Data,
     length_of_stays: List[float],
     note_types: Union[str, Dict[str, str]],
+    age_range: List[int],
+    provenance_source: Union[str, Dict[str, str]],
+    stay_source: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -55,12 +59,18 @@ def compute_completeness_predictor_per_visit(
     self._metrics = ["c", "n_visit", "n_visit_with_note"]
     check_tables(data=data, required_tables=["note"])
 
+    person = prepare_person(data)
+
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         start_date=start_date,
         end_date=end_date,
         stay_types=stay_types,
         length_of_stays=length_of_stays,
+        provenance_source=provenance_source,
+        stay_source=stay_source,
+        person=person,
+        age_range=age_range,
     )
 
     care_site = prepare_care_site(

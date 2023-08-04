@@ -2,10 +2,12 @@ import datetime
 from abc import ABCMeta, abstractmethod
 from typing import ClassVar, Dict, List, Union
 
+import altair as alt
 import pandas as pd
 from loguru import logger
 
 from edsteva import CACHE_DIR
+from edsteva.probes.base.viz_configs import viz_configs
 from edsteva.probes.utils.filter_df import filter_table_by_care_site
 from edsteva.probes.utils.prepare_df import prepare_care_site_relationship
 from edsteva.utils.checks import check_columns, check_tables
@@ -38,10 +40,11 @@ class BaseProbe(metaclass=ABCMeta):
 
     def __init__(
         self,
-        completeness_predictor: str,
         index: List[str],
+        completeness_predictor: str = None,
     ):
-        self._completeness_predictor = completeness_predictor
+        if completeness_predictor is not None:
+            self._completeness_predictor = completeness_predictor
         self._cache_index = index.copy()
         self._viz_config = {}
 
@@ -289,6 +292,104 @@ class BaseProbe(metaclass=ABCMeta):
                     how="left",
                 )
         return df.reset_index(drop=True)
+
+    def get_viz_config(self, viz_type: str, **kwargs):
+        """This is the basic viz configs if not overridden by the probe.
+
+        Parameters
+        ----------
+        viz_type : str,
+            **EXAMPLE**: `"probe_dashboard"`
+        """
+        if viz_type in viz_configs.keys():
+            return viz_configs[viz_type](self, **kwargs)
+        raise ValueError(f"edsteva has no {viz_type} registry !")
+
+    def generate_bar_chart_config(self, threshold: int = 10):
+        self.is_computed_probe()
+
+        # Sort index with regard to number of unique values
+        index = self._index.copy()
+        nunique_per_index = self.predictor[index].nunique()  # Number of unique value
+        vertical_variables = nunique_per_index.loc[
+            lambda x: x <= threshold
+        ].index.tolist()
+        horizontal_variables = nunique_per_index.loc[
+            lambda x: x > threshold
+        ].index.tolist()
+
+        # Sort metrics wether it is rate between 0 and 1 or integers
+        metrics = [
+            metric for metric in self._metrics if metric in self.predictor.columns
+        ]
+        if len(metrics) >= 2 and "c" in metrics:
+            metrics.remove("c")
+        metrics = {
+            metric: "mean"
+            if self.predictor[metric].between(0, 1, "neither").any()
+            else "sum"
+            for metric in metrics
+        }
+
+        vertical_bar_charts = dict(
+            x=[
+                {
+                    "title": field.replace("_", " ").capitalize(),
+                    "field": field,
+                    "type": "nominal",
+                    "sort": "-y",
+                }
+                for field in vertical_variables
+            ],
+            y=[
+                dict(
+                    y=alt.Y(
+                        f"{agg}({metric}):Q",
+                        axis=alt.Axis(format="s" if agg == "sum" else ".2f"),
+                    ),
+                    tooltip=alt.Tooltip(
+                        f"{agg}({metric}):Q",
+                        format="," if agg == "sum" else ".2f",
+                    ),
+                    sort={
+                        "field": metric,
+                        "op": agg,
+                        "order": "descending",
+                    },
+                )
+                for metric, agg in metrics.items()
+            ],
+        )
+        horizontal_bar_charts = dict(
+            y=[
+                {
+                    "title": field.replace("_", " ").capitalize(),
+                    "field": field,
+                    "type": "nominal",
+                    "sort": "-x",
+                }
+                for field in horizontal_variables
+            ],
+            x=[
+                dict(
+                    x=alt.X(
+                        f"{agg}({metric}):Q",
+                        axis=alt.Axis(format="s" if agg == "sum" else ".2f"),
+                    ),
+                    tooltip=alt.Tooltip(
+                        f"{agg}({metric}):Q",
+                        format="," if agg == "sum" else ".2f",
+                    ),
+                    sort={
+                        "field": metric,
+                        "op": agg,
+                        "order": "descending",
+                    },
+                )
+                for metric, agg in metrics.items()
+            ],
+        )
+        return vertical_bar_charts, horizontal_bar_charts
 
     def load(self, path=None) -> None:
         """Loads a Probe from local

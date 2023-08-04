@@ -6,6 +6,7 @@ import pandas as pd
 from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
+    prepare_person,
     prepare_visit_detail,
     prepare_visit_occurrence,
 )
@@ -34,6 +35,9 @@ def compute_completeness_predictor_per_visit(
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     length_of_stays: List[float],
+    age_range: List[int],
+    provenance_source: Union[str, Dict[str, str]],
+    stay_source: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -47,12 +51,19 @@ def compute_completeness_predictor_per_visit(
     Where $n_{visit}(t)$ is the number of administrative stays, $t$ is the month and $n_{max} = \max_{t}(n_{visit}(t))$.
     """
     self._metrics = ["c", "n_visit"]
+
+    person = prepare_person(data)
+
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         start_date=start_date,
         end_date=end_date,
         stay_types=stay_types,
         length_of_stays=length_of_stays,
+        stay_source=stay_source,
+        provenance_source=provenance_source,
+        person=person,
+        age_range=age_range,
     )
 
     care_site = prepare_care_site(
@@ -69,9 +80,9 @@ def compute_completeness_predictor_per_visit(
         visit_occurrence,
         care_site,
     )
+
     hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
     visit_predictor_by_level = {hospital_name: hospital_visit}
-
     if not hospital_only(care_site_levels=care_site_levels):
         visit_detail = prepare_visit_detail(data, start_date, end_date)
 
@@ -188,7 +199,16 @@ def get_uf_visit(
     uf_visit = uf_visit.merge(
         visit_occurrence[
             visit_occurrence.columns.intersection(
-                set(["visit_occurrence_id", "length_of_stay", "stay_type"])
+                set(
+                    [
+                        "visit_occurrence_id",
+                        "length_of_stay",
+                        "stay_type",
+                        "stay_source",
+                        "provenance_source",
+                        "age_range",
+                    ]
+                )
             )
         ],
         on="visit_occurrence_id",
@@ -210,7 +230,16 @@ def get_uc_visit(
     uc_visit = uc_visit.merge(
         visit_occurrence[
             visit_occurrence.columns.intersection(
-                set(["visit_occurrence_id", "length_of_stay", "stay_type"])
+                set(
+                    [
+                        "visit_occurrence_id",
+                        "length_of_stay",
+                        "stay_type",
+                        "stay_source",
+                        "provenance_source",
+                        "age_range",
+                    ]
+                )
             )
         ],
         on="visit_occurrence_id",
@@ -232,7 +261,16 @@ def get_uh_visit(
     uh_visit = uh_visit.merge(
         visit_occurrence[
             visit_occurrence.columns.intersection(
-                set(["visit_occurrence_id", "length_of_stay", "stay_type"])
+                set(
+                    [
+                        "visit_occurrence_id",
+                        "length_of_stay",
+                        "stay_type",
+                        "stay_source",
+                        "provenance_source",
+                        "age_range",
+                    ]
+                )
             )
         ],
         on="visit_occurrence_id",

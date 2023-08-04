@@ -2,6 +2,7 @@ from typing import Callable, List
 
 import numpy as np
 import pandas as pd
+import tqdm
 
 from edsteva.utils.checks import check_columns
 from edsteva.utils.loss_functions import l2_loss
@@ -53,7 +54,7 @@ def loss_minimization(
     cols = [*index, x_col, y_col]
     iter = predictor[cols].groupby(index)
     results = []
-    for partition, group in iter:
+    for partition, group in tqdm.tqdm(iter):
         row = dict(zip(index, partition))
         t_0, c_0 = _compute_one_threshold(
             group,

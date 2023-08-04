@@ -177,6 +177,7 @@ def test_step_function_note():
     simulation = data.note[
         ["care_site_id", "t_0", "note_class_source_value"]
     ].drop_duplicates()
+
     simulation = simulation.rename(columns={"note_class_source_value": "note_type"})
     simulation["t_0_min"] = pd.to_datetime(simulation["t_0"], unit="s") - pd.DateOffset(
         months=2

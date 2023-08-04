@@ -34,8 +34,9 @@ ipython = "^7.31.0"
 koalas = "^1.8.2"
 pgpasslib = "^1.1.0"
 psycopg2-binary = "^2.9.3"
-pyarrow = ">=0.15, <0.17.0"
+pyarrow = ">=0.10, <9.0.0"
 catalogue = "^2.0.8"
+tqdm = "^4.65.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
@@ -74,7 +75,7 @@ pylic = "^3.4.0"
 
 [tool.ruff]
 select = ["E", "F", "I", "W", "B", "RUF", "NPY", "PD", "ERA", "PTH", "SIM", "RET", "RSE", "T20", "PIE"]
-ignore = ["E501", "B006", "B905", "B017", "W605", "RUF001", "RUF013", "NPY002", "PD901", "SIM118", "RET503"]
+ignore = ["E501", "B006", "B905", "B017", "W605", "RUF001", "RUF007", "RUF013", "NPY002", "PD901", "SIM118", "RET503"]
 # Exclude a variety of commonly ignored directories.
 exclude = [
     ".eggs",

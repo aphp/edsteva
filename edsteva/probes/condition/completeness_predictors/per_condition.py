@@ -8,6 +8,7 @@ from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
     prepare_condition_occurrence,
+    prepare_person,
     prepare_visit_detail,
     prepare_visit_occurrence,
 )
@@ -40,6 +41,9 @@ def compute_completeness_predictor_per_condition(
     condition_types: Union[str, Dict[str, str]],
     source_systems: List[str],
     length_of_stays: List[float],
+    age_range: List[int],
+    provenance_source: Union[str, Dict[str, str]],
+    stay_source: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -61,10 +65,16 @@ def compute_completeness_predictor_per_condition(
     ):  # pragma: no cover
         logger.info("AREM claim data are only available at hospital level")
 
+    person = prepare_person(data)
+
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         stay_types=stay_types,
         length_of_stays=length_of_stays,
+        provenance_source=provenance_source,
+        stay_source=stay_source,
+        person=person,
+        age_range=age_range,
     ).drop(columns="date")
 
     condition_occurrence = prepare_condition_occurrence(

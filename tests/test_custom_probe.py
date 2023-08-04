@@ -1,44 +1,53 @@
 from datetime import datetime
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Union
 
 import pandas as pd
+import pytest
 
+from edsteva import improve_performances
+from edsteva.io import SyntheticData
+from edsteva.models.step_function import StepFunction
 from edsteva.probes.base import BaseProbe
-from edsteva.probes.biology.completeness_predictors import completeness_predictors
-from edsteva.probes.biology.viz_configs import viz_configs
+from edsteva.probes.visit.completeness_predictors import completeness_predictors
 from edsteva.utils.typing import Data
+from edsteva.viz.dashboards import normalized_probe_dashboard, probe_dashboard
+from edsteva.viz.plots import (
+    estimates_densities_plot,
+    normalized_probe_plot,
+    probe_plot,
+)
 
 
-class BiologyProbe(BaseProbe):
+@pytest.fixture(scope="session")
+def tmp_dir(tmp_path_factory):
+    return tmp_path_factory.mktemp("Test")
+
+
+pytestmark = pytest.mark.filterwarnings("ignore")
+
+improve_performances()
+data_step = SyntheticData(mean_visit=100, seed=41, mode="step").generate()
+data_rect = SyntheticData(mean_visit=100, seed=41, mode="rect").generate()
+
+
+class CustomProbe(BaseProbe):
     r"""
-    The ``BiologyProbe`` computes $c_(t)$ the availability of laboratory data related to biological measurements for each biological code and each care site according to time:
-
-    $$
-    c(t) = \frac{n_{biology}(t)}{n_{99}}
-    $$
-
-    Where $n_{biology}(t)$ is the number of biological measurements, $n_{99}$ is the $99^{th}$ percentile and $t$ is the month.
+    The ``VisitProbe`` computes $c_(t)$ the availability of administrative data according to time:
 
     Parameters
     ----------
     completeness_predictor: str
         Algorithm used to compute the completeness predictor
         **EXAMPLE**: ``"per_visit_default"``
-    standard_terminologies: List[str]
-        List of standards terminologies to consider
-        **EXAMPLE**: ``["LOINC", "ANABIO"]``
 
     Attributes
     ----------
     _completeness_predictor: str
         Algorithm used to compute the completeness predictor
         **VALUE**: ``"per_visit_default"``
-    _standard_terminologies: List[str]
-        List of standards terminologies to consider
-        **VALUE**: ``["LOINC", "ANABIO"]``
     _index: List[str]
         Variable from which data is grouped
-        **VALUE**: ``["care_site_level", "concepts_set", "stay_type", "length_of_stay", "care_site_id", "care_site_specialty", "specialties_set", "<std_terminology>_concept_code"]``
+        **VALUE**: ``["care_site_level", "stay_type", "length_of_stay", "care_site_id"]``
     _viz_config: List[str]
         Dictionary of configuration for visualization purpose.
         **VALUE**: ``{}``
@@ -46,13 +55,10 @@ class BiologyProbe(BaseProbe):
 
     def __init__(
         self,
-        completeness_predictor: str = "per_measurement_default",
-        standard_terminologies: List[str] = ["ANABIO", "LOINC"],
+        completeness_predictor: str = "per_visit_default",
     ):
-        self._standard_terminologies = standard_terminologies
         self._index = [
             "care_site_level",
-            "concepts_set",
             "stay_type",
             "length_of_stay",
             "age_range",
@@ -62,9 +68,6 @@ class BiologyProbe(BaseProbe):
             "specialties_set",
             "stay_source",
             "provenance_source",
-        ] + [
-            "{}_concept_code".format(terminology)
-            for terminology in standard_terminologies
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -82,33 +85,9 @@ class BiologyProbe(BaseProbe):
         care_site_ids: List[int],
         care_site_short_names: List[str] = None,
         care_site_specialties: List[str] = None,
-        concept_codes: List[str] = None,
         care_sites_sets: Union[str, Dict[str, str]] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
-        concepts_sets: Union[str, Dict[str, str]] = {
-            "Leucocytes": "A0174|K3232|H6740|E4358|C9784|C8824|E6953",
-            "Plaquettes": "E4812|C0326|A1636|A0230|H6751|A1598|G7728|G7727|G7833|A2538|A2539|J4463",
-            "Créatinine": "E3180|G1974|J1002|A7813|A0094|G1975|J1172|G7834|F9409|F9410|C0697|H4038|F2621",
-            "Potassium": "A1656|C8757|C8758|A2380|E2073|L5014|F2618|E2337|J1178|A3819|J1181",
-            "Sodium": "A1772|C8759|C8760|A0262|J1177|F8162|L5013|F2617|K9086|J1180",
-            "Chlorure": "B5597|F2359|A0079|J1179|F2619|J1182|F2358|A0079|J1179|F2619|J1182",
-            "Glucose": "A1245|E7961|C8796|H7753|A8029|H7749|A0141|H7323|J7401|F2622|B9553|C7236|E7312|G9557|A7338|H7324|C0565|E9889|A8424|F6235|F5659|F2406",
-            "Bicarbonate": "A0422|H9622|C6408|F4161",
-        },
-        length_of_stays: List[float] = [1],
-        source_terminologies: Dict[str, str] = {
-            "ANALYSES_LABORATOIRE": r"Analyses Laboratoire",
-            "GLIMS_ANABIO": r"GLIMS.{0,20}Anabio",
-            "GLIMS_LOINC": r"GLIMS.{0,20}LOINC",
-            "ANABIO_ITM": r"ITM - ANABIO",
-            "LOINC_ITM": r"ITM - LOINC",
-        },
-        mapping: List[Tuple[str, str, str]] = [
-            ("ANALYSES_LABORATOIRE", "GLIMS_ANABIO", "Maps to"),
-            ("ANALYSES_LABORATOIRE", "GLIMS_LOINC", "Maps to"),
-            ("GLIMS_ANABIO", "ANABIO_ITM", "Mapped from"),
-            ("ANABIO_ITM", "LOINC_ITM", "Maps to"),
-        ],
+        length_of_stays: List[float] = None,
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
         stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
         age_range: List[int] = None,
@@ -127,7 +106,7 @@ class BiologyProbe(BaseProbe):
         end_date : datetime, optional
             **EXAMPLE**: `"2021-07-01"`
         care_site_levels : List[str], optional
-            **EXAMPLE**: `["Hospital", "Pole", "UF"]`
+            **EXAMPLE**: `["Hospital", "Pole", "UF", "UC", "UH"]`
         stay_types : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés`
         care_site_ids : List[int], optional
@@ -136,22 +115,12 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
         care_site_specialties : List[str], optional
             **EXAMPLE**: `["CARDIOLOGIE", "CHIRURGIE"]`
-        concept_codes : List[str], optional
-            **EXAMPLE**: ['E3180', 'G1974', 'J1002', 'A7813', 'A0094', 'G1975', 'J1172', 'G7834', 'F9409', 'F9410', 'C0697', 'H4038']`
         care_sites_sets : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All AP-HP": ".*"}` or `{"All AP-HP": ".*", "Pediatrics": r"debre|trousseau|necker"}`
         specialties_sets : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
-        concepts_sets : Union[str, Dict[str, str]], optional
-            **EXAMPLE**: `{"Créatinine": "E3180|G1974|J1002|A7813|A0094|G1975|J1172|G7834|F9409|F9410|C0697|H4038|F2621", "Leucocytes": r"A0174|K3232|H6740|E4358|C9784|C8824|E6953"}`
         length_of_stays : List[float], optional
             **EXAMPLE**: `[1, 30]`
-        source_terminologies : Dict[str, str], optional
-            Dictionary of regex used to detect terminology in the column `vocabulary_id`.
-            **EXAMPLE**: `{"GLIMS_LOINC": r"GLIMS.{0,20}LOINC"}`
-        mapping : List[Tuple[str, str, str]], optional
-            List of values to filter in the column `relationship_id` in order to map between 2 terminologies.
-            **EXAMPLE**: `[("ANALYSES_LABORATOIRE", "GLIMS_ANABIO", "Maps to")]`
         stay_source : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
         provenance_source : Union[str, Dict[str, str]], optional
@@ -163,16 +132,10 @@ class BiologyProbe(BaseProbe):
             self._index.remove("specialties_set")
         if length_of_stays is None and "length_of_stay" in self._index:
             self._index.remove("length_of_stay")
-        if age_range is None and "age_range" in self._index:
-            self._index.remove("age_range")
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
-        if concepts_sets is None and "concepts_set" in self._index:
-            self._index.remove("concepts_set")
-        else:
-            for terminology in self._standard_terminologies:
-                if "{}_concept_code".format(terminology) in self._index:
-                    self._index.remove("{}_concept_code".format(terminology))
+        if age_range is None and "age_range" in self._index:
+            self._index.remove("age_range")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -184,27 +147,67 @@ class BiologyProbe(BaseProbe):
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
             care_site_specialties=care_site_specialties,
-            concept_codes=concept_codes,
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
-            concepts_sets=concepts_sets,
             length_of_stays=length_of_stays,
-            source_terminologies=source_terminologies,
-            mapping=mapping,
             provenance_source=provenance_source,
             stay_source=stay_source,
             age_range=age_range,
             **kwargs,
         )
 
-    def get_viz_config(self, viz_type: str, **kwargs):
-        if viz_type in viz_configs.keys():
-            _viz_config = self._viz_config.get(viz_type)
-            if _viz_config is None:
-                _viz_config = self._completeness_predictor
-        else:
-            raise ValueError(f"edsteva has no {viz_type} registry !")
-        return viz_configs[viz_type].get(_viz_config)(self, **kwargs)
-
     def available_completeness_predictors(self):
         return list(completeness_predictors.get_all().keys())
+
+
+def test_base_viz_config(tmp_dir):
+    probe = CustomProbe()
+    probe.compute(
+        data=data_step,
+        start_date=data_step.t_min,
+        end_date=data_step.t_max,
+        stay_types={"HC": "hospitalisés", "Urg": "urgences"},
+        care_site_ids=["1", "2"],
+        care_site_short_names=["Hôpital-1", "Hôpital-2"],
+        concepts_sets=None,
+        note_types=None,
+        length_of_stays=None,
+    )
+    with pytest.raises(ValueError):
+        probe.get_viz_config(viz_type="unknown_plot")
+    model = StepFunction()
+    model.fit(
+        probe=probe,
+        start_date=data_step.t_min,
+        end_date=data_step.t_max,
+    )
+
+    normalized_probe_dashboard(
+        probe=probe,
+        fitted_model=model,
+        care_site_level="Hospital",
+        save_path=tmp_dir / "test.html",
+    )
+    probe_dashboard(
+        probe=probe,
+        care_site_level="Hospital",
+        save_path=tmp_dir / "test.html",
+    )
+    probe_plot(
+        probe=probe,
+        care_site_level="Hospital",
+        stay_type="HC",
+        care_site_id="1",
+        save_path=tmp_dir / "test.html",
+    )
+    normalized_probe_plot(
+        probe=probe,
+        fitted_model=model,
+        care_site_level="Hospital",
+        save_path=tmp_dir / "test.html",
+    )
+    estimates_densities_plot(
+        probe=probe,
+        fitted_model=model,
+        save_path=tmp_dir / "test.html",
+    )

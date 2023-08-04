@@ -67,6 +67,13 @@ OTHER_VISIT_COLUMNS = dict(
         ("Actif", 0.999),
         ("supprimé", 0.001),
     ],
+    stay_source_value=[
+        ("MCO", 0.7),
+        ("Psychiatrie", 0.1),
+        ("SSR", 0.1),
+        ("SLD", 0.1),
+    ],
+    provenance_source_value=[("service d'urgence", 0.2), ("non renseigné", 0.8)],
 )
 
 OTHER_CONDITION_COLUMNS = dict(
@@ -97,6 +104,7 @@ OTHER_DETAIL_COLUMNS = dict(
     ],
 )
 
+
 OTHER_NOTE_COLUMNS = dict(
     note_text=[
         ("Losem Ipsum", 0.999),
@@ -118,6 +126,8 @@ OTHER_MEASUREMENT_COLUMNS = dict(
         ("Initial", 0.02),
     ],
 )
+
+PERSON_COLUMN = dict(ratio_of_visits=0.9, age_mean=45, age_std=25)
 
 
 def add_other_columns(
@@ -141,6 +151,7 @@ class SyntheticData:
     id_detail_col: str = "visit_detail_id"
     id_note_col: str = "note_id"
     id_bio_col: str = "measurement_id"
+    id_person_col: str = "person_id"
     note_type_col: str = "note_class_source_value"
     note_date_col: str = "note_datetime"
     condition_date_col: str = "condition_start_datetime"
@@ -148,6 +159,7 @@ class SyntheticData:
     end_date_col: str = "visit_end_datetime"
     detail_date_col: str = "visit_detail_start_datetime"
     bio_date_col: str = "measurement_datetime"
+    birth_date_col: str = "birth_datetime"
     t_min: datetime = datetime(2010, 1, 1)
     t_max: datetime = datetime(2020, 1, 1)
     other_visit_columns: Dict = field(default_factory=lambda: OTHER_VISIT_COLUMNS)
@@ -159,6 +171,7 @@ class SyntheticData:
     other_measurement_columns: Dict = field(
         default_factory=lambda: OTHER_MEASUREMENT_COLUMNS
     )
+    person_column: Dict = field(default_factory=lambda: PERSON_COLUMN)
     seed: int = None
     mode: str = "step"
 
@@ -192,6 +205,7 @@ class SyntheticData:
             hospital_ids=hospital_ids,
             src_concept_name=src_concept_name,
         )
+        person = self._generate_person(visit_occurrence)
 
         self.care_site = care_site
         self.visit_occurrence = visit_occurrence
@@ -202,6 +216,7 @@ class SyntheticData:
         self.concept = concept
         self.concept_relationship = concept_relationship
         self.measurement = measurement
+        self.person = person
 
         self.list_available_tables()
 
@@ -286,6 +301,13 @@ class SyntheticData:
         )
         visit_occurrence[self.id_visit_col] = range(visit_occurrence.shape[0])
         visit_occurrence[self.id_visit_source_col] = range(visit_occurrence.shape[0])
+
+        visit_occurrence[self.id_person_col] = self.generator.integers(
+            0,
+            int(self.mean_visit * self.person_column["ratio_of_visits"]),
+            len(visit_occurrence),
+        )
+
         return add_other_columns(
             generator=self.generator,
             table=visit_occurrence,
@@ -657,6 +679,23 @@ class SyntheticData:
             other_columns=self.other_measurement_columns,
         )
 
+    def _generate_person(self, visit_occurrence):
+        person = visit_occurrence.groupby(self.id_person_col, as_index=False)[
+            self.date_col
+        ].min()
+        person = person.rename(columns={self.date_col: self.birth_date_col})
+        person[self.birth_date_col] = person[self.birth_date_col] - pd.to_timedelta(
+            self.generator.normal(
+                self.person_column["age_mean"],
+                self.person_column["age_std"],
+                len(person),
+            )
+            * 365,
+            unit="D",
+        )
+
+        return person
+
     def convert_to_koalas(self):
         if isinstance(self.care_site, ks.frame.DataFrame):
             logger.info("Module is already Koalas!")
@@ -670,6 +709,7 @@ class SyntheticData:
         self.concept = ks.DataFrame(self.concept)
         self.concept_relationship = ks.DataFrame(self.concept_relationship)
         self.measurement = ks.DataFrame(self.measurement)
+        self.person = ks.DataFrame(self.person)
         self.module = "koalas"
 
     def reset_to_pandas(self):
@@ -685,6 +725,7 @@ class SyntheticData:
         self.concept = self.concept.to_pandas()
         self.concept_relationship = self.concept_relationship.to_pandas()
         self.measurement = self.measurement.to_pandas()
+        self.person = self.person.to_pandas()
         self.module = "pandas"
 
     def delete_table(self, table_name: str) -> None:

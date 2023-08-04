@@ -8,6 +8,7 @@ from edsteva.probes.utils.prepare_df import (
     prepare_biology_relationship,
     prepare_care_site,
     prepare_measurement,
+    prepare_person,
     prepare_visit_occurrence,
 )
 from edsteva.probes.utils.utils import (
@@ -39,6 +40,9 @@ def compute_completeness_predictor_per_visit(
     length_of_stays: List[float],
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
+    age_range: List[int],
+    provenance_source: Union[str, Dict[str, str]],
+    stay_source: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -51,10 +55,15 @@ def compute_completeness_predictor_per_visit(
 
     Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,condition}$ the number of stays having at least one biological measurement recorded and $t$ is the month.
     """
-    self._metrics = ["c", "n_measurement"]
+    self._metrics = ["c", "n_visit", "n_visit_with_measurement"]
     check_tables(
         data=data,
-        required_tables=["measurement", "concept", "concept_relationship"],
+        required_tables=[
+            "measurement",
+            "concept",
+            "concept_relationship",
+            "visit_occurrence",
+        ],
     )
     standard_terminologies = self._standard_terminologies
     biology_relationship = prepare_biology_relationship(
@@ -67,13 +76,20 @@ def compute_completeness_predictor_per_visit(
     self.biology_relationship = biology_relationship
     root_terminology = mapping[0][0]
 
+    person = prepare_person(data)
+
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         start_date=start_date,
         end_date=end_date,
         stay_types=stay_types,
         length_of_stays=length_of_stays,
+        provenance_source=provenance_source,
+        stay_source=stay_source,
+        person=person,
+        age_range=age_range,
     )
+
     measurement = prepare_measurement(
         data=data,
         biology_relationship=biology_relationship,
@@ -142,7 +158,6 @@ def compute_completeness(
         predictor=n_visit_with_measurement,
         partition_cols=partition_cols,
     )
-
     # Visit total
     biology_columns = ["concepts_set"] + [
         "{}_concept_code".format(terminology)

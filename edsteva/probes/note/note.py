@@ -40,11 +40,14 @@ class NoteProbe(BaseProbe):
             "care_site_level",
             "stay_type",
             "length_of_stay",
+            "age_range",
             "note_type",
             "care_site_id",
             "care_site_specialty",
             "care_sites_set",
             "specialties_set",
+            "stay_source",
+            "provenance_source",
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -71,6 +74,9 @@ class NoteProbe(BaseProbe):
             "Ordonnance": "ordo",
             "CRH": "crh",
         },
+        provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
+        stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
+        age_range: List[int] = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -107,15 +113,23 @@ class NoteProbe(BaseProbe):
             **EXAMPLE**: `[1, 30]`
         note_types : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"CRH": "crh", "Urgence": "urge"}`
+        stay_source : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
+        provenance_source : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
+        age_range : List[int], optional
+            **EXAMPLE**: `[18, 64]`
         """
         if specialties_sets is None and "specialties_set" in self._index:
             self._index.remove("specialties_set")
-        if length_of_stays is None and "length_of_stay" in self._index:
-            self._index.remove("length_of_stay")
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
         if note_types is None and "note_type" in self._index:
             self._index.remove("note_type")
+        if length_of_stays is None and "length_of_stay" in self._index:
+            self._index.remove("length_of_stay")
+        if age_range is None and "age_range" in self._index:
+            self._index.remove("age_range")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -132,6 +146,9 @@ class NoteProbe(BaseProbe):
             specialties_sets=specialties_sets,
             note_types=note_types,
             length_of_stays=length_of_stays,
+            provenance_source=provenance_source,
+            stay_source=stay_source,
+            age_range=age_range,
             **kwargs,
         )
 

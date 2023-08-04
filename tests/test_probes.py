@@ -26,7 +26,7 @@ params = [
         note_predictor="per_visit_default",
         condition_predictor="per_visit_default",
         biology_predictor="per_visit_default",
-        care_site_levels=["Pole", "UF", "UC", "UH"],
+        care_site_levels=["Pole", "UF", "UC", "Unité d’hébergement (UH)"],
         care_site_short_names=None,
         care_site_ids=None,
         care_site_specialties="PSYCHIATRIE",
@@ -50,6 +50,9 @@ params = [
         end_date=datetime(2020, 1, 1),
         test_save=False,
         module="koalas",
+        stay_source={"MCO": "MCO", "MCO_PSY_SSR": "MCO|Psychiatrie|SSR"},
+        provenance_source={"All": ".*"},
+        age_range=[18, 64],
     ),
     dict(
         visit_predictor="per_visit_default",
@@ -73,6 +76,9 @@ params = [
         start_date="2010-01-03",
         end_date=None,
         test_save=False,
+        stay_source={"MCO": "MCO"},
+        provenance_source={"All": ".*"},
+        age_range=[18],
         module="koalas",
     ),
     dict(
@@ -97,6 +103,9 @@ params = [
         start_date=datetime(2010, 5, 10),
         end_date=datetime(2020, 1, 1),
         test_save=True,
+        stay_source={"MCO": "MCO"},
+        provenance_source={"All": ".*", "urgence": "service d'urgence"},
+        age_range=None,
         module="pandas",
     ),
 ]
@@ -185,6 +194,9 @@ def test_compute_visit_probe(data, params):
         care_sites_sets=params["care_sites_sets"],
         specialties_sets=params["specialties_sets"],
         length_of_stays=params["length_of_stays"],
+        stay_source=params["stay_source"],
+        provenance_source=params["provenance_source"],
+        age_range=params["age_range"],
     )
 
     # Care site levels
@@ -336,6 +348,9 @@ def test_compute_note_probe(data, params):
         specialties_sets=params["specialties_sets"],
         length_of_stays=params["length_of_stays"],
         note_types=params["note_types"],
+        stay_source=params["stay_source"],
+        provenance_source=params["provenance_source"],
+        age_range=params["age_range"],
     )
 
     # Care site levels
@@ -499,6 +514,9 @@ def test_compute_condition_probe(data, params):
         diag_types=params["diag_types"],
         condition_types=params["condition_types"],
         source_systems=params["source_systems"],
+        stay_source=params["stay_source"],
+        provenance_source=params["provenance_source"],
+        age_range=params["age_range"],
     )
 
     # Care site levels
@@ -686,6 +704,9 @@ def test_compute_biology_probe(data, params):
         length_of_stays=params["length_of_stays"],
         concepts_sets=params["concepts_sets"],
         concept_codes=params["concept_codes"],
+        stay_source=params["stay_source"],
+        provenance_source=params["provenance_source"],
+        age_range=params["age_range"],
     )
 
     # Care site levels

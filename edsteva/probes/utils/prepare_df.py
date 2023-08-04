@@ -9,6 +9,7 @@ from edsteva.utils.framework import get_framework, is_koalas, to
 from edsteva.utils.typing import Data, DataFrame
 
 from .filter_df import (
+    filter_table_by_age,
     filter_table_by_care_site,
     filter_table_by_date,
     filter_table_by_length_of_stay,
@@ -20,9 +21,13 @@ from .filter_df import (
 def prepare_visit_occurrence(
     data: Data,
     stay_types: Union[str, Dict[str, str]],
+    stay_source: Union[str, Dict[str, str]],
+    provenance_source: Union[str, Dict[str, str]],
     length_of_stays: List[float],
+    age_range: List[int] = None,
     start_date: datetime = None,
     end_date: datetime = None,
+    person: DataFrame = None,
 ):
     required_columns = [
         "visit_occurrence_id",
@@ -31,8 +36,12 @@ def prepare_visit_occurrence(
         "visit_end_datetime",
         "care_site_id",
         "row_status_source_value",
+        "stay_source_value",
         "visit_occurrence_source_value",
+        "provenance_source_value",
+        "person_id",
     ]
+
     check_columns(
         data.visit_occurrence,
         required_columns=required_columns,
@@ -45,6 +54,24 @@ def prepare_visit_occurrence(
         table_name="visit_occurrence",
         invalid_naming="supprimé",
     )
+
+    if stay_source:
+        visit_occurrence = filter_table_by_type(
+            table=visit_occurrence,
+            table_name="visit_occurrence",
+            type_groups=stay_source,
+            source_col="stay_source_value",
+            target_col="stay_source",
+        )
+
+    if provenance_source:
+        visit_occurrence = filter_table_by_type(
+            table=visit_occurrence,
+            table_name="visit_occurrence",
+            type_groups=provenance_source,
+            source_col="provenance_source_value",
+            target_col="provenance_source",
+        )
 
     if length_of_stays:
         visit_occurrence = filter_table_by_length_of_stay(
@@ -69,6 +96,13 @@ def prepare_visit_occurrence(
             type_groups=stay_types,
             source_col="stay_type",
             target_col="stay_type",
+        )
+
+    if age_range:
+        visit_occurrence = visit_occurrence.merge(person, on="person_id")
+        visit_occurrence = filter_table_by_age(
+            visit_occurrence=visit_occurrence,
+            age_range=age_range,
         )
 
     return visit_occurrence
@@ -324,7 +358,6 @@ def prepare_care_site(
             source_col="care_site_short_name",
             target_col="care_sites_set",
         )
-
     # Add specialties_set
     if specialties_sets:
         care_site = filter_table_by_type(
@@ -631,6 +664,7 @@ def prepare_biology_relationship(
             ].isna(),
             biology_relationship["GLIMS_{}_concept_name".format(standard_terminology)],
         )
+
         biology_relationship["{}_vocabulary".format(standard_terminology)] = "ITM"
         biology_relationship[
             "{}_vocabulary".format(standard_terminology)
@@ -640,4 +674,23 @@ def prepare_biology_relationship(
             ].isna(),
             "GLIMS",
         )
+
     return biology_relationship
+
+
+def prepare_person(
+    data: Data,
+):
+    check_tables(
+        data=data,
+        required_tables=["person"],
+    )
+
+    person_columns = ["person_id", "birth_datetime"]
+
+    check_columns(
+        data.person,
+        required_columns=person_columns,
+        df_name="person",
+    )
+    return data.person[person_columns]
