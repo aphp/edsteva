@@ -9,6 +9,12 @@ vertical_bar_charts = dict(
             "sort": "-y",
         },
         {
+            "title": "Care site level",
+            "field": "care_site_level",
+            "type": "nominal",
+            "sort": "-y",
+        },
+        {
             "title": "Stay type",
             "field": "stay_type",
             "type": "nominal",
@@ -21,14 +27,14 @@ vertical_bar_charts = dict(
             "sort": "-y",
         },
         {
-            "title": "Provenance source",
-            "field": "provenance_source",
+            "title": "Length of stay",
+            "field": "length_of_stay",
             "type": "nominal",
             "sort": "-y",
         },
         {
-            "title": "Length of stay",
-            "field": "length_of_stay",
+            "title": "Provenance source",
+            "field": "provenance_source",
             "type": "nominal",
             "sort": "-y",
         },

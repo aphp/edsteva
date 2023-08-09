@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Dict, List, Union
 
 import pandas as pd
-from loguru import logger
 
 from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
@@ -18,7 +17,7 @@ from edsteva.probes.utils.utils import (
     hospital_only,
     impute_missing_dates,
 )
-from edsteva.utils.checks import check_condition_source_systems, check_tables
+from edsteva.utils.checks import check_tables
 from edsteva.utils.framework import is_koalas, to
 from edsteva.utils.typing import Data, DataFrame
 
@@ -29,21 +28,21 @@ def compute_completeness_predictor_per_condition(
     care_site_relationship: pd.DataFrame,
     start_date: datetime,
     end_date: datetime,
-    care_site_levels: List[str],
-    stay_types: Union[str, Dict[str, str]],
+    care_site_levels: Union[bool, str, List[str]],
+    stay_types: Union[bool, str, Dict[str, str]],
     care_site_ids: List[int],
     extra_data: Data,
     care_site_short_names: List[str],
-    care_site_specialties: List[str],
+    care_site_specialties: Union[bool, List[str]],
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
-    diag_types: Union[str, Dict[str, str]],
-    condition_types: Union[str, Dict[str, str]],
-    source_systems: List[str],
+    diag_types: Union[bool, str, Dict[str, str]],
+    condition_types: Union[bool, str, Dict[str, str]],
+    source_systems: Union[bool, List[str]],
     length_of_stays: List[float],
-    age_range: List[int],
-    provenance_source: Union[str, Dict[str, str]],
-    stay_source: Union[str, Dict[str, str]],
+    age_ranges: List[int],
+    provenance_sources: Union[bool, str, Dict[str, str]],
+    stay_sources: Union[bool, str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -59,11 +58,6 @@ def compute_completeness_predictor_per_condition(
 
     self._metrics = ["c", "n_condition"]
     check_tables(data=data, required_tables=["condition_occurrence"])
-    check_condition_source_systems(source_systems=source_systems)
-    if "AREM" in source_systems and not hospital_only(
-        care_site_levels=care_site_levels
-    ):  # pragma: no cover
-        logger.info("AREM claim data are only available at hospital level")
 
     person = prepare_person(data)
 
@@ -71,10 +65,10 @@ def compute_completeness_predictor_per_condition(
         data=data,
         stay_types=stay_types,
         length_of_stays=length_of_stays,
-        provenance_source=provenance_source,
-        stay_source=stay_source,
+        provenance_sources=provenance_sources,
+        stay_sources=stay_sources,
         person=person,
-        age_range=age_range,
+        age_ranges=age_ranges,
     ).drop(columns="date")
 
     condition_occurrence = prepare_condition_occurrence(

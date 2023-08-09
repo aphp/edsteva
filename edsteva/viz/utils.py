@@ -402,9 +402,6 @@ def filter_data(
     data: pd.DataFrame,
     table_name: str = "predictor",
     care_site_level: str = None,
-    stay_type: List[str] = None,
-    care_site_id: List[int] = None,
-    care_site_short_name: List[int] = None,
     start_date: Union[datetime, str] = None,
     end_date: Union[datetime, str] = None,
     **kwargs,
@@ -419,7 +416,7 @@ def filter_data(
         )
 
     # Care site level
-    if care_site_level:
+    if care_site_level and "care_site_level" in data.columns:
         if not isinstance(care_site_level, list):
             care_site_level = [care_site_level]
         care_site_levels = []
@@ -440,58 +437,17 @@ def filter_data(
             care_site_levels,
         )
 
-    # Stay type
-    if stay_type:
-        if not isinstance(stay_type, list):
-            stay_type = [stay_type]
-        data = data[data.stay_type.isin(stay_type)]
-        logger.debug(
-            "{} has been filtered on the selected stay type : {}",
-            table_name.capitalize(),
-            stay_type,
-        )
-
-    # Care site id
-    if care_site_id:
-        if not isinstance(care_site_id, list):
-            care_site_id = [care_site_id]
-        data = data[data.care_site_id.isin(care_site_id)]
-        logger.debug(
-            "{} has been filtered on the selected care site id : {}",
-            table_name.capitalize(),
-            care_site_id,
-        )
-
-    # Care site short name
-    if care_site_short_name:
-        if not isinstance(care_site_short_name, list):
-            care_site_short_name = [care_site_short_name]
-        data = data[data.care_site_short_name.isin(care_site_short_name)]
-        logger.debug(
-            "{} has been filtered on the selected care site short name : {}",
-            table_name.capitalize(),
-            care_site_short_name,
-        )
-
-    # Others
     for key, value in kwargs.items():
-        if not isinstance(value, list):
-            value = [value]
         if key in data.columns:
+            if not isinstance(value, list):
+                value = [value]
             data = data[data[key].isin(value)]
             logger.debug(
                 "{} has been filtered on the selected {} : {}",
                 table_name.capitalize(),
-                key,
+                key.replace("_", " "),
                 value,
             )
-
-    # Care site specialty
-    if (
-        "care_site_specialty" in data.columns
-        and data[~(data.care_site_specialty == "Non renseigné")].empty
-    ):
-        data = data.drop(columns="care_site_specialty")
 
     if data.empty:
         raise TypeError("Empty {}: no data to plot.".format(table_name))

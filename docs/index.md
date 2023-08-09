@@ -105,7 +105,7 @@ pip install edsteva==0.2.4
 ```
 ## Working example: administrative records relative to visits
 
-Let's consider a basic category of data: administrative records relative to visits. Visits are characterized by a stay type (full hospitalisation, emergency, consultation, etc.). In this example, the objective is to estimate the availability of visits records with respect to time, care site and stay type.
+Let's consider a basic category of data: administrative records relative to visits. A visit is characterized by a care site, a length of stay, a stay type (full hospitalisation, emergency, consultation, etc.) and other characteristics. In this example, the objective is to estimate the availability of visits records with respect to time, care site and stay type.
 
 ### 1. Load your [data][loading-data]
 
@@ -164,7 +164,7 @@ As detailled in [the dedicated section][loading-data], EDS-TeVa is expecting to 
 !!! info "Probe"
     A [Probe][probe] is a python class designed to compute a completeness predictor $c(t)$ that characterizes data availability of a target variable over time $t$.
 
-In this example, $c(t)$ predicts the availability of administrative records relative to visits. It is defined for each care site and stay type as the number of visits $n_{visit}(t)$ per month $t$, normalized by the maximum number of records per month $n_{max} = \max_{t}(n_{visit}(t))$ computed over the entire study period:
+In this example, $c(t)$ predicts the availability of administrative records relative to visits. It is defined for each characteristic (care site, stay type, age range, length of stay, etc.) as the number of visits $n_{visit}(t)$ per month $t$, normalized by the maximum number of records per month $n_{max} = \max_{t}(n_{visit}(t))$ computed over the entire study period:
 
 $$
 c(t) = \frac{n_{visit}(t)}{n_{max}}
@@ -188,19 +188,29 @@ probe_path = "my_path/visit.pkl"
 visit = VisitProbe()
 visit.compute(
     data,
+    care_site_levels=["Hospital", "Pole", "UF"],  # (1)
     stay_types={
         "All": ".*",
-        "Urg_Hospit": "urgence|hospitalisés",  # (1)
+        "Urg_Hospit": "urgence|hospitalisés",  # (2)
     },
-    care_site_levels=["Hospital", "Pole", "UF"],  # (2)
+    care_site_specialties=None,  # (3)
+    stay_sources=None,  # (4)
+    length_of_stays=None,  # (5)
+    provenance_sources=None,  # (6)
+    age_ranges=None,  # (7)
 )
-visit.save(path=probe_path)  # (3)
+visit.save(path=probe_path)  # (8)
 visit.predictor.head()
 ```
 
-1. The stay_types argument expects a python dictionary with labels as keys and regex as values.
-2. The care sites are articulated into levels (cf. [AP-HP's reference structure](https://doc-new.eds.aphp.fr/donnees_dispo/donnees_par_domaine/R%C3%A9f%C3%A9rentielsStructures)).
-3. Saving the Probe after computation saves you from having to compute it again. You just use `VisitProbe.load(path=probe_path)`.
+1. The care sites are articulated into levels (cf. [AP-HP's reference structure](https://bigdata-pages.eds.aphp.fr/omop/dev/clinical_data/care_site/#schema-de-la-hierarchie-des-structures)). Here, as an example, we are only interested in those three levels.
+2. The ``stay_types`` argument expects a python dictionary with labels as keys and regex as values.
+3. In this example we want to ignore the care site specialty (e.g., Cardiology, Pediatrics).
+4. In this example we want to ignore the stay source (e.g., MCO, SSR, PSY).
+5. In this example we want to ignore the length of stay (e.g., $>=$ 7 days, $<=$ 2 days).
+6. In this example we want to ignore the provenance source (e.g., service d'urgence, d'une unité de soins de courte durée).
+7. In this example we want to ignore the age range (e.g., 0-18 years, 18-25 years, 25-30 years).
+8. Saving the Probe after computation saves you from having to compute it again. You just use `VisitProbe.load(path=probe_path)`.
 
 ``Saved to /my_path/visit.pkl``
 
@@ -214,7 +224,7 @@ visit.predictor.head()
 
 #### 2.2 Filter your Probe
 
-In this example, we consider the poles of three hospitals. We consequently filter data before any further analysis.
+In this example, we are interested in three hospitals. We consequently filter data before any further analysis.
 
 ```python
 from edsteva.probes import VisitProbe
@@ -238,7 +248,6 @@ from edsteva.viz.dashboards import probe_dashboard
 
 probe_dashboard(
     probe=filtered_visit,
-    care_site_level="Pole",
 )
 ```
 Interactive dashboard is available [here](assets/charts/interactive_visit.html)
@@ -331,7 +340,6 @@ from edsteva.viz.dashboards import probe_dashboard
 probe_dashboard(
     probe=filtered_visit,
     fitted_model=step_function_model,
-    care_site_level="Pole",
 )
 ```
 Interactive dashboard is available [here](assets/charts/interactive_fitted_visit.html).
@@ -391,7 +399,6 @@ from edsteva.viz.dashboards import estimates_dashboard
 estimates_dashboard(
     probe=filtered_visit,
     fitted_model=step_function_model,
-    care_site_level="Pole",
 )
 ```
 

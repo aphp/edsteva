@@ -1,6 +1,6 @@
 import datetime
 from abc import ABCMeta, abstractmethod
-from typing import ClassVar, Dict, List, Union
+from typing import ClassVar, List, Union
 
 import altair as alt
 import pandas as pd
@@ -21,9 +21,9 @@ class BaseProbe(metaclass=ABCMeta):
     Attributes
     ----------
     _schema: List[str]
-        The columns a predictor must have
+        The columns a predictor must have.
 
-        **VALUE**: ``["care_site_id", "care_site_level", "stay_type", "date", "c"]``
+        **VALUE**: ``["date", "c"]``
     predictor: pd.DataFrame
         Available with the [``compute()``][edsteva.probes.base.BaseProbe.compute] method
     _cache_predictor: pd.DataFrame
@@ -36,7 +36,7 @@ class BaseProbe(metaclass=ABCMeta):
         It describes the care site structure (cf. [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship])
     """
 
-    _schema: ClassVar[List[str]] = ["care_site_level", "care_site_id", "date", "c"]
+    _schema: ClassVar[List[str]] = ["date", "c"]
 
     def __init__(
         self,
@@ -127,9 +127,6 @@ class BaseProbe(metaclass=ABCMeta):
         care_site_relationship: pd.DataFrame,
         start_date: datetime,
         end_date: datetime,
-        care_site_levels: List[str],
-        stay_types: Union[str, Dict[str, str]],
-        care_site_ids: List[int],
         **kwargs,
     ) -> pd.DataFrame:
         """Process the data in order to obtain a predictor table"""
@@ -139,9 +136,6 @@ class BaseProbe(metaclass=ABCMeta):
         data: Data,
         start_date: datetime = None,
         end_date: datetime = None,
-        care_site_levels: List[str] = None,
-        stay_types: Union[str, Dict[str, str]] = None,
-        care_site_ids: List[int] = None,
         with_cache: bool = True,
         **kwargs,
     ) -> None:
@@ -165,12 +159,6 @@ class BaseProbe(metaclass=ABCMeta):
             **EXAMPLE**: `"2019-05-01"`
         end_date : datetime, optional
             **EXAMPLE**: `"2021-07-01"`
-        care_site_levels : List[str], optional
-            **EXAMPLE**: `["Hospital", "Pole", "UF"]`
-        stay_types : Union[str, Dict[str, str]], optional
-            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés`
-        care_site_ids : List[int], optional
-            **EXAMPLE**: `[8312056386, 8312027648]`
 
         Attributes
         ----------
@@ -215,9 +203,6 @@ class BaseProbe(metaclass=ABCMeta):
             care_site_relationship=care_site_relationship,
             start_date=start_date,
             end_date=end_date,
-            care_site_levels=care_site_levels,
-            stay_types=stay_types,
-            care_site_ids=care_site_ids,
             **kwargs,
         )
         self.is_computed_probe()

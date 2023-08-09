@@ -23,16 +23,20 @@ class RectangleFunction(BaseModel):
     Attributes
     ----------
     _algo: List[str]
-        Algorithm used to compute the estimates
+        Algorithm used to compute the estimates.
+
         **VALUE**: ``"loss_minimization"``
     _coefs: List[str]
-        Model coefficients
+        Model coefficients.
+
         **VALUE**: ``["t_0", "c_0", "t_1"]``
     _default_metrics: List[str]
-        Metrics to used by default
+        Metrics to used by default.
+
         **VALUE**: ``[error_between_t0_t1]``
     _viz_config: List[str]
         Dictionary of configuration for visualization purpose.
+
         **VALUE**: ``{}``
 
     Example
@@ -87,7 +91,8 @@ class RectangleFunction(BaseModel):
         predictor : pd.DataFrame
             Target variable to be fitted
         index : List[str], optional
-            Variable from which data is grouped
+            Variable from which data is grouped.
+
             **EXAMPLE**: `["care_site_level", "stay_type", "note_type", "care_site_id"]`
         """
         return algos.get(self._algo)(predictor=predictor, index=index, **kwargs)
