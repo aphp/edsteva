@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import pandas as pd
 from loguru import logger
@@ -56,7 +56,7 @@ def impute_missing_dates(
     ).fillna({col: 0 for col in set(predictor.columns) - set(partition_cols)})
 
 
-def hospital_only(care_site_levels: List[str]):
+def hospital_only(care_site_levels: Union[bool, str, List[str]]):
     if not isinstance(care_site_levels, list):
         care_site_levels = [care_site_levels]
     return len(care_site_levels) == 1 and (
@@ -67,10 +67,10 @@ def hospital_only(care_site_levels: List[str]):
 
 def concatenate_predictor_by_level(
     predictor_by_level: Dict[str, DataFrame],
-    care_site_levels: List[str] = None,
+    care_site_levels: Union[bool, str, List[str]],
 ) -> DataFrame:
     predictors_to_concat = []
-    if care_site_levels:
+    if care_site_levels and isinstance(care_site_levels, (list, str)):
         if not isinstance(care_site_levels, list):
             care_site_levels = [care_site_levels]
         unknown_levels, unavailable_levels, selected_levels = [], [], []
@@ -106,19 +106,18 @@ def concatenate_predictor_by_level(
                 "The following levels: {} are not available for this probe.",
                 unavailable_levels,
             )
+        if not predictors_to_concat:
+            raise AttributeError(
+                "care site levels must include at least one of the following levels: {}".format(
+                    list(CARE_SITE_LEVEL_NAMES.values())
+                    + list(CARE_SITE_LEVEL_NAMES.keys())
+                )
+            )
     else:
         predictors_to_concat = list(predictor_by_level.values())
         logger.debug(
             "The following levels {} have been selected",
             list(predictor_by_level.keys()),
-        )
-
-    if not predictors_to_concat:
-        raise AttributeError(
-            "care site levels must include at least one of the following levels: {}".format(
-                list(CARE_SITE_LEVEL_NAMES.values())
-                + list(CARE_SITE_LEVEL_NAMES.keys())
-            )
         )
 
     return get_framework(predictors_to_concat[0]).concat(predictors_to_concat)

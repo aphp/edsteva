@@ -27,17 +27,17 @@ def compute_completeness_predictor_per_visit(
     care_site_relationship: pd.DataFrame,
     start_date: datetime,
     end_date: datetime,
-    care_site_levels: List[str],
-    stay_types: Union[str, Dict[str, str]],
+    care_site_levels: Union[bool, str, List[str]],
+    stay_types: Union[bool, str, Dict[str, str]],
     care_site_ids: List[int],
     care_site_short_names: List[str],
-    care_site_specialties: List[str],
+    care_site_specialties: Union[bool, List[str]],
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     length_of_stays: List[float],
-    age_range: List[int],
-    provenance_source: Union[str, Dict[str, str]],
-    stay_source: Union[str, Dict[str, str]],
+    age_ranges: List[int],
+    provenance_sources: Union[bool, str, Dict[str, str]],
+    stay_sources: Union[bool, str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -60,10 +60,10 @@ def compute_completeness_predictor_per_visit(
         end_date=end_date,
         stay_types=stay_types,
         length_of_stays=length_of_stays,
-        stay_source=stay_source,
-        provenance_source=provenance_source,
+        stay_sources=stay_sources,
+        provenance_sources=provenance_sources,
         person=person,
-        age_range=age_range,
+        age_ranges=age_ranges,
     )
 
     care_site = prepare_care_site(

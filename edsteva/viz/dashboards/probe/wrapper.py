@@ -1,6 +1,6 @@
 import uuid
 from copy import deepcopy
-from typing import Dict
+from typing import Dict, List
 
 import altair as alt
 from IPython.display import HTML, display
@@ -15,7 +15,7 @@ from edsteva.viz.utils import filter_data, save_html
 def probe_dashboard(
     probe: BaseProbe,
     fitted_model: BaseModel = None,
-    care_site_level: str = None,
+    care_site_level: List[str] = None,
     save_path: str = None,
     legend_predictor: str = "Predictor c(t)",
     legend_model: str = "Model f(t)",
@@ -43,10 +43,11 @@ def probe_dashboard(
         Class describing the completeness predictor $c(t)$.
     fitted_model : BaseModel, optional
         Model fitted to the probe.
-    care_site_level : str, optional
-        **EXAMPLE**: `"Hospital"`, `"Hôpital"` or `"UF"`
+    care_site_level : List[str], optional
+        **EXAMPLE**: `["Hospital"]`, `["Hôpital", "UF"]` or `["UF", "UH"]`
     save_path : str, optional
         Folder path where to save the chart in HTML format.
+
         **EXAMPLE**: `"my_folder/my_file.html"`
     legend_predictor: str, optional,
         Label name for the predictor legend.
@@ -70,6 +71,7 @@ def probe_dashboard(
         If not None, configuration used to construct the time line.
     chart_style: Dict[str, float], optional
         If not None, configuration used to configure the chart style.
+
         **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
     """
 

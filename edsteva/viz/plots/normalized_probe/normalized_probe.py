@@ -25,12 +25,9 @@ from edsteva.viz.utils import (
 def normalized_probe_plot(
     probe: BaseProbe,
     fitted_model: BaseModel,
-    care_site_level: str = None,
-    stay_type: List[str] = None,
-    care_site_id: List[int] = None,
+    care_site_level: List[str] = None,
     start_date: Union[datetime, str] = None,
     end_date: Union[datetime, str] = None,
-    care_site_short_name: List[int] = None,
     t_min: int = None,
     t_max: int = None,
     save_path: str = None,
@@ -56,23 +53,19 @@ def normalized_probe_plot(
         Class describing the completeness predictor $c(t)$
     fitted_model : BaseModel
         Model fitted to the probe
-    care_site_level : str, optional
-        **EXAMPLE**: `"Hospital"`, `"Hôpital"` or `"UF"`
-    stay_type : List[str], optional
-        **EXAMPLE**: `"All"` or `["All", "Urg"]`
-    care_site_id : List[int], optional
-        **EXAMPLE**: `[8312056386, 8312027648]`
+    care_site_level : List[str], optional
+        **EXAMPLE**: `["Hospital"]`, `["Hôpital", "UF"]` or `["UF", "UH"]`
     start_date : datetime, optional
         **EXAMPLE**: `"2019-05-01"`
     end_date : datetime, optional
         **EXAMPLE**: `"2021-07-01"`
-    care_site_short_name : List[int], optional
-        **EXAMPLE**: `"HOSPITAL XXXX"`
     t_min : int, optional
-        Minimal difference with $t_0$ in month $\Delta t_{min}$
+        Minimal difference with $t_0$ in month $\Delta t_{min}$.
+
         **EXAMPLE**: `-24`
     t_max : int, optional
-        Maximal difference with $t_0$ in month $\Delta t_{max}$
+        Maximal difference with $t_0$ in month $\Delta t_{max}$.
+
         **EXAMPLE**: `24`
     save_path : str, optional
         Folder path where to save the chart in HTML format.
@@ -94,6 +87,7 @@ def normalized_probe_plot(
         If not None, configuration used to construct the estimates filters.
     chart_style: Dict[str, float], optional
         If not None, configuration used to configure the chart style.
+
         **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
     indexes_to_remove: List[str], optional
         indexes to remove from the groupby selection.
@@ -126,9 +120,6 @@ def normalized_probe_plot(
     predictor = filter_data(
         data=predictor,
         care_site_level=care_site_level,
-        stay_type=stay_type,
-        care_site_id=care_site_id,
-        care_site_short_name=care_site_short_name,
         start_date=start_date,
         end_date=end_date,
         **kwargs,

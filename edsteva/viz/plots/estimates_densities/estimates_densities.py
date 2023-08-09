@@ -21,12 +21,9 @@ from edsteva.viz.utils import (
 def estimates_densities_plot(
     fitted_model: BaseModel,
     probe: BaseProbe = None,
-    care_site_level: str = None,
-    stay_type: List[str] = None,
-    care_site_id: List[int] = None,
+    care_site_level: List[str] = None,
     start_date: Union[datetime, str] = None,
     end_date: Union[datetime, str] = None,
-    care_site_short_name: List[int] = None,
     save_path: str = None,
     vertical_bar_charts_config: Dict[str, str] = None,
     horizontal_bar_charts_config: Dict[str, str] = None,
@@ -42,20 +39,15 @@ def estimates_densities_plot(
     probe : BaseProbe
         Class describing the completeness predictor $c(t)$
     fitted_model : BaseModel
-        Model with estimates of interest
+        Model with estimates of interest.
+
         **EXAMPLE**: StepFunction Model with $(\hat{t_0}, \hat{c_0})$
-    care_site_level : str, optional
-        **EXAMPLE**: `"Hospital"`, `"Hôpital"` or `"UF"`
-    stay_type : List[str], optional
-        **EXAMPLE**: `"All"` or `["All", "Urg"]`
-    care_site_id : List[int], optional
-        **EXAMPLE**: `[8312056386, 8312027648]`
+    care_site_level : List[str], optional
+        **EXAMPLE**: `["Hospital"]`, `["Hôpital", "UF"]` or `["UF", "UH"]`
     start_date : datetime, optional
         **EXAMPLE**: `"2019-05-01"`
     end_date : datetime, optional
         **EXAMPLE**: `"2021-07-01"`
-    care_site_short_name : List[int], optional
-        **EXAMPLE**: `"HOSPITAL XXXX"`
     save_path : str, optional
         Folder path where to save the chart in HTML format.
     vertical_bar_charts_config: Dict[str, str], optional
@@ -64,6 +56,7 @@ def estimates_densities_plot(
         Configuration used to construct the horizontal bar charts.
     chart_style: Dict[str, float], optional
         Configuration used to configure the chart style.
+
         **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
     y_axis_title: str, optional,
         Label name for the y axis.
@@ -75,9 +68,6 @@ def estimates_densities_plot(
         data=estimates,
         table_name="estimates",
         care_site_level=care_site_level,
-        stay_type=stay_type,
-        care_site_id=care_site_id,
-        care_site_short_name=care_site_short_name,
         **kwargs,
     )
     if probe is not None:
@@ -179,21 +169,14 @@ def estimates_densities_plot(
             time_estimates.append(estimate_density)
 
     estimates_densities = time_estimates + quantitative_estimates
-    care_site_level_dropdwon = alt.binding_select(
-        options=estimates["care_site_level"].unique(), name="Care site level : "
-    )
-    care_site_level_selection = alt.selection_point(
-        fields=["care_site_level"],
-        bind=care_site_level_dropdwon,
-        value=estimates["care_site_level"].unique()[0],
-    )
+
     chart = reduce(
         lambda estimate_density_1, estimate_density_2: estimate_density_1
         & estimate_density_2,
         estimates_densities,
     )
     if probe is not None:
-        base = alt.Chart(predictor).add_params(care_site_level_selection)
+        base = alt.Chart(predictor)
 
         horizontal_bar_charts, y_variables_selections = generate_horizontal_bar_charts(
             base=base,
@@ -209,7 +192,6 @@ def estimates_densities_plot(
         selections = dict(
             y_variables_selections,
             **x_variables_selections,
-            **dict(cares_site_level=care_site_level_selection),
         )
         selection_charts = dict(
             horizontal_bar_charts,
@@ -224,6 +206,18 @@ def estimates_densities_plot(
             horizontal_bar_charts=horizontal_bar_charts,
             vertical_bar_charts=vertical_bar_charts,
             spacing=0,
+        )
+    elif "care_site_level" in estimates.columns:
+        care_site_level_dropdwon = alt.binding_select(
+            options=estimates["care_site_level"].unique(), name="Care site level : "
+        )
+        care_site_level_selection = alt.selection_point(
+            fields=["care_site_level"],
+            bind=care_site_level_dropdwon,
+            value=estimates["care_site_level"].unique()[0],
+        )
+        chart = chart.add_params(care_site_level_selection).transform_filter(
+            care_site_level_selection
         )
     if chart_style:
         chart = configure_style(chart=chart, chart_style=chart_style)

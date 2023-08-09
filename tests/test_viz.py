@@ -63,7 +63,7 @@ def test_viz_fail(data, Model, Probe, tmp_dir):
             x_axis_title="x_axis",
             y_axis_title="y_axis",
             save_path=tmp_dir / "test.html",
-            care_site_specialty="fail",
+            stay_type="fail",
         )
     with pytest.raises(AttributeError):
         probe_plot(
@@ -225,10 +225,6 @@ def test_viz_probe(data, Model, Probe, tmp_dir):
             probe_plot(
                 probe=probe,
                 care_site_level="Hospital",
-                stay_type="HC",
-                care_site_id="1",
-                care_site_short_name="Hôpital-1",
-                care_site_specialty="Non renseigné",
                 start_date=data.t_min,
                 end_date=data.t_max,
                 x_axis_title="x_axis",

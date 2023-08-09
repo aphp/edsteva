@@ -8,7 +8,6 @@ from IPython.display import HTML, display
 
 from edsteva.models.base import BaseModel
 from edsteva.probes.base import BaseProbe
-from edsteva.probes.utils.utils import CARE_SITE_LEVEL_NAMES
 from edsteva.viz.utils import (
     add_estimates_filters,
     add_interactive_selection,
@@ -32,7 +31,7 @@ from edsteva.viz.utils import (
 def normalized_probe_dashboard(
     probe: BaseProbe,
     fitted_model: BaseModel,
-    care_site_level: str = CARE_SITE_LEVEL_NAMES["Hospital"],
+    care_site_level: List[str] = None,
     save_path: str = None,
     x_axis_title: str = None,
     y_axis_title: str = None,
@@ -62,8 +61,8 @@ def normalized_probe_dashboard(
         Class describing the completeness predictor $c(t)$
     fitted_model : BaseModel
         Model fitted to the probe
-    care_site_level : str, optional
-        **EXAMPLE**: `"Hospital"`, `"Hôpital"` or `"UF"`
+    care_site_level : List[str], optional
+        **EXAMPLE**: `["Hospital"]`, `["Hôpital", "UF"]` or `["UF", "UH"]`
     save_path : str, optional
         Folder path where to save the chart in HTML format.
     x_axis_title: str, optional,

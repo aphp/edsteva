@@ -42,6 +42,7 @@ def loss_minimization(
         $c(t)$ computed in the Probe.
     index : List[str]
         Variable from which data is grouped.
+
         **EXAMPLE**: `["care_site_level", "stay_type", "note_type", "care_site_id"]`
     x_col : str, optional
         Column name for the time variable $t$.
