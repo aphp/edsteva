@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block announce %}
+{% filter markdown %}
+{% include "/announce_bar.md" %}
+{% endfilter %}
+{% endblock %}
