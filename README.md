@@ -1,6 +1,6 @@
-<p align="center">
+<!-- <p align="center">
 <b>DISCLAIMER: </b>EDS-TeVa is intended to be a module of <a href="https://github.com/aphp/EDS-Scikit">EDS-Scikit</a>
-</p>
+</p> -->
 
 <div align="center">
 
@@ -14,23 +14,33 @@
 <a href="https://aphp.github.io/edsteva/latest/" target="_blank">
     <img src="https://img.shields.io/github/actions/workflow/status/aphp/edsteva/documentation.yaml?branch=main&label=docs&style=flat" alt="Documentation">
 </a>
-<a href="https://pypi.org/project/edsteva/" target="_blank">
-    <img src="https://img.shields.io/pypi/v/edsteva?color=blue&style=flat" alt="PyPI">
-</a>
 <a href="https://codecov.io/github/aphp/edsteva?branch=main" target="_blank">
-    <img src="https://codecov.io/github/aphp/edsteva/coverage.svg?branch=main" alt="Codecov">
-</a>
-<a href="https://github.com/psf/black" target="_blank">
-    <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Black">
-</a>
-<a href="https://python-poetry.org/" target="_blank">
-    <img src="https://img.shields.io/badge/reproducibility-poetry-blue" alt="Poetry">
+    <img src="https://codecov.io/github/aphp/edsteva/coverage.svg?branch=main"
+    alt="Codecov">
 </a>
 <a href="https://www.python.org/" target="_blank">
-    <img src="https://img.shields.io/badge/python-~3.7.1-brightgreen" alt="Supported Python versions">
+    <img src="https://img.shields.io/badge/python-~3.7.1-brightgreen"
+    alt="Supported Python versions">
+</a>
+<a href="https://pypi.org/project/edsteva/" target="_blank">
+    <img src="https://img.shields.io/pypi/v/edsteva?color=blue&style=flat"
+    alt="PyPI">
+</a>
+<a href="https://python-poetry.org/" target="_blank">
+    <img src="https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json"
+    alt="Poetry">
+</a>
+<a href="https://zenodo.org/badge/latestdoi/572079865">
+    <img src="https://zenodo.org/badge/572079865.svg"
+    alt="DOI">
+</a>
+<a href="https://github.com/psf/black" target="_blank">
+    <img src="https://img.shields.io/badge/code%20style-black-000000.svg"
+    alt="Black">
 </a>
 <a href="https://github.com/astral-sh/ruff" target="_blank">
-    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json" alt="Ruff">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json"
+    alt="Ruff">
 </a>
 </p>
 </div>
@@ -63,7 +73,7 @@ pip install edsteva==0.2.5
 ```
 ## Example
 
-A scientific paper is currently being written that describes extensively the use of the library on the study of pulmonary embolism of cancer patients.
+A scientific paper is currently being written that describes extensively the use of the library on the study of quality and epidemiological indicators.
 
 ## Contributing
 
