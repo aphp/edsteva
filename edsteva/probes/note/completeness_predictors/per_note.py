@@ -74,7 +74,7 @@ def compute_completeness_predictor_per_note(
         stay_types=stay_types,
         stay_sources=stay_sources,
         length_of_stays=length_of_stays,
-        provenance_source=provenance_sources,
+        provenance_sources=provenance_sources,
         cost=cost,
         person=person,
         age_ranges=age_ranges,

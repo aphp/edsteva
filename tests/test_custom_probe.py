@@ -46,6 +46,7 @@ class CustomProbe(BaseProbe):
             "length_of_stay",
             "provenance_source",
             "age_range",
+            "drg_source",
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -69,6 +70,8 @@ class CustomProbe(BaseProbe):
         length_of_stays: List[float] = None,
         provenance_sources: Union[bool, str, Dict[str, str]] = None,
         age_ranges: List[int] = None,
+        condition_types: Union[str, Dict[str, str]] = None,
+        drg_sources: Union[str, Dict[str, str]] = {"All": ".*"},
         **kwargs,
     ):
         if not care_site_levels and "care_site_level" in self._index:
@@ -85,6 +88,8 @@ class CustomProbe(BaseProbe):
             self._index.remove("stay_source")
         if not length_of_stays and "length_of_stay" in self._index:
             self._index.remove("length_of_stay")
+        if condition_types is None and "condition_type" in self._index:
+            self._index.remove("condition_type")
         if not provenance_sources and "provenance_source" in self._index:
             self._index.remove("provenance_source")
         if not age_ranges and "age_range" in self._index:
@@ -105,6 +110,8 @@ class CustomProbe(BaseProbe):
             length_of_stays=length_of_stays,
             provenance_sources=provenance_sources,
             stay_sources=stay_sources,
+            drg_sources=drg_sources,
+            condition_types=condition_types,
             age_ranges=age_ranges,
             **kwargs,
         )

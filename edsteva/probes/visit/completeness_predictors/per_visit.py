@@ -227,6 +227,7 @@ def get_uf_visit(
                         "stay_source",
                         "provenance_source",
                         "age_range",
+                        "drg_source",
                     ]
                 )
             )
@@ -258,6 +259,7 @@ def get_uc_visit(
                         "stay_source",
                         "provenance_source",
                         "age_range",
+                        "drg_source",
                     ]
                 )
             )
@@ -289,6 +291,7 @@ def get_uh_visit(
                         "stay_source",
                         "provenance_source",
                         "age_range",
+                        "drg_source",
                     ]
                 )
             )
