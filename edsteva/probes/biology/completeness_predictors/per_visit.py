@@ -7,6 +7,8 @@ from loguru import logger
 from edsteva.probes.utils.prepare_df import (
     prepare_biology_relationship,
     prepare_care_site,
+    prepare_condition_occurrence,
+    prepare_cost,
     prepare_measurement,
     prepare_person,
     prepare_visit_occurrence,
@@ -41,8 +43,10 @@ def compute_completeness_predictor_per_visit(
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
     age_range: List[int],
+    condition_types: Union[str, Dict[str, str]],
     provenance_source: Union[str, Dict[str, str]],
     stay_source: Union[str, Dict[str, str]],
+    drg_source: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -55,6 +59,7 @@ def compute_completeness_predictor_per_visit(
 
     Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,condition}$ the number of stays having at least one biological measurement recorded and $t$ is the month.
     """
+
     self._metrics = ["c", "n_measurement"]
     check_tables(
         data=data,
@@ -77,6 +82,7 @@ def compute_completeness_predictor_per_visit(
     root_terminology = mapping[0][0]
 
     person = prepare_person(data)
+    cost = prepare_cost(data, drg_source)
 
     visit_occurrence = prepare_visit_occurrence(
         data=data,
@@ -86,9 +92,24 @@ def compute_completeness_predictor_per_visit(
         length_of_stays=length_of_stays,
         provenance_source=provenance_source,
         stay_source=stay_source,
+        cost=cost,
         person=person,
         age_range=age_range,
     )
+
+    if condition_types:
+        conditions = prepare_condition_occurrence(
+            data,
+            extra_data=None,
+            visit_occurrence=None,
+            source_systems="ORBIS",
+            diag_types=None,
+            condition_types=condition_types,
+            start_date=start_date,
+            end_date=end_date,
+        )[["visit_occurrence_id", "condition_type"]]
+        visit_occurrence = visit_occurrence.merge(conditions, on="visit_occurrence_id")
+        visit_occurrence = visit_occurrence.drop_duplicates()
 
     measurement = prepare_measurement(
         data=data,
@@ -139,6 +160,7 @@ def compute_completeness(
 ):
     # Visit with measurement
     partition_cols = [*self._index.copy(), "date"]
+
     n_visit_with_measurement = (
         biology_predictor.groupby(
             partition_cols,
@@ -149,6 +171,7 @@ def compute_completeness(
         .rename(columns={"has_measurement": "n_visit_with_measurement"})
     )
     n_visit_with_measurement = to("pandas", n_visit_with_measurement)
+
     n_visit_with_measurement = n_visit_with_measurement[
         n_visit_with_measurement.n_visit_with_measurement > 0
     ]
@@ -211,6 +234,7 @@ def get_hospital_visit(
         on="visit_occurrence_id",
         how="left",
     )
+
     hospital_visit = hospital_visit.rename(columns={"visit_occurrence_id": "visit_id"})
     hospital_visit = hospital_visit.merge(care_site, on="care_site_id")
 

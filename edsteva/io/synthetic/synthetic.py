@@ -128,6 +128,7 @@ OTHER_MEASUREMENT_COLUMNS = dict(
 )
 
 PERSON_COLUMN = dict(ratio_of_visits=0.9, age_mean=45, age_std=25)
+OTHER_COST_COLUMNS = dict(drg_source_value=[("M", 0.9), ("K", 0.05), ("Z", 0.05)])
 
 
 def add_other_columns(
@@ -152,6 +153,7 @@ class SyntheticData:
     id_note_col: str = "note_id"
     id_bio_col: str = "measurement_id"
     id_person_col: str = "person_id"
+    id_cost_col: str = "cost_event_id"
     note_type_col: str = "note_class_source_value"
     note_date_col: str = "note_datetime"
     condition_date_col: str = "condition_start_datetime"
@@ -160,6 +162,7 @@ class SyntheticData:
     detail_date_col: str = "visit_detail_start_datetime"
     bio_date_col: str = "measurement_datetime"
     birth_date_col: str = "birth_datetime"
+    id_drg_source_col: str = "drg_source"
     t_min: datetime = datetime(2010, 1, 1)
     t_max: datetime = datetime(2020, 1, 1)
     other_visit_columns: Dict = field(default_factory=lambda: OTHER_VISIT_COLUMNS)
@@ -171,6 +174,7 @@ class SyntheticData:
     other_measurement_columns: Dict = field(
         default_factory=lambda: OTHER_MEASUREMENT_COLUMNS
     )
+    other_cost_columns: Dict = field(default_factory=lambda: OTHER_COST_COLUMNS)
     person_column: Dict = field(default_factory=lambda: PERSON_COLUMN)
     seed: int = None
     mode: str = "step"
@@ -206,6 +210,7 @@ class SyntheticData:
             src_concept_name=src_concept_name,
         )
         person = self._generate_person(visit_occurrence)
+        cost = self._generate_cost(visit_occurrence)
 
         self.care_site = care_site
         self.visit_occurrence = visit_occurrence
@@ -217,6 +222,7 @@ class SyntheticData:
         self.concept_relationship = concept_relationship
         self.measurement = measurement
         self.person = person
+        self.cost = cost
 
         self.list_available_tables()
 
@@ -696,6 +702,16 @@ class SyntheticData:
 
         return person
 
+    def _generate_cost(self, visit_occurrence):
+        cost = visit_occurrence[[self.id_visit_col]].rename(
+            columns={self.id_visit_col: self.id_cost_col}
+        )
+        return add_other_columns(
+            generator=self.generator,
+            table=cost,
+            other_columns=self.other_cost_columns,
+        )
+
     def convert_to_koalas(self):
         if isinstance(self.care_site, ks.frame.DataFrame):
             logger.info("Module is already Koalas!")
@@ -710,6 +726,7 @@ class SyntheticData:
         self.concept_relationship = ks.DataFrame(self.concept_relationship)
         self.measurement = ks.DataFrame(self.measurement)
         self.person = ks.DataFrame(self.person)
+        self.cost = ks.DataFrame(self.cost)
         self.module = "koalas"
 
     def reset_to_pandas(self):
@@ -726,6 +743,7 @@ class SyntheticData:
         self.concept_relationship = self.concept_relationship.to_pandas()
         self.measurement = self.measurement.to_pandas()
         self.person = self.person.to_pandas()
+        self.cost = self.cost.to_pandas()
         self.module = "pandas"
 
     def delete_table(self, table_name: str) -> None:

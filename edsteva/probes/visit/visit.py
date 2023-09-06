@@ -67,8 +67,10 @@ class VisitProbe(BaseProbe):
         care_sites_sets: Union[str, Dict[str, str]] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
         length_of_stays: List[float] = None,
+        condition_types: Union[str, Dict[str, str]] = None,
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
         stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
+        drg_source: Union[str, Dict[str, str]] = {"All": ".*"},
         age_range: List[int] = None,
         **kwargs,
     ):
@@ -113,6 +115,8 @@ class VisitProbe(BaseProbe):
             self._index.remove("length_of_stay")
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
+        if condition_types is None and "condition_type" in self._index:
+            self._index.remove("condition_type")
         if age_range is None and "age_range" in self._index:
             self._index.remove("age_range")
         return completeness_predictors.get(self._completeness_predictor)(
@@ -129,8 +133,10 @@ class VisitProbe(BaseProbe):
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             length_of_stays=length_of_stays,
+            condition_types=condition_types,
             provenance_source=provenance_source,
             stay_source=stay_source,
+            drg_source=drg_source,
             age_range=age_range,
             **kwargs,
         )

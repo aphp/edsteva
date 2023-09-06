@@ -76,6 +76,7 @@ class ConditionProbe(BaseProbe):
         length_of_stays: List[float] = None,
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
         stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
+        drg_source: Union[str, Dict[str, str]] = {"All": ".*"},
         age_range: List[int] = None,
         **kwargs,
     ):
@@ -150,6 +151,7 @@ class ConditionProbe(BaseProbe):
             condition_types=condition_types,
             source_systems=source_systems,
             stay_source=stay_source,
+            drg_source=drg_source,
             age_range=age_range,
             **kwargs,
         )

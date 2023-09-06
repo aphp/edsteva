@@ -7,6 +7,7 @@ from loguru import logger
 from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
+    prepare_cost,
     prepare_note,
     prepare_note_care_site,
     prepare_person,
@@ -43,6 +44,7 @@ def compute_completeness_predictor_per_visit(
     age_range: List[int],
     provenance_source: Union[str, Dict[str, str]],
     stay_source: Union[str, Dict[str, str]],
+    drg_source: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -60,6 +62,7 @@ def compute_completeness_predictor_per_visit(
     check_tables(data=data, required_tables=["note"])
 
     person = prepare_person(data)
+    cost = prepare_cost(data, drg_source)
 
     visit_occurrence = prepare_visit_occurrence(
         data=data,
@@ -69,6 +72,7 @@ def compute_completeness_predictor_per_visit(
         length_of_stays=length_of_stays,
         provenance_source=provenance_source,
         stay_source=stay_source,
+        cost=cost,
         person=person,
         age_range=age_range,
     )

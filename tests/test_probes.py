@@ -53,6 +53,7 @@ params = [
         stay_source={"MCO": "MCO", "MCO_PSY_SSR": "MCO|Psychiatrie|SSR"},
         provenance_source={"All": ".*"},
         age_range=[18, 64],
+        drg_source={"M": ".{2}M"},
     ),
     dict(
         visit_predictor="per_visit_default",
@@ -80,6 +81,7 @@ params = [
         provenance_source={"All": ".*"},
         age_range=[18],
         module="koalas",
+        drg_source={"All": ".*"},
     ),
     dict(
         visit_predictor="per_visit_default",
@@ -107,6 +109,7 @@ params = [
         provenance_source={"All": ".*", "urgence": "service d'urgence"},
         age_range=None,
         module="pandas",
+        drg_source={"All": ".*"},
     ),
 ]
 

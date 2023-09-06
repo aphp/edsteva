@@ -6,6 +6,8 @@ import pandas as pd
 from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
+    prepare_condition_occurrence,
+    prepare_cost,
     prepare_person,
     prepare_visit_detail,
     prepare_visit_occurrence,
@@ -36,8 +38,10 @@ def compute_completeness_predictor_per_visit(
     specialties_sets: Union[str, Dict[str, str]],
     length_of_stays: List[float],
     age_range: List[int],
+    condition_types: Union[str, Dict[str, str]],
     provenance_source: Union[str, Dict[str, str]],
     stay_source: Union[str, Dict[str, str]],
+    drg_source: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -53,6 +57,7 @@ def compute_completeness_predictor_per_visit(
     self._metrics = ["c", "n_visit"]
 
     person = prepare_person(data)
+    cost = prepare_cost(data, drg_source)
 
     visit_occurrence = prepare_visit_occurrence(
         data=data,
@@ -62,9 +67,24 @@ def compute_completeness_predictor_per_visit(
         length_of_stays=length_of_stays,
         stay_source=stay_source,
         provenance_source=provenance_source,
+        cost=cost,
         person=person,
         age_range=age_range,
     )
+
+    if condition_types:
+        conditions = prepare_condition_occurrence(
+            data,
+            extra_data=None,
+            visit_occurrence=None,
+            source_systems="ORBIS",
+            diag_types=None,
+            condition_types=condition_types,
+            start_date=start_date,
+            end_date=end_date,
+        )[["visit_occurrence_id", "condition_type"]]
+        visit_occurrence = visit_occurrence.merge(conditions, on="visit_occurrence_id")
+        visit_occurrence = visit_occurrence.drop_duplicates()
 
     care_site = prepare_care_site(
         data=data,

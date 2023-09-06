@@ -76,6 +76,7 @@ class NoteProbe(BaseProbe):
         },
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
         stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
+        drg_source: Union[str, Dict[str, str]] = {"All": ".*"},
         age_range: List[int] = None,
         **kwargs,
     ):
@@ -148,6 +149,7 @@ class NoteProbe(BaseProbe):
             length_of_stays=length_of_stays,
             provenance_source=provenance_source,
             stay_source=stay_source,
+            drg_source=drg_source,
             age_range=age_range,
             **kwargs,
         )

@@ -23,6 +23,7 @@ def prepare_visit_occurrence(
     stay_types: Union[str, Dict[str, str]],
     stay_source: Union[str, Dict[str, str]],
     provenance_source: Union[str, Dict[str, str]],
+    cost: DataFrame,
     length_of_stays: List[float],
     age_range: List[int] = None,
     start_date: datetime = None,
@@ -78,6 +79,12 @@ def prepare_visit_occurrence(
             visit_occurrence=visit_occurrence, length_of_stays=length_of_stays
         )
 
+    cost = cost[["cost_event_id", "drg_source"]]
+    visit_occurrence = visit_occurrence.merge(
+        cost, left_on="visit_occurrence_id", right_on="cost_event_id"
+    )
+    visit_occurrence = visit_occurrence.drop_duplicates("visit_occurrence_id")
+
     visit_occurrence = visit_occurrence.rename(
         columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
     )
@@ -125,6 +132,7 @@ def prepare_measurement(
         "measurement_datetime",
         "row_status_source_value",
         "measurement_source_concept_id",
+        "value_as_number",
     ]
 
     check_columns(
@@ -459,6 +467,7 @@ def prepare_visit_detail(
             "row_status_source_value",
         ]
     ]
+
     visit_detail = visit_detail.rename(
         columns={
             "visit_detail_id": "visit_id",
@@ -694,3 +703,26 @@ def prepare_person(
         df_name="person",
     )
     return data.person[person_columns]
+
+
+def prepare_cost(data: Data, drg_source):
+    check_tables(
+        data=data,
+        required_tables=["cost"],
+    )
+
+    cost_columns = ["drg_source_value"]
+
+    check_columns(
+        data.cost,
+        required_columns=cost_columns,
+        df_name="cost",
+    )
+
+    return filter_table_by_type(
+        table=data.cost,
+        table_name="cost",
+        type_groups=drg_source,
+        source_col="drg_source_value",
+        target_col="drg_source",
+    )

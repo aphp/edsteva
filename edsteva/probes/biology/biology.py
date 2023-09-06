@@ -62,6 +62,8 @@ class BiologyProbe(BaseProbe):
             "specialties_set",
             "stay_source",
             "provenance_source",
+            "drg_source",
+            "condition_type",
         ] + [
             "{}_concept_code".format(terminology)
             for terminology in standard_terminologies
@@ -109,8 +111,10 @@ class BiologyProbe(BaseProbe):
             ("GLIMS_ANABIO", "ANABIO_ITM", "Mapped from"),
             ("ANABIO_ITM", "LOINC_ITM", "Maps to"),
         ],
+        condition_types: Union[str, Dict[str, str]] = None,
         provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
         stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
+        drg_source: Union[str, Dict[str, str]] = {"All": ".*"},
         age_range: List[int] = None,
         **kwargs,
     ):
@@ -156,6 +160,10 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
         provenance_source : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
+        condition_types : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"Pulmonary_infection": "J22|J15|J13|J958|..."}`
+        drg_source : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         age_range : List[int], optional
             **EXAMPLE**: `[18, 64]`
         """
@@ -167,6 +175,8 @@ class BiologyProbe(BaseProbe):
             self._index.remove("age_range")
         if care_sites_sets is None and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
+        if condition_types is None and "condition_type" in self._index:
+            self._index.remove("condition_type")
         if concepts_sets is None and "concepts_set" in self._index:
             self._index.remove("concepts_set")
         else:
@@ -188,11 +198,13 @@ class BiologyProbe(BaseProbe):
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             concepts_sets=concepts_sets,
+            condition_types=condition_types,
             length_of_stays=length_of_stays,
             source_terminologies=source_terminologies,
             mapping=mapping,
             provenance_source=provenance_source,
             stay_source=stay_source,
+            drg_source=drg_source,
             age_range=age_range,
             **kwargs,
         )

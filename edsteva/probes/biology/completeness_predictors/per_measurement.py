@@ -7,6 +7,7 @@ from loguru import logger
 from edsteva.probes.utils.prepare_df import (
     prepare_biology_relationship,
     prepare_care_site,
+    prepare_cost,
     prepare_measurement,
     prepare_person,
     prepare_visit_occurrence,
@@ -43,6 +44,7 @@ def compute_completeness_predictor_per_measurement(
     age_range: List[int],
     provenance_source: Union[str, Dict[str, str]],
     stay_source: Union[str, Dict[str, str]],
+    drg_source: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -76,6 +78,7 @@ def compute_completeness_predictor_per_measurement(
     root_terminology = mapping[0][0]
 
     person = prepare_person(data)
+    cost = prepare_cost(data, drg_source)
 
     measurement = prepare_measurement(
         data=data,
@@ -97,6 +100,7 @@ def compute_completeness_predictor_per_measurement(
         length_of_stays=length_of_stays,
         provenance_source=provenance_source,
         stay_source=stay_source,
+        cost=cost,
         person=person,
         age_range=age_range,
     ).drop(columns=["visit_occurrence_source_value", "date"])
