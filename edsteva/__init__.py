@@ -1,8 +1,9 @@
-__version__ = "0.2.4"
+__version__ = "0.2.6"
 
 
 import importlib
 import os
+import subprocess
 import sys
 import time
 from distutils.version import LooseVersion
@@ -45,6 +46,14 @@ def set_env_variables() -> None:
 
     if LooseVersion(pyarrow.__version__) >= LooseVersion("2.0.0"):  # pragma: no cover
         os.environ["PYARROW_IGNORE_TIMEZONE"] = "0"
+
+    if LooseVersion(pyarrow.__version__) >= LooseVersion("1.0.0"):  # pragma: no cover
+        hadoop_home = os.environ.get("HADOOP_HOME")
+        if hadoop_home:
+            command = f"{hadoop_home}/bin/hdfs classpath --glob"
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            classpath = result.stdout.strip()
+            os.environ["CLASSPATH"] = classpath
 
 
 def improve_performances(

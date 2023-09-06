@@ -1,11 +1,13 @@
 import datetime
 from abc import ABCMeta, abstractmethod
-from typing import ClassVar, Dict, List, Union
+from typing import ClassVar, List, Union
 
+import altair as alt
 import pandas as pd
 from loguru import logger
 
 from edsteva import CACHE_DIR
+from edsteva.probes.base.viz_configs import viz_configs
 from edsteva.probes.utils.filter_df import filter_table_by_care_site
 from edsteva.probes.utils.prepare_df import prepare_care_site_relationship
 from edsteva.utils.checks import check_columns, check_tables
@@ -19,9 +21,9 @@ class BaseProbe(metaclass=ABCMeta):
     Attributes
     ----------
     _schema: List[str]
-        The columns a predictor must have
+        The columns a predictor must have.
 
-        **VALUE**: ``["care_site_id", "care_site_level", "stay_type", "date", "c"]``
+        **VALUE**: ``["date", "c"]``
     predictor: pd.DataFrame
         Available with the [``compute()``][edsteva.probes.base.BaseProbe.compute] method
     _cache_predictor: pd.DataFrame
@@ -34,14 +36,15 @@ class BaseProbe(metaclass=ABCMeta):
         It describes the care site structure (cf. [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship])
     """
 
-    _schema: ClassVar[List[str]] = ["care_site_level", "care_site_id", "date", "c"]
+    _schema: ClassVar[List[str]] = ["date", "c"]
 
     def __init__(
         self,
-        completeness_predictor: str,
         index: List[str],
+        completeness_predictor: str = None,
     ):
-        self._completeness_predictor = completeness_predictor
+        if completeness_predictor is not None:
+            self._completeness_predictor = completeness_predictor
         self._cache_index = index.copy()
         self._viz_config = {}
 
@@ -124,9 +127,6 @@ class BaseProbe(metaclass=ABCMeta):
         care_site_relationship: pd.DataFrame,
         start_date: datetime,
         end_date: datetime,
-        care_site_levels: List[str],
-        stay_types: Union[str, Dict[str, str]],
-        care_site_ids: List[int],
         **kwargs,
     ) -> pd.DataFrame:
         """Process the data in order to obtain a predictor table"""
@@ -136,9 +136,6 @@ class BaseProbe(metaclass=ABCMeta):
         data: Data,
         start_date: datetime = None,
         end_date: datetime = None,
-        care_site_levels: List[str] = None,
-        stay_types: Union[str, Dict[str, str]] = None,
-        care_site_ids: List[int] = None,
         with_cache: bool = True,
         **kwargs,
     ) -> None:
@@ -162,12 +159,6 @@ class BaseProbe(metaclass=ABCMeta):
             **EXAMPLE**: `"2019-05-01"`
         end_date : datetime, optional
             **EXAMPLE**: `"2021-07-01"`
-        care_site_levels : List[str], optional
-            **EXAMPLE**: `["Hospital", "Pole", "UF"]`
-        stay_types : Union[str, Dict[str, str]], optional
-            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés`
-        care_site_ids : List[int], optional
-            **EXAMPLE**: `[8312056386, 8312027648]`
 
         Attributes
         ----------
@@ -212,9 +203,6 @@ class BaseProbe(metaclass=ABCMeta):
             care_site_relationship=care_site_relationship,
             start_date=start_date,
             end_date=end_date,
-            care_site_levels=care_site_levels,
-            stay_types=stay_types,
-            care_site_ids=care_site_ids,
             **kwargs,
         )
         self.is_computed_probe()
@@ -289,6 +277,104 @@ class BaseProbe(metaclass=ABCMeta):
                     how="left",
                 )
         return df.reset_index(drop=True)
+
+    def get_viz_config(self, viz_type: str, **kwargs):
+        """This is the basic viz configs if not overridden by the probe.
+
+        Parameters
+        ----------
+        viz_type : str,
+            **EXAMPLE**: `"probe_dashboard"`
+        """
+        if viz_type in viz_configs.keys():
+            return viz_configs[viz_type](self, **kwargs)
+        raise ValueError(f"edsteva has no {viz_type} registry !")
+
+    def generate_bar_chart_config(self, threshold: int = 10):
+        self.is_computed_probe()
+
+        # Sort index with regard to number of unique values
+        index = self._index.copy()
+        nunique_per_index = self.predictor[index].nunique()  # Number of unique value
+        vertical_variables = nunique_per_index.loc[
+            lambda x: x <= threshold
+        ].index.tolist()
+        horizontal_variables = nunique_per_index.loc[
+            lambda x: x > threshold
+        ].index.tolist()
+
+        # Sort metrics wether it is rate between 0 and 1 or integers
+        metrics = [
+            metric for metric in self._metrics if metric in self.predictor.columns
+        ]
+        if len(metrics) >= 2 and "c" in metrics:
+            metrics.remove("c")
+        metrics = {
+            metric: "mean"
+            if self.predictor[metric].between(0, 1, "neither").any()
+            else "sum"
+            for metric in metrics
+        }
+
+        vertical_bar_charts = dict(
+            x=[
+                {
+                    "title": field.replace("_", " ").capitalize(),
+                    "field": field,
+                    "type": "nominal",
+                    "sort": "-y",
+                }
+                for field in vertical_variables
+            ],
+            y=[
+                dict(
+                    y=alt.Y(
+                        f"{agg}({metric}):Q",
+                        axis=alt.Axis(format="s" if agg == "sum" else ".2f"),
+                    ),
+                    tooltip=alt.Tooltip(
+                        f"{agg}({metric}):Q",
+                        format="," if agg == "sum" else ".2f",
+                    ),
+                    sort={
+                        "field": metric,
+                        "op": agg,
+                        "order": "descending",
+                    },
+                )
+                for metric, agg in metrics.items()
+            ],
+        )
+        horizontal_bar_charts = dict(
+            y=[
+                {
+                    "title": field.replace("_", " ").capitalize(),
+                    "field": field,
+                    "type": "nominal",
+                    "sort": "-x",
+                }
+                for field in horizontal_variables
+            ],
+            x=[
+                dict(
+                    x=alt.X(
+                        f"{agg}({metric}):Q",
+                        axis=alt.Axis(format="s" if agg == "sum" else ".2f"),
+                    ),
+                    tooltip=alt.Tooltip(
+                        f"{agg}({metric}):Q",
+                        format="," if agg == "sum" else ".2f",
+                    ),
+                    sort={
+                        "field": metric,
+                        "op": agg,
+                        "order": "descending",
+                    },
+                )
+                for metric, agg in metrics.items()
+            ],
+        )
+        return vertical_bar_charts, horizontal_bar_charts
 
     def load(self, path=None) -> None:
         """Loads a Probe from local

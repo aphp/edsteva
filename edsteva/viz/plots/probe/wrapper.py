@@ -14,12 +14,9 @@ from edsteva.viz.utils import configure_style, filter_data, save_html
 def probe_plot(
     probe: BaseProbe,
     fitted_model: BaseModel = None,
-    care_site_level: str = None,
-    stay_type: List[str] = None,
-    care_site_id: List[int] = None,
+    care_site_level: List[str] = None,
     start_date: datetime = None,
     end_date: datetime = None,
-    care_site_short_name: List[int] = None,
     save_path: str = None,
     legend_predictor: str = "Predictor c(t)",
     legend_model: str = "Model f(t)",
@@ -42,20 +39,15 @@ def probe_plot(
         Class describing the completeness predictor $c(t)$.
     fitted_model : BaseModel, optional
         Model fitted to the probe
-    care_site_level : str, optional
-        **EXAMPLE**: `"Hospital"`, `"Hôpital"` or `"UF"`
-    stay_type : List[str], optional
-        **EXAMPLE**: `"All"` or `["All", "Urg"]`
-    care_site_id : List[int], optional
-        **EXAMPLE**: `[8312056386, 8312027648]`
+    care_site_level : List[str], optional
+        **EXAMPLE**: `["Hospital"]`, `["Hôpital", "UF"]` or `["UF", "UH"]`
     start_date : datetime, optional
         **EXAMPLE**: `"2019-05-01"`
     end_date : datetime, optional
         **EXAMPLE**: `"2021-07-01"`
-    care_site_short_name : List[int], optional
-        **EXAMPLE**: `"HOSPITAL XXXX"`
     save_path : str, optional
         Folder path where to save the chart in HTML format.
+
         **EXAMPLE**: `"my_folder/my_file.html"`
     legend_predictor: str, optional,
         Label name for the predictor legend.
@@ -73,6 +65,7 @@ def probe_plot(
         If not None, configuration used to construct the probe line.
     chart_style: Dict[str, float], optional
         If not None, configuration used to configure the chart style.
+
         **EXAMPLE**: `{"labelFontSize": 13, "titleFontSize": 14}`
     indexes_to_remove: List[str], optional
         indexes to remove from the groupby selection.
@@ -99,9 +92,6 @@ def probe_plot(
     predictor = filter_data(
         data=predictor,
         care_site_level=care_site_level,
-        stay_type=stay_type,
-        care_site_id=care_site_id,
-        care_site_short_name=care_site_short_name,
         start_date=start_date,
         end_date=end_date,
         **kwargs,

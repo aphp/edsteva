@@ -51,14 +51,10 @@ It must include one and only one time related column:
 
 - **`date`**: date of the event associated with the target variable (by default, the dates are truncated to the month in which the event occurs).
 
-It must include the following string type column :
+Then, it can have any other string type column such as:
 
 - **`care_site_level`**: care site hierarchic level (`uf`, `pole`, ``hospital``).
 - **`care_site_id`**: care site unique identifier.
-- **`care_site_short_name`**: care site short name used for visualization.
-
-Then, it can have any other string type column such as:
-
 - **`stay_type`**: type of stay (``hospitalisés``, ``urgence``, ``hospitalisation incomplète``, ``consultation externe``).
 - **`note_type`**: type of note (``CRH``, ``Ordonnance``, ``CR Passage Urgences``).
 
@@ -104,9 +100,19 @@ from edsteva.probes import BaseProbe
 
 # Definition of a new Probe class
 class CustomProbe(BaseProbe):
-    _index = ["my_custom_column_1", "my_custom_column_2"]
+    def __init__(
+        self,
+    ):
+        self._index = ["my_custom_column_1", "my_custom_column_2"]
+        super().__init__(
+            index=self._index,
+        )
 
-    def compute_process(self, data: Data):
+    def compute_process(
+        self,
+        data: Data,
+        **kwargs,
+    ):
         # query using Pandas API
         return custom_predictor
 ```

@@ -17,18 +17,22 @@ class VisitProbe(BaseProbe):
     ----------
     completeness_predictor: str
         Algorithm used to compute the completeness predictor
+
         **EXAMPLE**: ``"per_visit_default"``
 
     Attributes
     ----------
     _completeness_predictor: str
         Algorithm used to compute the completeness predictor
+
         **VALUE**: ``"per_visit_default"``
     _index: List[str]
         Variable from which data is grouped
+
         **VALUE**: ``["care_site_level", "stay_type", "length_of_stay", "care_site_id"]``
     _viz_config: List[str]
         Dictionary of configuration for visualization purpose.
+
         **VALUE**: ``{}``
     """
 
@@ -37,16 +41,18 @@ class VisitProbe(BaseProbe):
         completeness_predictor: str = "per_visit_default",
     ):
         self._index = [
-            "care_site_level",
-            "stay_type",
-            "length_of_stay",
-            "age_range",
             "care_site_id",
-            "care_site_specialty",
+            "care_site_level",
             "care_sites_set",
+            "care_site_specialty",
             "specialties_set",
+            "stay_type",
             "stay_source",
+            "length_of_stay",
             "provenance_source",
+            "age_range",
+            "drg_source",
+            "condition_type",
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -59,19 +65,19 @@ class VisitProbe(BaseProbe):
         care_site_relationship: pd.DataFrame,
         start_date: datetime,
         end_date: datetime,
-        care_site_levels: List[str],
-        stay_types: Union[str, Dict[str, str]],
-        care_site_ids: List[int],
+        care_site_ids: List[int] = None,
         care_site_short_names: List[str] = None,
-        care_site_specialties: List[str] = None,
+        care_site_levels: Union[bool, str, List[str]] = True,
         care_sites_sets: Union[str, Dict[str, str]] = None,
+        care_site_specialties: Union[bool, List[str]] = None,
         specialties_sets: Union[str, Dict[str, str]] = None,
+        stay_types: Union[bool, str, Dict[str, str]] = True,
+        stay_sources: Union[bool, str, Dict[str, str]] = None,
         length_of_stays: List[float] = None,
         condition_types: Union[str, Dict[str, str]] = None,
-        provenance_source: Union[str, Dict[str, str]] = {"All": ".*"},
-        stay_source: Union[str, Dict[str, str]] = {"MCO": "MCO"},
+        provenance_sources: Union[bool, str, Dict[str, str]] = None,
         drg_source: Union[str, Dict[str, str]] = {"All": ".*"},
-        age_range: List[int] = None,
+        age_ranges: List[int] = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -86,39 +92,53 @@ class VisitProbe(BaseProbe):
             **EXAMPLE**: `"2019-05-01"`
         end_date : datetime, optional
             **EXAMPLE**: `"2021-07-01"`
-        care_site_levels : List[str], optional
-            **EXAMPLE**: `["Hospital", "Pole", "UF", "UC", "UH"]`
-        stay_types : Union[str, Dict[str, str]], optional
-            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés`
         care_site_ids : List[int], optional
             **EXAMPLE**: `[8312056386, 8312027648]`
         care_site_short_names : List[str], optional
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
-        care_site_specialties : List[str], optional
-            **EXAMPLE**: `["CARDIOLOGIE", "CHIRURGIE"]`
-        care_sites_sets : Union[str, Dict[str, str]], optional
+        care_site_levels : Union[bool, str, List[str]], optional
+            **EXAMPLE**: `["Hospital", "Pole", "UF", "UC", "UH"]`
+        care_sites_sets: Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All AP-HP": ".*"}` or `{"All AP-HP": ".*", "Pediatrics": r"debre|trousseau|necker"}`
-        specialties_sets : Union[str, Dict[str, str]], optional
+        care_site_specialties: Union[bool, List[str]], optional
+            **EXAMPLE**: `["CARDIOLOGIE", "CHIRURGIE"]`
+        specialties_sets: Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "ICU": r"REA\s|USI\s|SC\s"}`
-        length_of_stays : List[float], optional
-            **EXAMPLE**: `[1, 30]`
-        stay_source : Union[str, Dict[str, str]], optional
+        stay_types: Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Urg_and_consult": "urgences|consultation"}` or `"hospitalisés`
+        stay_sources: Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
-        provenance_source : Union[str, Dict[str, str]], optional
+        length_of_stays: List[float], optional
+            **EXAMPLE**: `[1, 30]`
+        provenance_sources: Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
-        age_range : List[int], optional
+        age_ranges: List[int], optional
             **EXAMPLE**: `[18, 64]`
+        condition_types : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"Pulmonary_infection": "J22|J15|J13|J958|..."}`
+        drg_source : Union[str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         """
-        if specialties_sets is None and "specialties_set" in self._index:
-            self._index.remove("specialties_set")
-        if length_of_stays is None and "length_of_stay" in self._index:
-            self._index.remove("length_of_stay")
-        if care_sites_sets is None and "care_sites_set" in self._index:
+        if not care_site_levels and "care_site_level" in self._index:
+            self._index.remove("care_site_level")
+        if not care_sites_sets and "care_sites_set" in self._index:
             self._index.remove("care_sites_set")
+        if not care_site_specialties and "care_site_specialty" in self._index:
+            self._index.remove("care_site_specialty")
+        if not specialties_sets and "specialties_set" in self._index:
+            self._index.remove("specialties_set")
+        if not stay_types and "stay_type" in self._index:
+            self._index.remove("stay_type")
+        if not stay_sources and "stay_source" in self._index:
+            self._index.remove("stay_source")
+        if not length_of_stays and "length_of_stay" in self._index:
+            self._index.remove("length_of_stay")
+        if not provenance_sources and "provenance_source" in self._index:
+            self._index.remove("provenance_source")
+        if not age_ranges and "age_range" in self._index:
+            self._index.remove("age_range")
         if condition_types is None and "condition_type" in self._index:
             self._index.remove("condition_type")
-        if age_range is None and "age_range" in self._index:
-            self._index.remove("age_range")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -133,11 +153,11 @@ class VisitProbe(BaseProbe):
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             length_of_stays=length_of_stays,
+            provenance_sources=provenance_sources,
+            stay_sources=stay_sources,
             condition_types=condition_types,
-            provenance_source=provenance_source,
-            stay_source=stay_source,
+            age_ranges=age_ranges,
             drg_source=drg_source,
-            age_range=age_range,
             **kwargs,
         )
 

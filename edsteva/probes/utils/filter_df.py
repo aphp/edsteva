@@ -21,27 +21,20 @@ def filter_table_by_type(
 ):
     if isinstance(type_groups, str):
         type_groups = {type_groups: type_groups}
-    if isinstance(type_groups, dict):
-        table_per_types = []
-        for type_name, type_value in type_groups.items():
-            table_per_type_element = table[
-                table[source_col]
-                .astype(str)
-                .str.contains(
-                    type_value,
-                    case=False,
-                    regex=True,
-                    na=False,
-                )
-            ].copy()
-            table_per_type_element[target_col] = type_name
-            table_per_types.append(table_per_type_element)
-    else:
-        raise TypeError(
-            "{} must be str or dict not {}".format(
-                target_col, type(type_groups).__name__
+    table_per_types = []
+    for type_name, type_value in type_groups.items():
+        table_per_type_element = table[
+            table[source_col]
+            .astype(str)
+            .str.contains(
+                type_value,
+                case=False,
+                regex=True,
+                na=False,
             )
-        )
+        ].copy()
+        table_per_type_element[target_col] = type_name
+        table_per_types.append(table_per_type_element)
 
     logger.debug(
         "The following {} : {} have been selected on table {}",
@@ -126,7 +119,7 @@ def filter_table_by_length_of_stay(
     )
 
     # Incomplete stays
-    visit_occurrence = visit_occurrence.assign(length_of_stay="Unknown")
+    visit_occurrence = visit_occurrence.assign(length_of_stay="Not specified")
     visit_occurrence["length_of_stay"] = visit_occurrence.length_of_stay.mask(
         visit_occurrence["visit_end_datetime"].isna(),
         "Incomplete stay",
@@ -143,17 +136,38 @@ def filter_table_by_length_of_stay(
         (visit_occurrence["length"] >= max_duration),
         ">= {} days".format(max_duration),
     )
-    n_duration = len(length_of_stays)
-    for i in range(0, n_duration - 1):
-        min = length_of_stays[i]
-        max = length_of_stays[i + 1]
+    for min_length, max_length in zip(length_of_stays[:-1], length_of_stays[1:]):
         visit_occurrence["length_of_stay"] = visit_occurrence["length_of_stay"].mask(
-            (visit_occurrence["length"] >= min) & (visit_occurrence["length"] < max),
-            "{} days - {} days".format(min, max),
+            (visit_occurrence["length"] >= min_length)
+            & (visit_occurrence["length"] < max_length),
+            "{} days - {} days".format(min_length, max_length),
         )
     visit_occurrence = visit_occurrence.drop(columns="length")
 
     return visit_occurrence.drop(columns="visit_end_datetime")
+
+
+def filter_table_by_age(visit_occurrence: pd.DataFrame, age_ranges: List[int]):
+    age_ranges.sort()
+
+    visit_occurrence["age"] = (
+        visit_occurrence["date"] - visit_occurrence["birth_datetime"]
+    ) / (np.timedelta64(timedelta(days=1)) * 356)
+
+    visit_occurrence["age_range"] = "Not specified"
+    visit_occurrence.loc[
+        visit_occurrence.age <= age_ranges[0], "age_range"
+    ] = f"age <= {age_ranges[0]}"
+
+    for age_min, age_max in zip(age_ranges[:-1], age_ranges[1:]):
+        in_range = (visit_occurrence.age > age_min) & (visit_occurrence.age <= age_max)
+        visit_occurrence.loc[in_range, "age_range"] = f"{age_min} < age <= {age_max}"
+
+    visit_occurrence.loc[
+        visit_occurrence.age > age_ranges[-1], "age_range"
+    ] = f"age > {age_ranges[-1]}"
+
+    return visit_occurrence.drop(columns="age")
 
 
 def filter_table_by_care_site(

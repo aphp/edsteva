@@ -5,14 +5,38 @@ import altair as alt
 vertical_bar_charts = dict(
     x=[
         {
+            "title": "Care site level",
+            "field": "care_site_level",
+            "type": "nominal",
+            "sort": "-y",
+        },
+        {
             "title": "Stay type",
             "field": "stay_type",
             "type": "nominal",
             "sort": "-y",
         },
         {
+            "title": "Stay source",
+            "field": "stay_source",
+            "type": "nominal",
+            "sort": "-y",
+        },
+        {
             "title": "Length of stay",
             "field": "length_of_stay",
+            "type": "nominal",
+            "sort": "-y",
+        },
+        {
+            "title": "Provenance source",
+            "field": "provenance_source",
+            "type": "nominal",
+            "sort": "-y",
+        },
+        {
+            "title": "Age range",
+            "field": "age_range",
             "type": "nominal",
             "sort": "-y",
         },

@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Dict, List, Union
 
 import pandas as pd
-from loguru import logger
 
 from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
@@ -19,7 +18,7 @@ from edsteva.probes.utils.utils import (
     hospital_only,
     impute_missing_dates,
 )
-from edsteva.utils.checks import check_condition_source_systems, check_tables
+from edsteva.utils.checks import check_tables
 from edsteva.utils.framework import is_koalas, to
 from edsteva.utils.typing import Data, DataFrame
 
@@ -30,17 +29,17 @@ def compute_completeness_predictor_per_visit(
     care_site_relationship: pd.DataFrame,
     start_date: datetime,
     end_date: datetime,
-    care_site_levels: List[str],
-    stay_types: Union[str, Dict[str, str]],
+    care_site_levels: Union[bool, str, List[str]],
+    stay_types: Union[bool, str, Dict[str, str]],
     care_site_ids: List[int],
     extra_data: Data,
     care_site_short_names: List[str],
-    care_site_specialties: List[str],
+    care_site_specialties: Union[bool, List[str]],
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
-    diag_types: Union[str, Dict[str, str]],
-    condition_types: Union[str, Dict[str, str]],
-    source_systems: List[str],
+    diag_types: Union[bool, str, Dict[str, str]],
+    condition_types: Union[bool, str, Dict[str, str]],
+    source_systems: Union[bool, List[str]],
     length_of_stays: List[float],
     age_range: List[int],
     provenance_source: Union[str, Dict[str, str]],
@@ -61,11 +60,8 @@ def compute_completeness_predictor_per_visit(
 
     self._metrics = ["c", "n_visit", "n_visit_with_condition"]
     check_tables(data=data, required_tables=["condition_occurrence"])
-    check_condition_source_systems(source_systems=source_systems)
-    if "AREM" in source_systems and not hospital_only(
-        care_site_levels=care_site_levels
-    ):  # pragma: no cover
-        logger.info("AREM claim data are only available at hospital level")
+
+    person = prepare_person(data)
 
     person = prepare_person(data)
     cost = prepare_cost(data, drg_source)

@@ -1,4 +1,14 @@
 # Changelog
+## v0.2.6 - 09-08-2023
+
+- Update LocalData for EDS-Tuto.
+## v0.2.5 - 09-08-2023
+
+- New Probe parameters:
+  - Age range: Age of patient at visit.
+  - Provenance source: Where the patient came from before the visit (emergency, consultation, etc.).
+  - stay source: Type of care (MCO, PSY, SSY).
+- Refacto the params type to make it more uniform.
 ## v0.2.4 - 28-07-2023
 
 - Viz: Simplify normalized probe plot
