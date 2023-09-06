@@ -50,10 +50,9 @@ params = [
         end_date=datetime(2020, 1, 1),
         test_save=False,
         module="koalas",
-        stay_source={"MCO": "MCO", "MCO_PSY_SSR": "MCO|Psychiatrie|SSR"},
-        provenance_source={"All": ".*"},
-        age_range=[18, 64],
-        drg_source={"M": ".{2}M"},
+        stay_sources={"MCO": "MCO", "MCO_PSY_SSR": "MCO|Psychiatrie|SSR"},
+        age_ranges=[18, 64],
+        drg_sources={"M": ".{2}M"},
         provenance_sources={"All": ".*"},
     ),
     dict(
@@ -78,11 +77,11 @@ params = [
         start_date="2010-01-03",
         end_date=None,
         test_save=False,
-        stay_source={"MCO": "MCO"},
-        provenance_source={"All": ".*"},
-        age_range=[18],
+        stay_sources={"MCO": "MCO"},
+        provenance_sources={"All": ".*"},
+        age_ranges=[18],
         module="koalas",
-        drg_source={"All": ".*"},
+        drg_sources={"All": ".*"},
     ),
     dict(
         visit_predictor="per_visit_default",
@@ -106,11 +105,11 @@ params = [
         start_date=datetime(2010, 5, 10),
         end_date=datetime(2020, 1, 1),
         test_save=True,
-        stay_source={"MCO": "MCO"},
-        provenance_source={"All": ".*", "urgence": "service d'urgence"},
-        age_range=None,
+        stay_sources={"MCO": "MCO"},
+        provenance_sources={"All": ".*", "urgence": "service d'urgence"},
+        age_ranges=None,
         module="pandas",
-        drg_source={"All": ".*"},
+        drg_sources={"All": ".*"},
     ),
 ]
 
@@ -695,9 +694,9 @@ def test_compute_biology_probe(data, params):
         length_of_stays=params["length_of_stays"],
         concepts_sets=params["concepts_sets"],
         concept_codes=params["concept_codes"],
-        stay_source=params["stay_source"],
-        provenance_source=params["provenance_source"],
-        age_range=params["age_range"],
+        stay_sources=params["stay_sources"],
+        provenance_sources=params["provenance_sources"],
+        age_ranges=params["age_ranges"],
     )
 
     # Care site levels

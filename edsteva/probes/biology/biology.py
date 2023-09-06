@@ -110,7 +110,7 @@ class BiologyProbe(BaseProbe):
             "Bicarbonate": "A0422|H9622|C6408|F4161",
         },
         condition_types: Union[str, Dict[str, str]] = None,
-        drg_source: Union[str, Dict[str, str]] = {"All": ".*"},
+        drg_sources: Union[str, Dict[str, str]] = {"All": ".*"},
         care_site_ids: List[int] = None,
         care_site_short_names: List[str] = None,
         care_site_levels: Union[bool, str, List[str]] = True,
@@ -170,7 +170,7 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
         condition_types : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"Pulmonary_infection": "J22|J15|J13|J958|..."}`
-        drg_source : Union[str, Dict[str, str]], optional
+        drg_sources : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         age_ranges: List[int], optional
             **EXAMPLE**: `[18, 64]`
@@ -222,7 +222,7 @@ class BiologyProbe(BaseProbe):
             mapping=mapping,
             provenance_sources=provenance_sources,
             stay_sources=stay_sources,
-            drg_source=drg_source,
+            drg_sources=drg_sources,
             age_ranges=age_ranges,
             **kwargs,
         )

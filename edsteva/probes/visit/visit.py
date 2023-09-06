@@ -76,7 +76,7 @@ class VisitProbe(BaseProbe):
         length_of_stays: List[float] = None,
         condition_types: Union[str, Dict[str, str]] = None,
         provenance_sources: Union[bool, str, Dict[str, str]] = None,
-        drg_source: Union[str, Dict[str, str]] = {"All": ".*"},
+        drg_sources: Union[str, Dict[str, str]] = {"All": ".*"},
         age_ranges: List[int] = None,
         **kwargs,
     ):
@@ -116,7 +116,7 @@ class VisitProbe(BaseProbe):
             **EXAMPLE**: `[18, 64]`
         condition_types : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"Pulmonary_infection": "J22|J15|J13|J958|..."}`
-        drg_source : Union[str, Dict[str, str]], optional
+        drg_sources : Union[str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         """
         if not care_site_levels and "care_site_level" in self._index:
@@ -157,7 +157,7 @@ class VisitProbe(BaseProbe):
             stay_sources=stay_sources,
             condition_types=condition_types,
             age_ranges=age_ranges,
-            drg_source=drg_source,
+            drg_sources=drg_sources,
             **kwargs,
         )
 

@@ -21,8 +21,8 @@ from .filter_df import (
 def prepare_visit_occurrence(
     data: Data,
     stay_types: Union[str, Dict[str, str]],
-    stay_source: Union[str, Dict[str, str]],
-    provenance_source: Union[str, Dict[str, str]],
+    stay_sources: Union[str, Dict[str, str]],
+    provenance_sources: Union[str, Dict[str, str]],
     cost: DataFrame,
     length_of_stays: List[float],
     age_ranges: List[int] = None,
@@ -56,20 +56,20 @@ def prepare_visit_occurrence(
         invalid_naming="supprimé",
     )
 
-    if stay_source:
+    if stay_sources:
         visit_occurrence = filter_table_by_type(
             table=visit_occurrence,
             table_name="visit_occurrence",
-            type_groups=stay_source,
+            type_groups=stay_sources,
             source_col="stay_source_value",
             target_col="stay_source",
         )
 
-    if provenance_source:
+    if provenance_sources:
         visit_occurrence = filter_table_by_type(
             table=visit_occurrence,
             table_name="visit_occurrence",
-            type_groups=provenance_source,
+            type_groups=provenance_sources,
             source_col="provenance_source_value",
             target_col="provenance_source",
         )

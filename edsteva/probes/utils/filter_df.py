@@ -215,25 +215,25 @@ def filter_table_by_care_site(
     ]
 
 
-def filter_table_by_age(visit_occurrence: pd.DataFrame, age_range: List[int]):
-    age_range.sort()
+def filter_table_by_age(visit_occurrence: pd.DataFrame, age_ranges: List[int]):
+    age_ranges.sort()
 
     visit_occurrence["age"] = (
         visit_occurrence["date"] - visit_occurrence["birth_datetime"]
     ) / (np.timedelta64(timedelta(days=1)) * 356)
 
-    visit_occurrence["age_range"] = "Not specified"
+    visit_occurrence["age_ranges"] = "Not specified"
     visit_occurrence.loc[
-        visit_occurrence.age <= age_range[0], "age_range"
-    ] = f"age <= {age_range[0]}"
+        visit_occurrence.age <= age_ranges[0], "age_ranges"
+    ] = f"age <= {age_ranges[0]}"
 
-    for age_min, age_max in zip(age_range[:-1], age_range[1:]):
+    for age_min, age_max in zip(age_ranges[:-1], age_ranges[1:]):
         in_range = (visit_occurrence.age > age_min) & (visit_occurrence.age <= age_max)
-        visit_occurrence.loc[in_range, "age_range"] = f"{age_min} < age <= {age_max}"
+        visit_occurrence.loc[in_range, "age_ranges"] = f"{age_min} < age <= {age_max}"
 
     visit_occurrence.loc[
-        visit_occurrence.age > age_range[-1], "age_range"
-    ] = f"age > {age_range[-1]}"
+        visit_occurrence.age > age_ranges[-1], "age_ranges"
+    ] = f"age > {age_ranges[-1]}"
 
     return visit_occurrence.drop(columns="age")
 

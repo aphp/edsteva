@@ -41,10 +41,10 @@ def compute_completeness_predictor_per_measurement(
     length_of_stays: List[float],
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
-    age_range: List[int],
-    provenance_source: Union[str, Dict[str, str]],
-    stay_source: Union[str, Dict[str, str]],
-    drg_source: Union[str, Dict[str, str]],
+    age_ranges: List[int],
+    provenance_sources: Union[str, Dict[str, str]],
+    stay_sources: Union[str, Dict[str, str]],
+    drg_sources: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -78,7 +78,7 @@ def compute_completeness_predictor_per_measurement(
     root_terminology = mapping[0][0]
 
     person = prepare_person(data)
-    cost = prepare_cost(data, drg_source)
+    cost = prepare_cost(data, drg_sources)
 
     measurement = prepare_measurement(
         data=data,
@@ -98,11 +98,11 @@ def compute_completeness_predictor_per_measurement(
         end_date=None,
         stay_types=stay_types,
         length_of_stays=length_of_stays,
-        provenance_source=provenance_source,
-        stay_source=stay_source,
+        provenance_sources=provenance_sources,
+        stay_sources=stay_sources,
         cost=cost,
         person=person,
-        age_range=age_range,
+        age_ranges=age_ranges,
     ).drop(columns=["visit_occurrence_source_value", "date"])
 
     care_site = prepare_care_site(

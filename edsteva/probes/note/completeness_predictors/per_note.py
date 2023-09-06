@@ -40,10 +40,10 @@ def compute_completeness_predictor_per_note(
     extra_data: Data,
     length_of_stays: List[float],
     note_types: Union[str, Dict[str, str]],
-    age_range: List[int],
-    provenance_source: Union[str, Dict[str, str]],
-    stay_source: Union[str, Dict[str, str]],
-    drg_source: Union[str, Dict[str, str]],
+    age_ranges: List[int],
+    provenance_sources: Union[str, Dict[str, str]],
+    stay_sources: Union[str, Dict[str, str]],
+    drg_sources: Union[str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -67,17 +67,17 @@ def compute_completeness_predictor_per_note(
     )
 
     person = prepare_person(data)
-    cost = prepare_cost(data, drg_source)
+    cost = prepare_cost(data, drg_sources)
 
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         stay_types=stay_types,
-        stay_source=stay_source,
+        stay_sources=stay_sources,
         length_of_stays=length_of_stays,
-        provenance_source=provenance_source,
+        provenance_source=provenance_sources,
         cost=cost,
         person=person,
-        age_range=age_range,
+        age_ranges=age_ranges,
     ).drop(columns=["visit_occurrence_source_value", "date"])
 
     care_site = prepare_care_site(
