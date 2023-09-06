@@ -20,20 +20,12 @@ from .filter_df import (
 
 def prepare_visit_occurrence(
     data: Data,
-<<<<<<< HEAD
     stay_types: Union[str, Dict[str, str]],
     stay_source: Union[str, Dict[str, str]],
     provenance_source: Union[str, Dict[str, str]],
     cost: DataFrame,
     length_of_stays: List[float],
-    age_range: List[int] = None,
-=======
-    stay_types: Union[bool, str, Dict[str, str]],
-    stay_sources: Union[bool, str, Dict[str, str]],
-    provenance_sources: Union[bool, str, Dict[str, str]],
-    length_of_stays: List[float],
     age_ranges: List[int] = None,
->>>>>>> main
     start_date: datetime = None,
     end_date: datetime = None,
     person: DataFrame = None,
@@ -113,37 +105,11 @@ def prepare_visit_occurrence(
             target_col="stay_type",
         )
 
-<<<<<<< HEAD
-    if age_range:
-        visit_occurrence = visit_occurrence.merge(person, on="person_id")
-        visit_occurrence = filter_table_by_age(
-            visit_occurrence=visit_occurrence,
-            age_range=age_range,
-=======
-    if stay_sources and isinstance(stay_sources, (dict, str)):
-        visit_occurrence = filter_table_by_type(
-            table=visit_occurrence,
-            table_name="visit_occurrence",
-            type_groups=stay_sources,
-            source_col="stay_source_value",
-            target_col="stay_source",
-        )
-
-    if provenance_sources and isinstance(provenance_sources, (dict, str)):
-        visit_occurrence = filter_table_by_type(
-            table=visit_occurrence,
-            table_name="visit_occurrence",
-            type_groups=provenance_sources,
-            source_col="provenance_source_value",
-            target_col="provenance_source",
-        )
-
     if age_ranges:
         visit_occurrence = visit_occurrence.merge(person, on="person_id")
         visit_occurrence = filter_table_by_age(
             visit_occurrence=visit_occurrence,
             age_ranges=age_ranges,
->>>>>>> main
         )
 
     return visit_occurrence
@@ -746,7 +712,6 @@ def prepare_person(
         df_name="person",
     )
     return data.person[person_columns]
-<<<<<<< HEAD
 
 
 def prepare_cost(data: Data, drg_source):
@@ -770,5 +735,3 @@ def prepare_cost(data: Data, drg_source):
         source_col="drg_source_value",
         target_col="drg_source",
     )
-=======
->>>>>>> main
