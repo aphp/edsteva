@@ -106,7 +106,6 @@ def compute_completeness_predictor_per_measurement(
         person=person,
         age_ranges=age_ranges,
     ).drop(columns=["visit_occurrence_source_value", "date"])
-
     if condition_types:
         conditions = prepare_condition_occurrence(
             data,

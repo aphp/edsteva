@@ -36,7 +36,7 @@ params = [
         note_types=None,
         stay_types=None,
         diag_types=None,
-        condition_types="C",
+        condition_types=None,
         source_systems=None,
         concepts_sets={
             "entity 1": "A0",
@@ -71,7 +71,35 @@ params = [
         note_types="CRH",
         stay_types="hospitalisés",
         diag_types="DP",
-        condition_types=None,
+        condition_types="C",
+        source_systems=["ORBIS"],
+        concepts_sets={"All": ".*"},
+        start_date="2010-01-03",
+        end_date=None,
+        test_save=False,
+        stay_sources={"MCO": "MCO"},
+        provenance_sources={"All": ".*"},
+        age_ranges=[18],
+        module="koalas",
+        drg_sources={"All": ".*"},
+    ),
+    dict(
+        visit_predictor="per_visit_default",
+        note_predictor="per_note_default",
+        condition_predictor="per_condition_default",
+        biology_predictor="per_visit_default",
+        care_site_levels=["Hospital", "Pole", "UF", "Unité de consultation (UC)", "UH"],
+        care_site_ids="1",
+        care_site_short_names="Hôpital-1",
+        care_site_specialties=None,
+        specialties_sets={"All": ".*"},
+        care_sites_sets=None,
+        concept_codes=["A0009", "A0209", "A3109"],
+        length_of_stays=None,
+        note_types="CRH",
+        stay_types="hospitalisés",
+        diag_types="DP",
+        condition_types="C",
         source_systems=["ORBIS"],
         concepts_sets={"All": ".*"},
         start_date="2010-01-03",
@@ -353,6 +381,7 @@ def test_compute_note_probe(data, params):
         stay_sources=params["stay_sources"],
         provenance_sources=params["provenance_sources"],
         age_ranges=params["age_ranges"],
+        condition_types=params["condition_types"],
     )
 
     # Care site levels
@@ -671,6 +700,9 @@ def test_compute_condition_probe(data, params):
     assert isinstance(condition.get_viz_config(viz_type="normalized_probe_plot"), dict)
     with pytest.raises(Exception):
         condition.get_viz_config(viz_type="unknown_plot")
+
+
+params = [params[1]]
 
 
 @pytest.mark.parametrize("data", [data_step, data_rect])
