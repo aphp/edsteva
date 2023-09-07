@@ -7,6 +7,7 @@ from loguru import logger
 from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
+    prepare_condition_occurrence,
     prepare_cost,
     prepare_note,
     prepare_note_care_site,
@@ -42,6 +43,7 @@ def compute_completeness_predictor_per_visit(
     length_of_stays: List[float],
     note_types: Union[str, Dict[str, str]],
     age_ranges: List[int],
+    condition_types: Union[str, Dict[str, str]],
     provenance_sources: Union[str, Dict[str, str]],
     stay_sources: Union[str, Dict[str, str]],
     drg_sources: Union[str, Dict[str, str]],
@@ -76,6 +78,20 @@ def compute_completeness_predictor_per_visit(
         person=person,
         age_ranges=age_ranges,
     )
+
+    if condition_types:
+        conditions = prepare_condition_occurrence(
+            data,
+            extra_data=None,
+            visit_occurrence=None,
+            source_systems="ORBIS",
+            diag_types=None,
+            condition_types=condition_types,
+            start_date=start_date,
+            end_date=end_date,
+        )[["visit_occurrence_id", "condition_type"]]
+        visit_occurrence = visit_occurrence.merge(conditions, on="visit_occurrence_id")
+        visit_occurrence = visit_occurrence.drop_duplicates()
 
     care_site = prepare_care_site(
         data=data,
