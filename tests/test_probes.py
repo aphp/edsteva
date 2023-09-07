@@ -36,7 +36,7 @@ params = [
         note_types=None,
         stay_types=None,
         diag_types=None,
-        condition_types=None,
+        condition_types="C",
         source_systems=None,
         concepts_sets={
             "entity 1": "A0",
@@ -71,7 +71,7 @@ params = [
         note_types="CRH",
         stay_types="hospitalisés",
         diag_types="DP",
-        condition_types="C",
+        condition_types=None,
         source_systems=["ORBIS"],
         concepts_sets={"All": ".*"},
         start_date="2010-01-03",
