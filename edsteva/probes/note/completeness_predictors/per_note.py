@@ -46,7 +46,6 @@ def compute_completeness_predictor_per_note(
     provenance_sources: Union[str, Dict[str, str]],
     stay_sources: Union[str, Dict[str, str]],
     drg_sources: Union[str, Dict[str, str]],
-    **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
 

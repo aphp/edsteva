@@ -702,9 +702,6 @@ def test_compute_condition_probe(data, params):
         condition.get_viz_config(viz_type="unknown_plot")
 
 
-params = [params[1]]
-
-
 @pytest.mark.parametrize("data", [data_step, data_rect])
 @pytest.mark.parametrize("params", params)
 def test_compute_biology_probe(data, params):
