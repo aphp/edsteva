@@ -197,6 +197,7 @@ def test_compute_visit_probe(data, params):
         length_of_stays=params["length_of_stays"],
         stay_sources=params["stay_sources"],
         provenance_sources=params["provenance_sources"],
+        condition_types=params["condition_types"],
         age_ranges=params["age_ranges"],
     )
 
@@ -696,6 +697,7 @@ def test_compute_biology_probe(data, params):
         concept_codes=params["concept_codes"],
         stay_sources=params["stay_sources"],
         provenance_sources=params["provenance_sources"],
+        condition_types=params["condition_types"],
         age_ranges=params["age_ranges"],
     )
 
