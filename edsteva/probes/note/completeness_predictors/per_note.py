@@ -79,6 +79,7 @@ def compute_completeness_predictor_per_note(
         provenance_sources=provenance_sources,
         cost=cost,
         person=person,
+        age_ranges=age_ranges
     ).drop(columns=["visit_occurrence_source_value", "date"])
 
     if condition_types:

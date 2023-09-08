@@ -69,6 +69,7 @@ def compute_completeness_predictor_per_visit(
         provenance_sources=provenance_sources,
         cost=cost,
         person=person,
+        age_ranges=age_ranges
     )
 
     if condition_types:

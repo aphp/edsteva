@@ -104,6 +104,7 @@ def compute_completeness_predictor_per_measurement(
         stay_sources=stay_sources,
         cost=cost,
         person=person,
+        age_ranges=age_ranges
     ).drop(columns=["visit_occurrence_source_value", "date"])
     if condition_types:
         conditions = prepare_condition_occurrence(
