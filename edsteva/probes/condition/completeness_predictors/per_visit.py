@@ -42,9 +42,9 @@ def compute_completeness_predictor_per_visit(
     source_systems: Union[bool, List[str]],
     length_of_stays: List[float],
     age_ranges: List[int],
-    provenance_sources: Union[str, Dict[str, str]],
-    stay_sources: Union[str, Dict[str, str]],
-    drg_sources: Union[str, Dict[str, str]],
+    provenance_sources: Union[bool, str, Dict[str, str]],
+    stay_sources: Union[bool, str, Dict[str, str]],
+    drg_sources: Union[bool, str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]

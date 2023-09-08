@@ -74,9 +74,9 @@ class VisitProbe(BaseProbe):
         stay_types: Union[bool, str, Dict[str, str]] = True,
         stay_sources: Union[bool, str, Dict[str, str]] = None,
         length_of_stays: List[float] = None,
-        condition_types: Union[str, Dict[str, str]] = None,
+        condition_types: Union[bool, str, Dict[str, str]] = None,
         provenance_sources: Union[bool, str, Dict[str, str]] = None,
-        drg_sources: Union[str, Dict[str, str]] = {"All": ".*"},
+        drg_sources: Union[bool, str, Dict[str, str]] = None,
         age_ranges: List[int] = None,
         **kwargs,
     ):
@@ -114,9 +114,9 @@ class VisitProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
         age_ranges: List[int], optional
             **EXAMPLE**: `[18, 64]`
-        condition_types : Union[str, Dict[str, str]], optional
+        condition_types :  Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"Pulmonary_infection": "J22|J15|J13|J958|..."}`
-        drg_sources : Union[str, Dict[str, str]], optional
+        drg_sources :  Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         """
         if not care_site_levels and "care_site_level" in self._index:
@@ -139,6 +139,8 @@ class VisitProbe(BaseProbe):
             self._index.remove("age_range")
         if condition_types is None and "condition_type" in self._index:
             self._index.remove("condition_type")
+        if not drg_sources and "drg_source" in self._index:
+            self._index.remove("drg_source")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,

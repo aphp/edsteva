@@ -42,10 +42,10 @@ def compute_completeness_predictor_per_note(
     length_of_stays: List[float],
     note_types: Union[str, Dict[str, str]],
     age_ranges: List[int],
-    condition_types: Union[str, Dict[str, str]],
-    provenance_sources: Union[str, Dict[str, str]],
-    stay_sources: Union[str, Dict[str, str]],
-    drg_sources: Union[str, Dict[str, str]],
+    condition_types: Union[bool, str, Dict[str, str]],
+    provenance_sources: Union[bool, str, Dict[str, str]],
+    stay_sources: Union[bool, str, Dict[str, str]],
+    drg_sources: Union[bool, str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
