@@ -25,7 +25,6 @@ def prepare_visit_occurrence(
     provenance_sources: Union[str, Dict[str, str]],
     cost: DataFrame,
     length_of_stays: List[float],
-    age_ranges: List[int] = None,
     start_date: datetime = None,
     end_date: datetime = None,
     person: DataFrame = None,
@@ -78,16 +77,16 @@ def prepare_visit_occurrence(
         visit_occurrence = filter_table_by_length_of_stay(
             visit_occurrence=visit_occurrence, length_of_stays=length_of_stays
         )
-
-    cost = cost[["cost_event_id", "drg_source"]]
-    visit_occurrence = visit_occurrence.merge(
-        cost, left_on="visit_occurrence_id", right_on="cost_event_id"
-    )
-    visit_occurrence = visit_occurrence.drop_duplicates("visit_occurrence_id")
-
-    visit_occurrence = visit_occurrence.rename(
-        columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
-    )
+    
+    if cost:
+        cost = cost[["cost_event_id", "drg_source"]]
+        visit_occurrence = visit_occurrence.merge(
+            cost, left_on="visit_occurrence_id", right_on="cost_event_id"
+            )
+        visit_occurrence = visit_occurrence.drop_duplicates("visit_occurrence_id")
+        visit_occurrence = visit_occurrence.rename(
+            columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
+            )
 
     visit_occurrence = filter_table_by_date(
         table=visit_occurrence,
@@ -105,7 +104,7 @@ def prepare_visit_occurrence(
             target_col="stay_type",
         )
 
-    if age_ranges:
+    if person:
         visit_occurrence = visit_occurrence.merge(person, on="person_id")
         visit_occurrence = filter_table_by_age(
             visit_occurrence=visit_occurrence,

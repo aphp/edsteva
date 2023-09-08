@@ -56,8 +56,8 @@ def compute_completeness_predictor_per_visit(
     """
     self._metrics = ["c", "n_visit"]
 
-    person = prepare_person(data)
-    cost = prepare_cost(data, drg_sources)
+    person = prepare_person(data) if age_ranges else None
+    cost = prepare_cost(data, drg_sources) if drg_sources else None
 
     visit_occurrence = prepare_visit_occurrence(
         data=data,
@@ -69,7 +69,6 @@ def compute_completeness_predictor_per_visit(
         provenance_sources=provenance_sources,
         cost=cost,
         person=person,
-        age_ranges=age_ranges,
     )
 
     if condition_types:

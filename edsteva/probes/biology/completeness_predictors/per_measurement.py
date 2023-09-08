@@ -79,8 +79,8 @@ def compute_completeness_predictor_per_measurement(
     self.biology_relationship = biology_relationship
     root_terminology = mapping[0][0]
 
-    person = prepare_person(data)
-    cost = prepare_cost(data, drg_sources)
+    person = prepare_person(data) if age_ranges else None
+    cost = prepare_cost(data, drg_sources) if drg_sources else None
 
     measurement = prepare_measurement(
         data=data,
@@ -104,7 +104,6 @@ def compute_completeness_predictor_per_measurement(
         stay_sources=stay_sources,
         cost=cost,
         person=person,
-        age_ranges=age_ranges,
     ).drop(columns=["visit_occurrence_source_value", "date"])
     if condition_types:
         conditions = prepare_condition_occurrence(

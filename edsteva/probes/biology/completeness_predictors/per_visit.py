@@ -80,8 +80,8 @@ def compute_completeness_predictor_per_visit(
     self.biology_relationship = biology_relationship
     root_terminology = mapping[0][0]
 
-    person = prepare_person(data)
-    cost = prepare_cost(data, drg_sources)
+    person = prepare_person(data) if age_ranges else None
+    cost = prepare_cost(data, drg_sources) if drg_sources else None
 
     visit_occurrence = prepare_visit_occurrence(
         data=data,
@@ -93,7 +93,6 @@ def compute_completeness_predictor_per_visit(
         stay_sources=stay_sources,
         cost=cost,
         person=person,
-        age_ranges=age_ranges,
     )
 
     if condition_types:

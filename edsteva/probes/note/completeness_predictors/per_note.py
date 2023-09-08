@@ -68,8 +68,8 @@ def compute_completeness_predictor_per_note(
         note_types=note_types,
     )
 
-    person = prepare_person(data)
-    cost = prepare_cost(data, drg_sources)
+    person = prepare_person(data) if age_ranges else None
+    cost = prepare_cost(data, drg_sources) if drg_sources else None
 
     visit_occurrence = prepare_visit_occurrence(
         data=data,
@@ -79,7 +79,6 @@ def compute_completeness_predictor_per_note(
         provenance_sources=provenance_sources,
         cost=cost,
         person=person,
-        age_ranges=age_ranges,
     ).drop(columns=["visit_occurrence_source_value", "date"])
 
     if condition_types:
