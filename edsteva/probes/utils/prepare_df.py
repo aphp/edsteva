@@ -79,7 +79,7 @@ def prepare_visit_occurrence(
             visit_occurrence=visit_occurrence, length_of_stays=length_of_stays
         )
 
-    if cost:
+    if cost is not None:
         cost = cost[["visit_occurrence_id", "drg_source"]]
         visit_occurrence = visit_occurrence.merge(cost, on="visit_occurrence_id")
 
