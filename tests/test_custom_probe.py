@@ -70,8 +70,8 @@ class CustomProbe(BaseProbe):
         length_of_stays: List[float] = None,
         provenance_sources: Union[bool, str, Dict[str, str]] = None,
         age_ranges: List[int] = None,
-        condition_types: Union[str, Dict[str, str]] = None,
-        drg_sources: Union[str, Dict[str, str]] = {"All": ".*"},
+        condition_types: Union[bool, str, Dict[str, str]] = None,
+        drg_sources: Union[bool, str, Dict[str, str]] = None,
         **kwargs,
     ):
         if not care_site_levels and "care_site_level" in self._index:
@@ -88,7 +88,7 @@ class CustomProbe(BaseProbe):
             self._index.remove("stay_source")
         if not length_of_stays and "length_of_stay" in self._index:
             self._index.remove("length_of_stay")
-        if condition_types is None and "condition_type" in self._index:
+        if not condition_types and "condition_type" in self._index:
             self._index.remove("condition_type")
         if not provenance_sources and "provenance_source" in self._index:
             self._index.remove("provenance_source")

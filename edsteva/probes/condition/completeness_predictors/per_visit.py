@@ -250,6 +250,7 @@ def get_uf_visit(
                         "provenance_source",
                         "age_range",
                         "drg_source",
+                        "condition_type",
                     ]
                 )
             )

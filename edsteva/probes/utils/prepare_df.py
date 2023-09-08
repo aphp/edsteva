@@ -720,16 +720,16 @@ def prepare_cost(data: Data, drg_source):
         required_tables=["cost"],
     )
 
-    cost_columns = ["drg_source_value"]
+    cost_columns = ["cost_event_id", "drg_source_value"]
 
     check_columns(
         data.cost,
         required_columns=cost_columns,
         df_name="cost",
     )
-
+    cost = data.cost[["cost_event_id", "drg_source_value"]].rename(columns={"cost_event_id": "visit_occurrence_id"}.drop_duplicates()
     return filter_table_by_type(
-        table=data.cost,
+        table=cost,
         table_name="cost",
         type_groups=drg_source,
         source_col="drg_source_value",

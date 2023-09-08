@@ -59,8 +59,7 @@ def compute_completeness_predictor_per_visit(
 
     Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,condition}$ the number of stays having at least one biological measurement recorded and $t$ is the month.
     """
-
-    self._metrics = ["c", "n_measurement"]
+    self._metrics = ["c", "n_visit", "n_visit_with_measurement"]
     check_tables(
         data=data,
         required_tables=[
