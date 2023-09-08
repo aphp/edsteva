@@ -28,6 +28,7 @@ def prepare_visit_occurrence(
     start_date: datetime = None,
     end_date: datetime = None,
     person: DataFrame = None,
+    age_ranges: List[int] = None,
 ):
     required_columns = [
         "visit_occurrence_id",
@@ -77,16 +78,14 @@ def prepare_visit_occurrence(
         visit_occurrence = filter_table_by_length_of_stay(
             visit_occurrence=visit_occurrence, length_of_stays=length_of_stays
         )
-    
+
     if cost:
-        cost = cost[["cost_event_id", "drg_source"]]
-        visit_occurrence = visit_occurrence.merge(
-            cost, left_on="visit_occurrence_id", right_on="cost_event_id"
-            )
-        visit_occurrence = visit_occurrence.drop_duplicates("visit_occurrence_id")
-        visit_occurrence = visit_occurrence.rename(
-            columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
-            )
+        cost = cost[["visit_occurrence_id", "drg_source"]]
+        visit_occurrence = visit_occurrence.merge(cost, on="visit_occurrence_id")
+
+    visit_occurrence = visit_occurrence.rename(
+        columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
+    )
 
     visit_occurrence = filter_table_by_date(
         table=visit_occurrence,
@@ -104,7 +103,7 @@ def prepare_visit_occurrence(
             target_col="stay_type",
         )
 
-    if person:
+    if age_ranges:
         visit_occurrence = visit_occurrence.merge(person, on="person_id")
         visit_occurrence = filter_table_by_age(
             visit_occurrence=visit_occurrence,
@@ -726,7 +725,12 @@ def prepare_cost(data: Data, drg_source):
         required_columns=cost_columns,
         df_name="cost",
     )
-    cost = data.cost[["cost_event_id", "drg_source_value"]].rename(columns={"cost_event_id": "visit_occurrence_id"}.drop_duplicates()
+    cost = (
+        data.cost[["cost_event_id", "drg_source_value"]]
+        .rename(columns={"cost_event_id": "visit_occurrence_id"})
+        .drop_duplicates()
+    )
+
     return filter_table_by_type(
         table=cost,
         table_name="cost",
