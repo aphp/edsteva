@@ -74,7 +74,7 @@ def compute_completeness_predictor_per_visit(
         stay_sources=stay_sources,
         cost=cost,
         person=person,
-        age_ranges=age_ranges
+        age_ranges=age_ranges,
     )
 
     condition_occurrence = prepare_condition_occurrence(

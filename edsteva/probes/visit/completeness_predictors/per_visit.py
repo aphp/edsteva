@@ -69,7 +69,7 @@ def compute_completeness_predictor_per_visit(
         provenance_sources=provenance_sources,
         cost=cost,
         person=person,
-        age_ranges=age_ranges
+        age_ranges=age_ranges,
     )
 
     if condition_types:
@@ -228,7 +228,7 @@ def get_uf_visit(
                         "provenance_source",
                         "age_range",
                         "drg_source",
-                        "condition_type"
+                        "condition_type",
                     ]
                 )
             )
@@ -261,7 +261,7 @@ def get_uc_visit(
                         "provenance_source",
                         "age_range",
                         "drg_source",
-                        "condition_type"
+                        "condition_type",
                     ]
                 )
             )
@@ -294,7 +294,7 @@ def get_uh_visit(
                         "provenance_source",
                         "age_range",
                         "drg_source",
-                        "condition_type"
+                        "condition_type",
                     ]
                 )
             )
