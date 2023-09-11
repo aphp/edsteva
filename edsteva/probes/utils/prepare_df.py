@@ -79,10 +79,6 @@ def prepare_visit_occurrence(
             visit_occurrence=visit_occurrence, length_of_stays=length_of_stays
         )
 
-    if cost is not None:
-        cost = cost[["visit_occurrence_id", "drg_source"]]
-        visit_occurrence = visit_occurrence.merge(cost, on="visit_occurrence_id")
-
     visit_occurrence = visit_occurrence.rename(
         columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
     )
@@ -93,6 +89,10 @@ def prepare_visit_occurrence(
         start_date=start_date,
         end_date=end_date,
     )
+
+    if cost is not None:
+        cost = cost[["visit_occurrence_id", "drg_source"]]
+        visit_occurrence = visit_occurrence.merge(cost, on="visit_occurrence_id")
 
     if stay_types and isinstance(stay_types, (dict, str)):
         visit_occurrence = filter_table_by_type(
