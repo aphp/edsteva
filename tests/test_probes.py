@@ -108,7 +108,7 @@ params = [
         stay_sources={"MCO": "MCO"},
         provenance_sources=None,
         age_ranges=[18],
-        module="pandas",
+        module="koalas",
         drg_sources=None,
     ),
     dict(
