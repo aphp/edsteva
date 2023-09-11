@@ -92,6 +92,8 @@ class CustomProbe(BaseProbe):
             self._index.remove("condition_type")
         if not provenance_sources and "provenance_source" in self._index:
             self._index.remove("provenance_source")
+        if not drg_sources and "drg_source" in self._index:
+            self._index.remove("drg_source")
         if not age_ranges and "age_range" in self._index:
             self._index.remove("age_range")
         return completeness_predictors.get(self._completeness_predictor)(
