@@ -61,9 +61,10 @@ Ready to contribute? Here's how to set up `edsteva` for local development.
     <div class="termy">
 
     ```console
-    $ poetry install --only docs
-    $ poetry config experimental.new-installer false
+    $ pip install pypandoc==1.7.5
+    $ pip install pyspark==2.4.8
     $ poetry install
+    $ pip uninstall pypandoc
 
     color:lightblue Updating dependencies
     color:lightblue Resolving dependencies... (25.3s)
