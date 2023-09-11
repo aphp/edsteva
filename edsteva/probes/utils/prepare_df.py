@@ -91,7 +91,7 @@ def prepare_visit_occurrence(
     )
 
     if cost is not None:
-        cost = cost[["visit_occurrence_id", "drg_source"]]
+        cost = cost[["visit_occurrence_id", "drg_source"]].drop_duplicates()
         visit_occurrence = visit_occurrence.merge(cost, on="visit_occurrence_id")
 
     if stay_types and isinstance(stay_types, (dict, str)):
