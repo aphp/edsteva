@@ -54,6 +54,7 @@ class ConditionProbe(BaseProbe):
             "length_of_stay",
             "provenance_source",
             "age_range",
+            "drg_source",
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -81,6 +82,7 @@ class ConditionProbe(BaseProbe):
         length_of_stays: List[float] = None,
         provenance_sources: Union[bool, str, Dict[str, str]] = None,
         age_ranges: List[int] = None,
+        drg_sources: Union[bool, str, Dict[str, str]] = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -123,6 +125,8 @@ class ConditionProbe(BaseProbe):
             **EXAMPLE**: `[1, 30]`
         provenance_sources: Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
+        drg_sources :  Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         age_ranges: List[int], optional
             **EXAMPLE**: `[18, 64]`
         """
@@ -150,6 +154,8 @@ class ConditionProbe(BaseProbe):
             self._index.remove("provenance_source")
         if not age_ranges and "age_range" in self._index:
             self._index.remove("age_range")
+        if not drg_sources and "drg_source" in self._index:
+            self._index.remove("drg_source")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -170,6 +176,7 @@ class ConditionProbe(BaseProbe):
             condition_types=condition_types,
             source_systems=source_systems,
             stay_sources=stay_sources,
+            drg_sources=drg_sources,
             age_ranges=age_ranges,
             **kwargs,
         )

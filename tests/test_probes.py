@@ -51,8 +51,9 @@ params = [
         test_save=False,
         module="koalas",
         stay_sources={"MCO": "MCO", "MCO_PSY_SSR": "MCO|Psychiatrie|SSR"},
-        provenance_sources={"All": ".*"},
         age_ranges=[18, 64],
+        drg_sources={"M": ".{2}M"},
+        provenance_sources=None,
     ),
     dict(
         visit_predictor="per_visit_default",
@@ -76,10 +77,39 @@ params = [
         start_date="2010-01-03",
         end_date=None,
         test_save=False,
-        stay_sources=None,
+        stay_sources={"MCO": "MCO"},
         provenance_sources=None,
-        age_ranges=None,
+        age_ranges=[18],
+        module="pandas",
+        drg_sources=None,
+    ),
+    dict(
+        visit_predictor="per_visit_default",
+        note_predictor="per_note_default",
+        condition_predictor="per_condition_default",
+        biology_predictor="per_visit_default",
+        care_site_levels=["Hospital", "Pole", "UF", "Unité de consultation (UC)", "UH"],
+        care_site_ids="1",
+        care_site_short_names="Hôpital-1",
+        care_site_specialties=None,
+        specialties_sets={"All": ".*"},
+        care_sites_sets=None,
+        concept_codes=["A0009", "A0209", "A3109"],
+        length_of_stays=None,
+        note_types="CRH",
+        stay_types="hospitalisés",
+        diag_types="DP",
+        condition_types="C",
+        source_systems=["ORBIS"],
+        concepts_sets={"All": ".*"},
+        start_date="2010-01-03",
+        end_date=None,
+        test_save=False,
+        stay_sources={"MCO": "MCO"},
+        provenance_sources=None,
+        age_ranges=[18],
         module="koalas",
+        drg_sources=None,
     ),
     dict(
         visit_predictor="per_visit_default",
@@ -103,10 +133,11 @@ params = [
         start_date=datetime(2010, 5, 10),
         end_date=datetime(2020, 1, 1),
         test_save=True,
-        stay_sources=None,
-        provenance_sources=None,
+        stay_sources={"MCO": "MCO"},
+        provenance_sources={"All": ".*", "urgence": "service d'urgence"},
         age_ranges=None,
         module="pandas",
+        drg_sources=None,
     ),
 ]
 
@@ -194,6 +225,7 @@ def test_compute_visit_probe(data, params):
         length_of_stays=params["length_of_stays"],
         stay_sources=params["stay_sources"],
         provenance_sources=params["provenance_sources"],
+        condition_types=params["condition_types"],
         age_ranges=params["age_ranges"],
     )
 
@@ -349,6 +381,7 @@ def test_compute_note_probe(data, params):
         stay_sources=params["stay_sources"],
         provenance_sources=params["provenance_sources"],
         age_ranges=params["age_ranges"],
+        condition_types=params["condition_types"],
     )
 
     # Care site levels
@@ -693,6 +726,7 @@ def test_compute_biology_probe(data, params):
         concept_codes=params["concept_codes"],
         stay_sources=params["stay_sources"],
         provenance_sources=params["provenance_sources"],
+        condition_types=params["condition_types"],
         age_ranges=params["age_ranges"],
     )
 

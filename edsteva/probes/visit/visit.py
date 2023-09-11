@@ -51,6 +51,8 @@ class VisitProbe(BaseProbe):
             "length_of_stay",
             "provenance_source",
             "age_range",
+            "drg_source",
+            "condition_type",
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -72,7 +74,9 @@ class VisitProbe(BaseProbe):
         stay_types: Union[bool, str, Dict[str, str]] = True,
         stay_sources: Union[bool, str, Dict[str, str]] = None,
         length_of_stays: List[float] = None,
+        condition_types: Union[bool, str, Dict[str, str]] = None,
         provenance_sources: Union[bool, str, Dict[str, str]] = None,
+        drg_sources: Union[bool, str, Dict[str, str]] = None,
         age_ranges: List[int] = None,
         **kwargs,
     ):
@@ -110,6 +114,10 @@ class VisitProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
         age_ranges: List[int], optional
             **EXAMPLE**: `[18, 64]`
+        condition_types :  Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"Pulmonary_infection": "J22|J15|J13|J958|..."}`
+        drg_sources :  Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         """
         if not care_site_levels and "care_site_level" in self._index:
             self._index.remove("care_site_level")
@@ -129,6 +137,10 @@ class VisitProbe(BaseProbe):
             self._index.remove("provenance_source")
         if not age_ranges and "age_range" in self._index:
             self._index.remove("age_range")
+        if condition_types is None and "condition_type" in self._index:
+            self._index.remove("condition_type")
+        if not drg_sources and "drg_source" in self._index:
+            self._index.remove("drg_source")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -145,7 +157,9 @@ class VisitProbe(BaseProbe):
             length_of_stays=length_of_stays,
             provenance_sources=provenance_sources,
             stay_sources=stay_sources,
+            condition_types=condition_types,
             age_ranges=age_ranges,
+            drg_sources=drg_sources,
             **kwargs,
         )
 

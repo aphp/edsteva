@@ -199,6 +199,7 @@ def test_viz_probe(data, Model, Probe, tmp_dir):
             stay_types={"HC": "hospitalisés", "Urg": "urgences"},
             care_site_ids=["1", "2"],
             care_site_short_names=["Hôpital-1", "Hôpital-2"],
+            drg_sources={"All": ".*"},
             concepts_sets=None,
             note_types=None,
             length_of_stays=None,

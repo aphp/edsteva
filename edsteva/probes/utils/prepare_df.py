@@ -23,11 +23,12 @@ def prepare_visit_occurrence(
     stay_types: Union[bool, str, Dict[str, str]],
     stay_sources: Union[bool, str, Dict[str, str]],
     provenance_sources: Union[bool, str, Dict[str, str]],
+    cost: DataFrame,
     length_of_stays: List[float],
-    age_ranges: List[int] = None,
     start_date: datetime = None,
     end_date: datetime = None,
     person: DataFrame = None,
+    age_ranges: List[int] = None,
 ):
     required_columns = [
         "visit_occurrence_id",
@@ -55,6 +56,24 @@ def prepare_visit_occurrence(
         invalid_naming="supprimé",
     )
 
+    if stay_sources:
+        visit_occurrence = filter_table_by_type(
+            table=visit_occurrence,
+            table_name="visit_occurrence",
+            type_groups=stay_sources,
+            source_col="stay_source_value",
+            target_col="stay_source",
+        )
+
+    if provenance_sources:
+        visit_occurrence = filter_table_by_type(
+            table=visit_occurrence,
+            table_name="visit_occurrence",
+            type_groups=provenance_sources,
+            source_col="provenance_source_value",
+            target_col="provenance_source",
+        )
+
     if length_of_stays:
         visit_occurrence = filter_table_by_length_of_stay(
             visit_occurrence=visit_occurrence, length_of_stays=length_of_stays
@@ -71,6 +90,10 @@ def prepare_visit_occurrence(
         end_date=end_date,
     )
 
+    if cost is not None:
+        cost = cost[["visit_occurrence_id", "drg_source"]].drop_duplicates()
+        visit_occurrence = visit_occurrence.merge(cost, on="visit_occurrence_id")
+
     if stay_types and isinstance(stay_types, (dict, str)):
         visit_occurrence = filter_table_by_type(
             table=visit_occurrence,
@@ -78,24 +101,6 @@ def prepare_visit_occurrence(
             type_groups=stay_types,
             source_col="stay_type",
             target_col="stay_type",
-        )
-
-    if stay_sources and isinstance(stay_sources, (dict, str)):
-        visit_occurrence = filter_table_by_type(
-            table=visit_occurrence,
-            table_name="visit_occurrence",
-            type_groups=stay_sources,
-            source_col="stay_source_value",
-            target_col="stay_source",
-        )
-
-    if provenance_sources and isinstance(provenance_sources, (dict, str)):
-        visit_occurrence = filter_table_by_type(
-            table=visit_occurrence,
-            table_name="visit_occurrence",
-            type_groups=provenance_sources,
-            source_col="provenance_source_value",
-            target_col="provenance_source",
         )
 
     if age_ranges:
@@ -468,6 +473,7 @@ def prepare_visit_detail(
             "row_status_source_value",
         ]
     ]
+
     visit_detail = visit_detail.rename(
         columns={
             "visit_detail_id": "visit_id",
@@ -703,3 +709,29 @@ def prepare_person(
         df_name="person",
     )
     return data.person[person_columns]
+
+
+def prepare_cost(data: Data, drg_source):
+    check_tables(
+        data=data,
+        required_tables=["cost"],
+    )
+
+    cost_columns = ["cost_event_id", "drg_source_value"]
+
+    check_columns(
+        data.cost,
+        required_columns=cost_columns,
+        df_name="cost",
+    )
+    cost = data.cost[cost_columns].rename(
+        columns={"cost_event_id": "visit_occurrence_id"}
+    )
+
+    return filter_table_by_type(
+        table=cost,
+        table_name="cost",
+        type_groups=drg_source,
+        source_col="drg_source_value",
+        target_col="drg_source",
+    )

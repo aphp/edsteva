@@ -71,6 +71,8 @@ class BiologyProbe(BaseProbe):
             "length_of_stay",
             "provenance_source",
             "age_range",
+            "drg_source",
+            "condition_type",
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -107,6 +109,8 @@ class BiologyProbe(BaseProbe):
             "Glucose": "A1245|E7961|C8796|H7753|A8029|H7749|A0141|H7323|J7401|F2622|B9553|C7236|E7312|G9557|A7338|H7324|C0565|E9889|A8424|F6235|F5659|F2406",
             "Bicarbonate": "A0422|H9622|C6408|F4161",
         },
+        condition_types: Union[bool, str, Dict[str, str]] = None,
+        drg_sources: Union[bool, str, Dict[str, str]] = None,
         care_site_ids: List[int] = None,
         care_site_short_names: List[str] = None,
         care_site_levels: Union[bool, str, List[str]] = True,
@@ -164,6 +168,10 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `[1, 30]`
         provenance_sources: Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
+        condition_types : Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"Pulmonary_infection": "J22|J15|J13|J958|..."}`
+        drg_sources : Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         age_ranges: List[int], optional
             **EXAMPLE**: `[18, 64]`
         """
@@ -191,6 +199,10 @@ class BiologyProbe(BaseProbe):
             self._index.remove("provenance_source")
         if not age_ranges and "age_range" in self._index:
             self._index.remove("age_range")
+        if not condition_types and "condition_type" in self._index:
+            self._index.remove("condition_type")
+        if not drg_sources and "drg_source" in self._index:
+            self._index.remove("drg_source")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -206,11 +218,13 @@ class BiologyProbe(BaseProbe):
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             concepts_sets=concepts_sets,
+            condition_types=condition_types,
             length_of_stays=length_of_stays,
             source_terminologies=source_terminologies,
             mapping=mapping,
             provenance_sources=provenance_sources,
             stay_sources=stay_sources,
+            drg_sources=drg_sources,
             age_ranges=age_ranges,
             **kwargs,
         )

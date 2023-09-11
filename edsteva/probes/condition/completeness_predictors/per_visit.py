@@ -7,6 +7,7 @@ from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
     prepare_condition_occurrence,
+    prepare_cost,
     prepare_person,
     prepare_visit_detail,
     prepare_visit_occurrence,
@@ -43,6 +44,7 @@ def compute_completeness_predictor_per_visit(
     age_ranges: List[int],
     provenance_sources: Union[bool, str, Dict[str, str]],
     stay_sources: Union[bool, str, Dict[str, str]],
+    drg_sources: Union[bool, str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -59,7 +61,8 @@ def compute_completeness_predictor_per_visit(
     self._metrics = ["c", "n_visit", "n_visit_with_condition"]
     check_tables(data=data, required_tables=["condition_occurrence"])
 
-    person = prepare_person(data)
+    person = prepare_person(data) if age_ranges else None
+    cost = prepare_cost(data, drg_sources) if drg_sources else None
 
     visit_occurrence = prepare_visit_occurrence(
         data=data,
@@ -69,6 +72,7 @@ def compute_completeness_predictor_per_visit(
         length_of_stays=length_of_stays,
         provenance_sources=provenance_sources,
         stay_sources=stay_sources,
+        cost=cost,
         person=person,
         age_ranges=age_ranges,
     )
@@ -243,6 +247,8 @@ def get_uf_visit(
                         "stay_source",
                         "provenance_source",
                         "age_range",
+                        "drg_source",
+                        "condition_type",
                     ]
                 )
             )

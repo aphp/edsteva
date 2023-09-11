@@ -6,6 +6,8 @@ import pandas as pd
 from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
+    prepare_condition_occurrence,
+    prepare_cost,
     prepare_person,
     prepare_visit_detail,
     prepare_visit_occurrence,
@@ -36,8 +38,10 @@ def compute_completeness_predictor_per_visit(
     specialties_sets: Union[str, Dict[str, str]],
     length_of_stays: List[float],
     age_ranges: List[int],
+    condition_types: Union[bool, str, Dict[str, str]],
     provenance_sources: Union[bool, str, Dict[str, str]],
     stay_sources: Union[bool, str, Dict[str, str]],
+    drg_sources: Union[bool, str, Dict[str, str]],
     **kwargs
 ):
     r"""Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -52,7 +56,8 @@ def compute_completeness_predictor_per_visit(
     """
     self._metrics = ["c", "n_visit"]
 
-    person = prepare_person(data)
+    person = prepare_person(data) if age_ranges else None
+    cost = prepare_cost(data, drg_sources) if drg_sources else None
 
     visit_occurrence = prepare_visit_occurrence(
         data=data,
@@ -62,9 +67,24 @@ def compute_completeness_predictor_per_visit(
         length_of_stays=length_of_stays,
         stay_sources=stay_sources,
         provenance_sources=provenance_sources,
+        cost=cost,
         person=person,
         age_ranges=age_ranges,
     )
+
+    if condition_types:
+        conditions = prepare_condition_occurrence(
+            data,
+            extra_data=None,
+            visit_occurrence=None,
+            source_systems="ORBIS",
+            diag_types=None,
+            condition_types=condition_types,
+            start_date=start_date,
+            end_date=end_date,
+        )[["visit_occurrence_id", "condition_type"]]
+        visit_occurrence = visit_occurrence.merge(conditions, on="visit_occurrence_id")
+        visit_occurrence = visit_occurrence.drop_duplicates()
 
     care_site = prepare_care_site(
         data=data,
@@ -207,6 +227,8 @@ def get_uf_visit(
                         "stay_source",
                         "provenance_source",
                         "age_range",
+                        "drg_source",
+                        "condition_type",
                     ]
                 )
             )
@@ -238,6 +260,8 @@ def get_uc_visit(
                         "stay_source",
                         "provenance_source",
                         "age_range",
+                        "drg_source",
+                        "condition_type",
                     ]
                 )
             )
@@ -269,6 +293,8 @@ def get_uh_visit(
                         "stay_source",
                         "provenance_source",
                         "age_range",
+                        "drg_source",
+                        "condition_type",
                     ]
                 )
             )

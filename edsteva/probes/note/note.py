@@ -52,6 +52,8 @@ class NoteProbe(BaseProbe):
             "length_of_stay",
             "provenance_source",
             "age_range",
+            "drg_source",
+            "condition_type",
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -80,6 +82,8 @@ class NoteProbe(BaseProbe):
         stay_sources: Union[bool, str, Dict[str, str]] = None,
         length_of_stays: List[float] = None,
         provenance_sources: Union[bool, str, Dict[str, str]] = None,
+        condition_types: Union[bool, str, Dict[str, str]] = None,
+        drg_sources: Union[bool, str, Dict[str, str]] = None,
         age_ranges: List[int] = None,
         **kwargs,
     ):
@@ -117,8 +121,12 @@ class NoteProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"MCO" : "MCO", "MCO_PSY_SSR" : "MCO|Psychiatrie|SSR"}`
         length_of_stays: List[float], optional
             **EXAMPLE**: `[1, 30]`
-        provenance_sources: Union[bool, str, Dict[str, str]], optional
+        provenance_sources:  Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
+        condition_types :  Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"Pulmonary_infection": "J22|J15|J13|J958|..."}`
+        drg_sources :  Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         age_ranges: List[int], optional
             **EXAMPLE**: `[18, 64]`
         """
@@ -142,6 +150,12 @@ class NoteProbe(BaseProbe):
             self._index.remove("provenance_source")
         if not age_ranges and "age_range" in self._index:
             self._index.remove("age_range")
+        if condition_types is None and "condition_type" in self._index:
+            self._index.remove("condition_type")
+        if not drg_sources and "drg_source" in self._index:
+            self._index.remove("drg_source")
+        if not condition_types and "condition_type" in self._index:
+            self._index.remove("condition_type")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -161,6 +175,8 @@ class NoteProbe(BaseProbe):
             provenance_sources=provenance_sources,
             stay_sources=stay_sources,
             age_ranges=age_ranges,
+            drg_sources=drg_sources,
+            condition_types=condition_types,
             **kwargs,
         )
 
