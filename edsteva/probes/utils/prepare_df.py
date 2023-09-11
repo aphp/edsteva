@@ -20,9 +20,9 @@ from .filter_df import (
 
 def prepare_visit_occurrence(
     data: Data,
-    stay_types: Union[str, Dict[str, str]],
-    stay_sources: Union[str, Dict[str, str]],
-    provenance_sources: Union[str, Dict[str, str]],
+    stay_types: Union[bool, str, Dict[str, str]],
+    stay_sources: Union[bool, str, Dict[str, str]],
+    provenance_sources: Union[bool, str, Dict[str, str]],
     cost: DataFrame,
     length_of_stays: List[float],
     start_date: datetime = None,
@@ -130,7 +130,6 @@ def prepare_measurement(
         "measurement_datetime",
         "row_status_source_value",
         "measurement_source_concept_id",
-        "value_as_number",
     ]
 
     check_columns(
