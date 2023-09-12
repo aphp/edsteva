@@ -29,10 +29,6 @@ class BaseProbe(metaclass=ABCMeta):
         Available with the [``compute()``][edsteva.probes.base.BaseProbe.compute] method
 
         It is a copy of the predictor DataFrame used to [``reset_predictor()``][edsteva.probes.base.BaseProbe.reset_predictor]
-    care_site_relationship: pd.DataFrame
-        Available with the [``compute()``][edsteva.probes.base.BaseProbe.compute] method
-
-        It describes the care site structure (cf. [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship])
     """
 
     _schema: ClassVar[List[str]] = ["date", "c"]
@@ -116,7 +112,6 @@ class BaseProbe(metaclass=ABCMeta):
         Here are the following computation steps:
 
         - check if input data is valid with [``validate_input_data()``][edsteva.probes.base.BaseProbe.validate_input_data] method
-        - query care site relationship table with [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship]
         - compute predictor with [``compute_process()``][edsteva.probes.base.BaseProbe.compute_process] method
         - check if predictor is valid with [``is_computed_probe()``][edsteva.probes.base.BaseProbe.is_computed_probe] method
 
@@ -137,7 +132,6 @@ class BaseProbe(metaclass=ABCMeta):
 
         - predictor is the target DataFrame
         - _cache_predictor is a copy of the target DataFrame (used to [``reset_predictor()``][edsteva.probes.base.BaseProbe.reset_predictor])
-        - care_site_relationship is a DataFrame with the hierarchy of the care site structure
 
         Examples
         -------

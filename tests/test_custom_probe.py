@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Dict, List, Union
 
-import pandas as pd
 import pytest
 
 from edsteva import improve_performances
@@ -56,7 +55,6 @@ class CustomProbe(BaseProbe):
     def compute_process(
         self,
         data: Data,
-        care_site_relationship: pd.DataFrame,
         start_date: datetime,
         end_date: datetime,
         care_site_ids: List[int] = None,
@@ -99,7 +97,6 @@ class CustomProbe(BaseProbe):
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
-            care_site_relationship=care_site_relationship,
             start_date=start_date,
             end_date=end_date,
             care_site_levels=care_site_levels,

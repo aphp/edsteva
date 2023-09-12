@@ -1,8 +1,6 @@
 from datetime import datetime
 from typing import Dict, List, Union
 
-import pandas as pd
-
 from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
@@ -28,7 +26,6 @@ from edsteva.utils.typing import Data, DataFrame
 def compute_completeness_predictor_per_visit(
     self,
     data: Data,
-    care_site_relationship: pd.DataFrame,
     start_date: datetime,
     end_date: datetime,
     care_site_levels: Union[bool, str, List[str]],
