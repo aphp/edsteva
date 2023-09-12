@@ -116,9 +116,8 @@ def compute_completeness_predictor_per_measurement(
             condition_types=condition_types,
             start_date=start_date,
             end_date=end_date,
-        )[["visit_occurrence_id", "condition_type"]]
+        )[["visit_occurrence_id", "condition_type"]].drop_duplicates()
         visit_occurrence = visit_occurrence.merge(conditions, on="visit_occurrence_id")
-        visit_occurrence = visit_occurrence.drop_duplicates()
 
     care_site = prepare_care_site(
         data=data,

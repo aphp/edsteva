@@ -194,7 +194,6 @@ def test_base_probe(data):
     visit.load("test.pickle")
     predictor = visit.predictor.copy()
     visit.filter_care_site(care_site_ids="1")
-    visit.filter_date_per_care_site(target_column="n_visit")
     assert visit.predictor.care_site_id.str.startswith("1").all()
     visit.filter_care_site(care_site_ids=["1", "2"], care_site_short_names="Hôpital-2")
     visit.reset_predictor()

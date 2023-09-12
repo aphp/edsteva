@@ -6,6 +6,7 @@ import pandas as pd
 from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
+    prepare_care_site_relationship,
     prepare_condition_occurrence,
     prepare_cost,
     prepare_person,
@@ -59,8 +60,19 @@ def compute_completeness_predictor_per_visit(
     """
 
     self._metrics = ["c", "n_visit", "n_visit_with_condition"]
-    check_tables(data=data, required_tables=["condition_occurrence"])
-
+    check_tables(
+        data=data,
+        required_tables=[
+            "condition_occurrence",
+            "visit_occurrence",
+            "care_site",
+            "fact_relationship",
+        ],
+    )
+    care_site_relationship = prepare_care_site_relationship(
+        data=data,
+    )
+    self.care_site_relationship = care_site_relationship
     person = prepare_person(data) if age_ranges else None
     cost = prepare_cost(data, drg_sources) if drg_sources else None
 
