@@ -8,7 +8,12 @@ from edsteva.models.base import BaseModel
 from edsteva.probes.base import BaseProbe
 from edsteva.viz.plots.probe.fitted_probe import fitted_probe_line
 from edsteva.viz.plots.probe.probe import probe_line
-from edsteva.viz.utils import configure_style, filter_data, save_html
+from edsteva.viz.utils import (
+    configure_style,
+    filter_data,
+    get_indexes_to_groupby,
+    save_html,
+)
 
 
 def probe_plot(
@@ -26,7 +31,7 @@ def probe_plot(
     model_line_config: Dict[str, str] = None,
     probe_line_config: Dict[str, str] = None,
     chart_style: Dict[str, float] = None,
-    indexes_to_remove: List[str] = ["care_site_id"],
+    indexes_to_remove: List[str] = None,
     **kwargs,
 ):
     r"""
@@ -78,11 +83,11 @@ def probe_plot(
         main_chart_config = probe_config["main_chart"]
     if chart_style is None:
         chart_style = probe_config["chart_style"]
-    predictor = probe.predictor.copy()
-    cols_to_remove = ["date", *probe._metrics]
-    if indexes_to_remove:
-        cols_to_remove.extend(indexes_to_remove)
-    indexes = list(set(predictor.columns).difference(cols_to_remove))
+    indexes = get_indexes_to_groupby(
+        predictor_columns=probe.predictor.columns,
+        predictor_metrics=probe._metrics.copy(),
+        indexes_to_remove=indexes_to_remove,
+    )
 
     if fitted_model:
         predictor = fitted_model.predict(probe).copy()
@@ -98,9 +103,13 @@ def probe_plot(
     )
 
     indexes = [
-        {"field": variable, "title": variable.replace("_", " ").capitalize()}
+        {
+            "field": variable["field"],
+            "title": variable["field"].replace("_", " ").capitalize(),
+        }
         for variable in indexes
-        if variable in predictor.columns and len(predictor[variable].unique()) >= 2
+        if variable["field"] in predictor.columns
+        and len(predictor[variable["field"]].unique()) >= 2
     ]
 
     if fitted_model:
