@@ -1,4 +1,7 @@
 # Changelog
+## Unreleased
+
+- Custom probe is simplified
 ## v0.2.6 - 09-08-2023
 
 - Update LocalData for EDS-Tuto.
