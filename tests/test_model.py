@@ -219,21 +219,30 @@ def test_step_function_biology():
     simulation = data_step.measurement.merge(
         data_step.visit_occurrence, on="visit_occurrence_id"
     )
-    simulation["ANABIO_concept_code"] = simulation["measurement_source_concept_id"].str[
-        5:10
-    ]
+    simulation["ANABIO_concept_code"] = (
+        simulation["measurement_source_concept_id"]
+        .str.extract(r"\b[A-Z]\d{4}\b")
+        .str[0]
+    )
+
     simulation = simulation.groupby(
         ["ANABIO_concept_code", "care_site_id"], as_index=False
     )[["t_0"]].min()
     simulation.t_0 = pd.to_datetime(simulation.t_0, unit="s")
 
-    df = biology_model.estimates.merge(
+    biology_model = biology_model.estimates.merge(
         simulation,
         on=["ANABIO_concept_code", "care_site_id"],
         suffixes=("_model", "_simulation"),
     )
 
     assert (
-        (df.t_0_model <= df.t_0_simulation + pd.DateOffset(months=2))
-        & (df.t_0_model > df.t_0_simulation - pd.DateOffset(months=2))
+        (
+            biology_model.t_0_model
+            <= biology_model.t_0_simulation + pd.DateOffset(months=2)
+        )
+        & (
+            biology_model.t_0_model
+            > biology_model.t_0_simulation - pd.DateOffset(months=2)
+        )
     ).all()
