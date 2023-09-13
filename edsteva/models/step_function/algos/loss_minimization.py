@@ -55,6 +55,8 @@ def loss_minimization(
     iter = predictor[cols].groupby(index)
     results = []
     for partition, group in tqdm.tqdm(iter):
+        if not isinstance(partition, tuple):
+            partition = tuple([partition])
         row = dict(zip(index, partition))
         t_0, c_0 = _compute_one_threshold(
             group,

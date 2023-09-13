@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Dict, List, Tuple, Union
 
-import pandas as pd
 from loguru import logger
 
 from edsteva.probes.utils.prepare_df import (
     prepare_biology_relationship,
     prepare_care_site,
+    prepare_care_site_relationship,
     prepare_condition_occurrence,
     prepare_cost,
     prepare_measurement,
@@ -27,7 +27,6 @@ from edsteva.utils.typing import Data, DataFrame
 def compute_completeness_predictor_per_measurement(
     self,
     data: Data,
-    care_site_relationship: pd.DataFrame,
     start_date: datetime,
     end_date: datetime,
     care_site_levels: Union[bool, str, List[str]],
@@ -63,11 +62,18 @@ def compute_completeness_predictor_per_measurement(
     check_tables(
         data=data,
         required_tables=[
+            "visit_occurrence",
+            "care_site",
+            "fact_relationship",
             "measurement",
             "concept",
             "concept_relationship",
         ],
     )
+    care_site_relationship = prepare_care_site_relationship(
+        data=data,
+    )
+    self.care_site_relationship = care_site_relationship
     standard_terminologies = self._standard_terminologies
     biology_relationship = prepare_biology_relationship(
         data=data,
@@ -116,9 +122,8 @@ def compute_completeness_predictor_per_measurement(
             condition_types=condition_types,
             start_date=start_date,
             end_date=end_date,
-        )[["visit_occurrence_id", "condition_type"]]
+        )[["visit_occurrence_id", "condition_type"]].drop_duplicates()
         visit_occurrence = visit_occurrence.merge(conditions, on="visit_occurrence_id")
-        visit_occurrence = visit_occurrence.drop_duplicates()
 
     care_site = prepare_care_site(
         data=data,
@@ -130,13 +135,13 @@ def compute_completeness_predictor_per_measurement(
         care_site_relationship=care_site_relationship,
     )
 
-    hospital_visit = get_hospital_measurements(
+    hospital_measurement = get_hospital_measurements(
         measurement=measurement,
         visit_occurrence=visit_occurrence,
         care_site=care_site,
     )
     hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
-    biology_predictor_by_level = {hospital_name: hospital_visit}
+    biology_predictor_by_level = {hospital_name: hospital_measurement}
 
     if care_site_levels and not hospital_only(care_site_levels=care_site_levels):
         logger.info(

@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Dict, List, Tuple, Union
 
-import pandas as pd
 from loguru import logger
 
 from edsteva.probes.utils.prepare_df import (
     prepare_biology_relationship,
     prepare_care_site,
+    prepare_care_site_relationship,
     prepare_condition_occurrence,
     prepare_cost,
     prepare_measurement,
@@ -27,7 +27,6 @@ from edsteva.utils.typing import Data, DataFrame
 def compute_completeness_predictor_per_visit(
     self,
     data: Data,
-    care_site_relationship: pd.DataFrame,
     start_date: datetime,
     end_date: datetime,
     care_site_levels: Union[bool, str, List[str]],
@@ -63,12 +62,18 @@ def compute_completeness_predictor_per_visit(
     check_tables(
         data=data,
         required_tables=[
+            "visit_occurrence",
+            "care_site",
+            "fact_relationship",
             "measurement",
             "concept",
             "concept_relationship",
-            "visit_occurrence",
         ],
     )
+    care_site_relationship = prepare_care_site_relationship(
+        data=data,
+    )
+    self.care_site_relationship = care_site_relationship
     standard_terminologies = self._standard_terminologies
     biology_relationship = prepare_biology_relationship(
         data=data,

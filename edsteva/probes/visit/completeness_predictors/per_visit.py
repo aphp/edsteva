@@ -1,11 +1,10 @@
 from datetime import datetime
 from typing import Dict, List, Union
 
-import pandas as pd
-
 from edsteva.probes.utils.filter_df import convert_uf_to_pole
 from edsteva.probes.utils.prepare_df import (
     prepare_care_site,
+    prepare_care_site_relationship,
     prepare_condition_occurrence,
     prepare_cost,
     prepare_person,
@@ -19,6 +18,7 @@ from edsteva.probes.utils.utils import (
     hospital_only,
     impute_missing_dates,
 )
+from edsteva.utils.checks import check_tables
 from edsteva.utils.framework import is_koalas, to
 from edsteva.utils.typing import Data, DataFrame
 
@@ -26,7 +26,6 @@ from edsteva.utils.typing import Data, DataFrame
 def compute_completeness_predictor_per_visit(
     self,
     data: Data,
-    care_site_relationship: pd.DataFrame,
     start_date: datetime,
     end_date: datetime,
     care_site_levels: Union[bool, str, List[str]],
@@ -55,7 +54,18 @@ def compute_completeness_predictor_per_visit(
     Where $n_{visit}(t)$ is the number of administrative stays, $t$ is the month and $n_{max} = \max_{t}(n_{visit}(t))$.
     """
     self._metrics = ["c", "n_visit"]
-
+    check_tables(
+        data=data,
+        required_tables=[
+            "visit_occurrence",
+            "care_site",
+            "fact_relationship",
+        ],
+    )
+    care_site_relationship = prepare_care_site_relationship(
+        data=data,
+    )
+    self.care_site_relationship = care_site_relationship
     person = prepare_person(data) if age_ranges else None
     cost = prepare_cost(data, drg_sources) if drg_sources else None
 
@@ -73,6 +83,12 @@ def compute_completeness_predictor_per_visit(
     )
 
     if condition_types:
+        check_tables(
+            data=data,
+            required_tables=[
+                "condition_occurrence",
+            ],
+        )
         conditions = prepare_condition_occurrence(
             data,
             extra_data=None,
@@ -82,9 +98,8 @@ def compute_completeness_predictor_per_visit(
             condition_types=condition_types,
             start_date=start_date,
             end_date=end_date,
-        )[["visit_occurrence_id", "condition_type"]]
+        )[["visit_occurrence_id", "condition_type"]].drop_duplicates()
         visit_occurrence = visit_occurrence.merge(conditions, on="visit_occurrence_id")
-        visit_occurrence = visit_occurrence.drop_duplicates()
 
     care_site = prepare_care_site(
         data=data,

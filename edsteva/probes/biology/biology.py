@@ -1,8 +1,6 @@
 from datetime import datetime
 from typing import Dict, List, Tuple, Union
 
-import pandas as pd
-
 from edsteva.probes.base import BaseProbe
 from edsteva.probes.biology.completeness_predictors import completeness_predictors
 from edsteva.probes.biology.viz_configs import viz_configs
@@ -48,6 +46,12 @@ class BiologyProbe(BaseProbe):
         Dictionary of configuration for visualization purpose.
 
         **VALUE**: ``{}``
+    care_site_relationship: pd.DataFrame
+
+        It describes the care site structure and gives the hierarchy of the different care site levels. (cf. [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship])
+    biology_relationship: pd.DataFrame
+
+        It provides the link between the different terminology (ex: LOINC, ANABIO, etc.) (cf. [``prepare_biology_relationship()``][edsteva.probes.utils.prepare_df.prepare_biology_relationship])
     """
 
     def __init__(
@@ -82,7 +86,6 @@ class BiologyProbe(BaseProbe):
     def compute_process(
         self,
         data: Data,
-        care_site_relationship: pd.DataFrame,
         start_date: datetime,
         end_date: datetime,
         source_terminologies: Dict[str, str] = {
@@ -130,8 +133,6 @@ class BiologyProbe(BaseProbe):
         ----------
         data : Data
             Instantiated [``HiveData``][edsteva.io.hive.HiveData], [``PostgresData``][edsteva.io.postgres.PostgresData] or [``LocalData``][edsteva.io.files.LocalData]
-        care_site_relationship: pd.DataFrame
-            DataFrame computed in the [``compute()``][edsteva.probes.base.BaseProbe.compute] that gives the hierarchy of the care site structure.
         start_date: datetime, optional
             **EXAMPLE**: `"2019-05-01"`
         end_date: datetime, optional
@@ -206,7 +207,6 @@ class BiologyProbe(BaseProbe):
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
-            care_site_relationship=care_site_relationship,
             start_date=start_date,
             end_date=end_date,
             care_site_levels=care_site_levels,

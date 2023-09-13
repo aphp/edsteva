@@ -45,7 +45,7 @@ def normalized_probe_dashboard(
     horizontal_bar_charts_config: Dict[str, str] = None,
     time_line_config: Dict[str, str] = None,
     chart_style: Dict[str, float] = None,
-    indexes_to_remove: List[str] = ["care_site_id", "care_site_level"],
+    indexes_to_remove: List[str] = ["care_site_level"],
     **kwargs,
 ):
     r"""Displays an interactive chart with:

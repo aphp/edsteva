@@ -228,6 +228,11 @@ def get_indexes_to_groupby(
     indexes_to_remove: List[str],
 ):
     cols_to_remove = ["date", *predictor_metrics]
+    if (
+        "care_site_id" in predictor_columns
+        and "care_site_short_name" in predictor_columns
+    ):
+        cols_to_remove.extend(["care_site_id"])
     if indexes_to_remove:
         cols_to_remove.extend(indexes_to_remove)
     indexes = list(set(predictor_columns).difference(cols_to_remove))
