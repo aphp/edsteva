@@ -14,14 +14,14 @@ def generate_events_before_t0(
     """Generate events before t0 - increase_time / 2
 
     Args:
-        generator (np.random.Generator): 
-        t_start (int): Starting date in seconds 
+        generator (np.random.Generator):
+        t_start (int): Starting date in seconds
         t_end (int): Ending date in seconds
         n_events (int): Number of events to generate
         t0 (int): Events deployment date
         increase_time (int): Events deployment interval in seconds
         increase_ratio (float): Ratio between events before t0 and events after t0
- 
+
     Returns:
         pd.Series: A series of datetime values representing generated events
     """
@@ -50,14 +50,14 @@ def generate_events_after_t0(
     """Generate events after t0 + increase_time / 2
 
     Args:
-        generator (np.random.Generator): 
-        t_start (int): Starting date in seconds 
+        generator (np.random.Generator):
+        t_start (int): Starting date in seconds
         t_end (int): Ending date in seconds
         n_events (int): Number of events to generate
         t0 (int): Events deployment date
         increase_time (int): Events deployment interval in seconds
         increase_ratio (float): Ratio between events before t0 and events after t0
- 
+
     Returns:
         pd.Series: A series of datetime values representing generated events
     """
@@ -85,22 +85,20 @@ def generate_events_around_t0(
     increase_time: int,
     increase_ratio: float,
 ):
-    
     """Generate events between t0 - increase_time / 2 and t0 + increase_time / 2
 
     Args:
-        generator (np.random.Generator): 
-        t_start (int): Starting date in seconds 
+        generator (np.random.Generator):
+        t_start (int): Starting date in seconds
         t_end (int): Ending date in seconds
         n_events (int): Number of events to generate
         t0 (int): Events deployment date
         increase_time (int): Events deployment interval in seconds
         increase_ratio (float): Ratio between events before t0 and events after t0
- 
+
     Returns:
         pd.Series: A series of datetime values representing generated events
     """
-
 
     t0_before = t0 - increase_time / 2
     t0_after = t0 + increase_time / 2
@@ -133,14 +131,14 @@ def generate_events_around_t1(
     """Generate events between t1 - increase_time / 2 and t1 + increase_time / 2
 
     Args:
-        generator (np.random.Generator): 
-        t_start (int): Starting date in seconds 
+        generator (np.random.Generator):
+        t_start (int): Starting date in seconds
         t_end (int): Ending date in seconds
         n_events (int): Number of events to generate
         t1 (int): Events deployment date
         increase_time (int): Events deployment interval in seconds
         increase_ratio (float): Ratio between events before t1 and events after t1
- 
+
     Returns:
         pd.Series: A series of datetime values representing generated events
     """
@@ -173,18 +171,17 @@ def generate_events_after_t1(
     increase_time: int,
     increase_ratio: float,
 ):
-    
     """Generate events after t1 + increase_time / 2
 
     Args:
-        generator (np.random.Generator): 
-        t_start (int): Starting date in seconds 
+        generator (np.random.Generator):
+        t_start (int): Starting date in seconds
         t_end (int): Ending date in seconds
         n_events (int): Number of events to generate
         t1 (int): Events deployment date
         increase_time (int): Events deployment interval in seconds
         increase_ratio (float): Ratio between events before t1 and events after t1
- 
+
     Returns:
         pd.Series: A series of datetime values representing generated events
     """
