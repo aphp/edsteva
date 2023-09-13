@@ -105,13 +105,13 @@ def compute_completeness_predictor_per_condition(
         specialties_sets=specialties_sets,
     )
 
-    hospital_visit = get_hospital_condition(
+    hospital_condition = get_hospital_condition(
         condition_occurrence,
         visit_occurrence,
         care_site,
     )
     hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
-    condition_predictor_by_level = {hospital_name: hospital_visit}
+    condition_predictor_by_level = {hospital_name: hospital_condition}
 
     # UF selection
     if not hospital_only(care_site_levels=care_site_levels):

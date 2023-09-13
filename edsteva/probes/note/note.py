@@ -152,8 +152,6 @@ class NoteProbe(BaseProbe):
             self._index.remove("condition_type")
         if not drg_sources and "drg_source" in self._index:
             self._index.remove("drg_source")
-        if not condition_types and "condition_type" in self._index:
-            self._index.remove("condition_type")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,

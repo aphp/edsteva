@@ -154,9 +154,6 @@ def compute_completeness_predictor_per_note(
         care_site_levels=care_site_levels,
     )
 
-    if is_koalas(note_predictor):
-        note_predictor.spark.cache()
-
     return compute_completeness(self, note_predictor)
 
 

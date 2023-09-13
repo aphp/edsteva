@@ -135,13 +135,13 @@ def compute_completeness_predictor_per_measurement(
         care_site_relationship=care_site_relationship,
     )
 
-    hospital_visit = get_hospital_measurements(
+    hospital_measurement = get_hospital_measurements(
         measurement=measurement,
         visit_occurrence=visit_occurrence,
         care_site=care_site,
     )
     hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
-    biology_predictor_by_level = {hospital_name: hospital_visit}
+    biology_predictor_by_level = {hospital_name: hospital_measurement}
 
     if care_site_levels and not hospital_only(care_site_levels=care_site_levels):
         logger.info(
