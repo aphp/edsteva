@@ -1,2 +1,2 @@
 **New features: **
-Check out the new [**BiologyProbe**][available-probes] !
+You can now filter probes by **GHM** and **CIM10** !
