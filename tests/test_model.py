@@ -221,7 +221,7 @@ def test_step_function_biology():
     )
     simulation["ANABIO_concept_code"] = (
         simulation["measurement_source_concept_id"]
-        .str.extract(r"\b[A-Z]\d{4}\b")
+        .str.findall(r"\b[A-Z]\d{4}\b")
         .str[0]
     )
 
