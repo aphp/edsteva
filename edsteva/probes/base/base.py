@@ -9,8 +9,7 @@ from loguru import logger
 from edsteva import CACHE_DIR
 from edsteva.probes.base.viz_configs import viz_configs
 from edsteva.probes.utils.filter_df import filter_table_by_care_site
-from edsteva.probes.utils.prepare_df import prepare_care_site_relationship
-from edsteva.utils.checks import check_columns, check_tables
+from edsteva.utils.checks import check_columns
 from edsteva.utils.file_management import delete_object, load_object, save_object
 from edsteva.utils.typing import Data, DataFrame
 
@@ -30,10 +29,6 @@ class BaseProbe(metaclass=ABCMeta):
         Available with the [``compute()``][edsteva.probes.base.BaseProbe.compute] method
 
         It is a copy of the predictor DataFrame used to [``reset_predictor()``][edsteva.probes.base.BaseProbe.reset_predictor]
-    care_site_relationship: pd.DataFrame
-        Available with the [``compute()``][edsteva.probes.base.BaseProbe.compute] method
-
-        It describes the care site structure (cf. [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship])
     """
 
     _schema: ClassVar[List[str]] = ["date", "c"]
@@ -59,15 +54,6 @@ class BaseProbe(metaclass=ABCMeta):
 
         if not isinstance(data, Data.__args__):
             raise TypeError("Unsupported type {} for data".format(type(data).__name__))
-
-        check_tables(
-            data=data,
-            required_tables=[
-                "visit_occurrence",
-                "care_site",
-                "fact_relationship",
-            ],
-        )
 
     def is_computed_probe(self) -> None:
         """Raises an error if the Probe has not been computed properly"""
@@ -102,29 +88,10 @@ class BaseProbe(metaclass=ABCMeta):
                 "Predictor has not been computed, please use the compute method as follow: Predictor.compute()"
             )
 
-    def filter_date_per_care_site(self, target_column: str):
-        filtered_predictor = self.predictor.copy()
-        predictor_activity = self.predictor[self.predictor[target_column] > 0].copy()
-        predictor_activity = (
-            predictor_activity.groupby("care_site_id")
-            .agg({"date": ["min", "max"]})
-            .droplevel(axis="columns", level=0)
-            .reset_index()
-        )
-        filtered_predictor = filtered_predictor.merge(
-            predictor_activity, on="care_site_id"
-        )
-        filtered_predictor = filtered_predictor[
-            (filtered_predictor["date"] >= filtered_predictor["min"])
-            & (filtered_predictor["date"] <= filtered_predictor["max"])
-        ].drop(columns=["min", "max"])
-        self.predictor = filtered_predictor
-
     @abstractmethod
     def compute_process(
         self,
         data: Data,
-        care_site_relationship: pd.DataFrame,
         start_date: datetime,
         end_date: datetime,
         **kwargs,
@@ -145,7 +112,6 @@ class BaseProbe(metaclass=ABCMeta):
         Here are the following computation steps:
 
         - check if input data is valid with [``validate_input_data()``][edsteva.probes.base.BaseProbe.validate_input_data] method
-        - query care site relationship table with [``prepare_care_site_relationship()``][edsteva.probes.utils.prepare_df.prepare_care_site_relationship]
         - compute predictor with [``compute_process()``][edsteva.probes.base.BaseProbe.compute_process] method
         - check if predictor is valid with [``is_computed_probe()``][edsteva.probes.base.BaseProbe.is_computed_probe] method
 
@@ -166,7 +132,6 @@ class BaseProbe(metaclass=ABCMeta):
 
         - predictor is the target DataFrame
         - _cache_predictor is a copy of the target DataFrame (used to [``reset_predictor()``][edsteva.probes.base.BaseProbe.reset_predictor])
-        - care_site_relationship is a DataFrame with the hierarchy of the care site structure
 
         Examples
         -------
@@ -195,18 +160,15 @@ class BaseProbe(metaclass=ABCMeta):
         """
         self.validate_input_data(data=data)
         self._reset_index()
-        care_site_relationship = prepare_care_site_relationship(data=data)
         self.start_date = pd.to_datetime(start_date) if start_date else None
         self.end_date = pd.to_datetime(end_date) if end_date else None
         self.predictor = self.compute_process(
             data=data,
-            care_site_relationship=care_site_relationship,
             start_date=start_date,
             end_date=end_date,
             **kwargs,
         )
         self.is_computed_probe()
-        self.care_site_relationship = care_site_relationship
         self.predictor = self.add_names_columns(self.predictor)
         if with_cache:
             self.cache_predictor()
@@ -241,13 +203,17 @@ class BaseProbe(metaclass=ABCMeta):
         care_site_short_names : Union[str, List[str]], optional
             **EXAMPLE**: `["HOSPITAL 1", "HOSPITAL 2"]`
         """
-        self.predictor = filter_table_by_care_site(
-            table_to_filter=self.predictor,
-            care_site_relationship=self.care_site_relationship,
-            care_site_ids=care_site_ids,
-            care_site_short_names=care_site_short_names,
-            care_site_specialties=care_site_specialties,
-        )
+        if (
+            hasattr(self, "care_site_relationship")
+            and "care_site_id" in self.predictor.columns
+        ):
+            self.predictor = filter_table_by_care_site(
+                table_to_filter=self.predictor,
+                care_site_relationship=self.care_site_relationship,
+                care_site_ids=care_site_ids,
+                care_site_short_names=care_site_short_names,
+                care_site_specialties=care_site_specialties,
+            )
         logger.info("Use probe.reset_predictor() to get back the initial predictor")
 
     def add_names_columns(self, df: DataFrame):

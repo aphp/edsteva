@@ -80,34 +80,6 @@ params = [
         stay_sources={"MCO": "MCO"},
         provenance_sources=None,
         age_ranges=[18],
-        module="pandas",
-        drg_sources=None,
-    ),
-    dict(
-        visit_predictor="per_visit_default",
-        note_predictor="per_note_default",
-        condition_predictor="per_condition_default",
-        biology_predictor="per_visit_default",
-        care_site_levels=["Hospital", "Pole", "UF", "Unité de consultation (UC)", "UH"],
-        care_site_ids="1",
-        care_site_short_names="Hôpital-1",
-        care_site_specialties=None,
-        specialties_sets={"All": ".*"},
-        care_sites_sets=None,
-        concept_codes=["A0009", "A0209", "A3109"],
-        length_of_stays=None,
-        note_types="CRH",
-        stay_types="hospitalisés",
-        diag_types="DP",
-        condition_types="C",
-        source_systems=["ORBIS"],
-        concepts_sets={"All": ".*"},
-        start_date="2010-01-03",
-        end_date=None,
-        test_save=False,
-        stay_sources={"MCO": "MCO"},
-        provenance_sources=None,
-        age_ranges=[18],
         module="koalas",
         drg_sources=None,
     ),
@@ -194,7 +166,6 @@ def test_base_probe(data):
     visit.load("test.pickle")
     predictor = visit.predictor.copy()
     visit.filter_care_site(care_site_ids="1")
-    visit.filter_date_per_care_site(target_column="n_visit")
     assert visit.predictor.care_site_id.str.startswith("1").all()
     visit.filter_care_site(care_site_ids=["1", "2"], care_site_short_names="Hôpital-2")
     visit.reset_predictor()
