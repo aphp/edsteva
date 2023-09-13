@@ -47,7 +47,7 @@ def generate_events_after_t0(
     increase_time: int,
     increase_ratio: float,
 ):
-    """Generate events after t0 - increase_time / 2
+    """Generate events after t0 + increase_time / 2
 
     Args:
         generator (np.random.Generator): 
