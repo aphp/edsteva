@@ -11,7 +11,6 @@ def generate_events_before_t0(
     increase_time: int,
     increase_ratio: float,
 ):
-
     """Generate events before t0 - increase_time / 2
 
     Parameters
@@ -58,7 +57,6 @@ def generate_events_after_t0(
     increase_time: int,
     increase_ratio: float,
 ):
-    
     """Generate events after t0 + increase_time / 2
 
     Parameters
@@ -82,7 +80,6 @@ def generate_events_after_t0(
     pd.Series
         A series of datetime values representing generated events
     """
-
 
     t0_after = t0 + increase_time / 2
     n_after = int(
