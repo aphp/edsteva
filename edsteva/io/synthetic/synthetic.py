@@ -616,8 +616,8 @@ class SyntheticData:
         mean_measurement: int = 1000,
         units: List[str] = ["g", "g/l", "mol", "s"],
     ):
-        t_min = self.t_min.timestamp()
-        t_max = self.t_max.timestamp()
+        self.t_min.timestamp()
+        self.t_max.timestamp()
         measurements = []
         visit_occurrence = visit_occurrence.sample(frac=0.9)
         for concept_name in src_concept_name:
@@ -626,50 +626,37 @@ class SyntheticData:
             mean_value = (1 + units.index(unit)) * 2
             std_value = 1
             for care_site_id in hospital_ids:
-                t_start = t_min + self.generator.integers(0, (t_max - t_min) / 20)
-                t_end = t_max - self.generator.integers(0, (t_max - t_min) / 20)
-                valid_measurements = int(
-                    self.generator.normal(mean_measurement, mean_measurement / 5)
-                )
-                missing_value = int(self.generator.uniform(1, valid_measurements / 10))
-                n_measurements = valid_measurements + missing_value
-                increase_time = self.generator.integers(
-                    (t_end - t_start) / 100, (t_end - t_start) / 10
-                )
-                increase_ratio = self.generator.uniform(150, 200)
-                concept_code = concept_name.split("_")[1]
-                unit = concept_name.split("_")[-1]
-                mean_value = (1 + units.index(unit)) * 2
-                std_value = 1
-                params = dict(
-                    generator=self.generator,
-                    t_start=t_start,
-                    t_end=t_end,
-                    n_events=n_measurements,
-                    increase_ratio=increase_ratio,
-                    increase_time=increase_time,
-                    bio_date_col=self.bio_date_col,
-                    unit=unit,
-                    concept_code=concept_code,
-                    mode=self.mode,
-                )
-                measurement = generate_bio(**params)
                 visit_care_site = visit_occurrence[
                     visit_occurrence.care_site_id == care_site_id
-                ]
-                measurement[self.id_visit_col] = (
-                    visit_care_site[self.id_visit_col]
-                    .sample(
-                        n=measurement.shape[0],
-                        replace=True,
-                    )
-                    .reset_index(drop=True)
+                ].reset_index(drop=True)
+                visit_care_site[self.date_col] = (
+                    visit_care_site[self.date_col].view("int64") // 10**9
                 )
-                measurement["value_as_number"] = [None] * missing_value + list(
-                    self.generator.normal(
-                        mean_value, std_value, measurement.shape[0] - missing_value
-                    )
+
+                t0_visit = visit_care_site["t_0_max"].max()
+                params = dict(
+                    generator=self.generator,
+                    visit_care_site=visit_care_site,
+                    date_col=self.date_col,
+                    bio_date_col=self.bio_date_col,
+                    id_visit_col=self.id_visit_col,
+                    unit=unit,
+                    concept_code=concept_code,
+                    t0_visit=t0_visit,
+                    mode=self.mode,
                 )
+
+                measurement = generate_bio(**params)
+
+                measurement["value_as_number"] = self.generator.normal(
+                    mean_value, std_value, measurement.shape[0]
+                )
+
+                valid_measurements = (
+                    self.generator.uniform(0, 1, measurement.shape[0]) > 0.01
+                )
+                measurement.loc[~valid_measurements, "value_as_number"] = None
+
                 measurements.append(measurement)
 
         measurements = pd.concat(measurements).reset_index(drop=True)

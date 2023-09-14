@@ -11,6 +11,30 @@ def generate_events_before_t0(
     increase_time: int,
     increase_ratio: float,
 ):
+    """Generate events before t0 - increase_time / 2
+
+    Parameters
+    ----------
+    generator : np.random.Generator
+    t_start : int
+        Starting date in seconds
+    t_end : int
+        Ending date in seconds
+    n_events : int
+        Number of events to generate
+    t0 : int
+        Events deployment date
+    increase_time : int
+        Events deployment interval in seconds
+    increase_ratio : float
+        Ratio between events before t0 and events after t0
+
+    Returns
+    -------
+    pd.Series
+        A series of datetime values representing generated events
+    """
+
     t0_before = t0 - increase_time / 2
     n_before = int(
         (t0_before - t_start)
@@ -33,6 +57,30 @@ def generate_events_after_t0(
     increase_time: int,
     increase_ratio: float,
 ):
+    """Generate events after t0 + increase_time / 2
+
+    Parameters
+    ----------
+    generator : np.random.Generator
+    t_start : int
+        Starting date in seconds
+    t_end : int
+        Ending date in seconds
+    n_events : int
+        Number of events to generate
+    t0 : int
+        Events deployment date
+    increase_time : int
+        Events deployment interval in seconds
+    increase_ratio : float
+        Ratio between events before t0 and events after t0
+
+    Returns
+    -------
+    pd.Series
+        A series of datetime values representing generated events
+    """
+
     t0_after = t0 + increase_time / 2
     n_after = int(
         increase_ratio
@@ -56,6 +104,29 @@ def generate_events_around_t0(
     increase_time: int,
     increase_ratio: float,
 ):
+    """Generate events between t0 - increase_time / 2 and t0 + increase_time / 2
+
+    Parameters
+    ----------
+    generator : np.random.Generator
+    t_start : int
+        Starting date in seconds
+    t_end : int
+        Ending date in seconds
+    n_events : int
+        Number of events to generate
+    t0 : int
+        Events deployment date
+    increase_time : int
+        Events deployment interval in seconds
+    increase_ratio : float
+        Ratio between events before t0 and events after t0
+
+    Returns
+    -------
+    pd.Series
+        A series of datetime values representing generated events
+    """
     t0_before = t0 - increase_time / 2
     t0_after = t0 + increase_time / 2
     n_middle = int(
@@ -84,6 +155,29 @@ def generate_events_around_t1(
     increase_time: int,
     increase_ratio: float,
 ):
+    """Generate events between t1 - increase_time / 2 and t1 + increase_time / 2
+
+    Parameters
+    ----------
+    generator : np.random.Generator
+    t_start : int
+        Starting date in seconds
+    t_end : int
+        Ending date in seconds
+    n_events : int
+        Number of events to generate
+    t1 : int
+        End of events deployment date
+    increase_time : int
+        End of events deployment interval in seconds
+    increase_ratio : float
+        Ratio between events before t1 and events after t1
+
+    Returns
+    -------
+    pd.Series
+        A series of datetime values representing generated events
+    """
     t1_before = t1 - increase_time / 2
     t1_after = t1 + increase_time / 2
     n_middle = int(
@@ -112,6 +206,30 @@ def generate_events_after_t1(
     increase_time: int,
     increase_ratio: float,
 ):
+    """Generate events after t1 + increase_time / 2
+
+    Parameters
+    ----------
+    generator : np.random.Generator
+    t_start : int
+        Starting date in seconds
+    t_end : int
+        Ending date in seconds
+    n_events : int
+        Number of events to generate
+    t1 : int
+        End of events deployment date
+    increase_time : int
+        End of events deployment interval in seconds
+    increase_ratio : float
+        Ratio between events before t1 and events after t1
+
+    Returns
+    -------
+    pd.Series
+        A series of datetime values representing generated events
+    """
+
     t1_after = t1 + increase_time / 2
     n_after = int(
         (t_end - t1_after) * n_events / ((t1 - t_start) * increase_ratio + (t_end - t1))

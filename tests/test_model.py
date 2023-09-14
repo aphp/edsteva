@@ -7,7 +7,7 @@ from edsteva import CACHE_DIR, improve_performances
 from edsteva.io import SyntheticData
 from edsteva.models.rectangle_function import RectangleFunction
 from edsteva.models.step_function import StepFunction
-from edsteva.probes import NoteProbe, VisitProbe
+from edsteva.probes import BiologyProbe, NoteProbe, VisitProbe
 from edsteva.utils.loss_functions import l1_loss
 
 pytestmark = pytest.mark.filterwarnings("ignore")
@@ -192,4 +192,57 @@ def test_step_function_note():
     assert (
         (prediction["t_0"] <= prediction["t_0_max"])
         & (prediction["t_0_min"] <= prediction["t_0"])
+    ).all()
+
+
+def test_step_function_biology():
+    biology = BiologyProbe(completeness_predictor="per_visit_default")
+    biology.compute(
+        data=data_step,
+        start_date=data_step.t_min,
+        end_date=data_step.t_max,
+        stay_types={"ALL": ".*", "HC": "hospitalisés", "Urg": "urgences"},
+        care_site_ids=["1", "2"],
+        care_site_short_names=["Hôpital-1", "Hôpital-2"],
+        concepts_sets=None,
+        concept_codes=True,
+        length_of_stays=None,
+    )
+
+    biology_model = StepFunction()
+    biology_model.fit(
+        probe=biology,
+        start_date=data_step.t_min,
+        end_date=data_step.t_max,
+    )
+
+    simulation = data_step.measurement.merge(
+        data_step.visit_occurrence, on="visit_occurrence_id"
+    )
+    simulation["ANABIO_concept_code"] = (
+        simulation["measurement_source_concept_id"]
+        .str.findall(r"\b[A-Z]\d{4}\b")
+        .str[0]
+    )
+
+    simulation = simulation.groupby(
+        ["ANABIO_concept_code", "care_site_id"], as_index=False
+    )[["t_0"]].min()
+    simulation.t_0 = pd.to_datetime(simulation.t_0, unit="s")
+
+    biology_model = biology_model.estimates.merge(
+        simulation,
+        on=["ANABIO_concept_code", "care_site_id"],
+        suffixes=("_model", "_simulation"),
+    )
+
+    assert (
+        (
+            biology_model.t_0_model
+            <= biology_model.t_0_simulation + pd.DateOffset(months=2)
+        )
+        & (
+            biology_model.t_0_model
+            > biology_model.t_0_simulation - pd.DateOffset(months=2)
+        )
     ).all()

@@ -2,23 +2,14 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
-from edsteva.io.synthetic.utils import (
-    generate_events_after_t0,
-    generate_events_after_t1,
-    generate_events_around_t0,
-    generate_events_around_t1,
-    generate_events_before_t0,
-)
-
 
 def generate_bio(
     generator: np.random.Generator,
-    t_start: int,
-    t_end: int,
-    n_events: int,
-    increase_time: int,
-    increase_ratio: float,
+    visit_care_site,
+    t0_visit,
+    date_col: str,
     bio_date_col: str,
+    id_visit_col,
     unit: str,
     concept_code: str,
     mode: str,
@@ -26,24 +17,22 @@ def generate_bio(
     if mode == "step":
         return _generate_bio_step(
             generator=generator,
-            t_start=t_start,
-            t_end=t_end,
-            n_events=n_events,
-            increase_time=increase_time,
-            increase_ratio=increase_ratio,
+            visit_care_site=visit_care_site,
+            t0_visit=t0_visit,
+            date_col=date_col,
             bio_date_col=bio_date_col,
+            id_visit_col=id_visit_col,
             unit=unit,
             concept_code=concept_code,
         )
     if mode == "rect":
         return _generate_bio_rect(
             generator=generator,
-            t_start=t_start,
-            t_end=t_end,
-            n_events=n_events,
-            increase_time=increase_time,
-            increase_ratio=increase_ratio,
+            visit_care_site=visit_care_site,
+            t0_visit=t0_visit,
+            date_col=date_col,
             bio_date_col=bio_date_col,
+            id_visit_col=id_visit_col,
             unit=unit,
             concept_code=concept_code,
         )
@@ -51,101 +40,104 @@ def generate_bio(
 
 def _generate_bio_step(
     generator: np.random.Generator,
-    t_start: int,
-    t_end: int,
-    n_events: int,
-    increase_time: int,
-    increase_ratio: float,
+    visit_care_site,
+    t0_visit,
+    date_col: str,
     bio_date_col: str,
+    id_visit_col,
     unit: str,
     concept_code: str,
 ):
-    t0 = generator.integers(t_start + increase_time, t_end - increase_time)
-    params = dict(
-        generator=generator,
-        t_start=t_start,
-        t_end=t_end,
-        n_events=n_events,
-        t0=t0,
-        increase_ratio=increase_ratio,
-        increase_time=increase_time,
-    )
-    df = pd.concat(
-        [
-            generate_events_before_t0(**params),
-            generate_events_after_t0(**params),
-            generate_events_around_t0(**params),
-        ]
-    ).to_frame()
-    df.columns = [bio_date_col]
-    df["unit_source_value"] = unit
-    df["measurement_source_concept_id"] = concept_code
-    df["t_0_min"] = t0 - increase_time / 2
-    df["t_0_max"] = t0 + increase_time / 2
-    logger.debug("Generate measurement deploying as step function")
+    t_end = visit_care_site[date_col].max()
+    t0 = generator.integers(t0_visit, t_end)
+    c_before = generator.uniform(0, 0.01)
+    c_after = generator.uniform(0.8, 1)
 
-    return df
+    measurement_before_t0_visit = (
+        visit_care_site[visit_care_site[date_col] <= t0_visit][[id_visit_col, date_col]]
+        .sample(frac=c_before)
+        .rename(columns={date_col: bio_date_col})
+    )
+    # Stratify visit between t0_visit and t0 to
+    # ensure that these elements are represented
+    # in the final measurements dataset.
+
+    measurement_before_t0 = (
+        visit_care_site[
+            (visit_care_site[date_col] <= t0) & (visit_care_site[date_col] > t0_visit)
+        ][[id_visit_col, date_col]]
+        .sample(frac=c_before)
+        .rename(columns={date_col: bio_date_col})
+    )
+
+    measurement_after_t0 = (
+        visit_care_site[visit_care_site[date_col] > t0][[id_visit_col, date_col]]
+        .sample(frac=c_after)
+        .rename(columns={date_col: bio_date_col})
+    )
+
+    measurement = pd.concat(
+        [measurement_before_t0_visit, measurement_before_t0, measurement_after_t0]
+    )
+
+    measurement[bio_date_col] = pd.to_datetime(measurement[bio_date_col], unit="s")
+    measurement["unit_source_value"] = unit
+    measurement["measurement_source_concept_id"] = concept_code
+    measurement["t_0"] = t0
+
+    logger.debug("Generate synthetic measurement deploying as step function")
+
+    return measurement
 
 
 def _generate_bio_rect(
     generator: np.random.Generator,
-    t_start: int,
-    t_end: int,
-    n_events: int,
-    increase_time: int,
-    increase_ratio: float,
+    visit_care_site,
+    t0_visit,
+    date_col: str,
     bio_date_col: str,
+    id_visit_col,
     unit: str,
     concept_code: str,
 ):
-    t0 = generator.integers(
-        t_start + increase_time, (t_end + t_start) / 2 - increase_time
-    )
-    t1 = generator.integers(
-        (t_end + t_start) / 2 + increase_time, t_end - increase_time
-    )
-    t0_params = dict(
-        generator=generator,
-        t_start=t_start,
-        t_end=t1 - increase_time / 2,
-        n_events=n_events,
-        t0=t0,
-        increase_ratio=increase_ratio,
-        increase_time=increase_time,
-    )
-    before_t0 = generate_events_before_t0(**t0_params)
-    around_t0 = generate_events_around_t0(**t0_params)
-    # Raise n_visit to enforce a rectangle shape
-    between_t0_t1 = generate_events_after_t0(**t0_params)
-    t1_params = dict(
-        generator=generator,
-        t_start=t_start,
-        t_end=t_end,
-        n_events=n_events,
-        t1=t1,
-        increase_time=increase_time,
-        increase_ratio=increase_ratio,
-    )
-    around_t1 = generate_events_around_t1(**t1_params)
-    after_t1 = generate_events_after_t1(**t1_params)
+    t1_visit = visit_care_site["t_1_min"].max()
+    t0 = generator.integers(t0_visit, t0_visit + (t1_visit - t0_visit) / 3)
+    t1 = generator.integers(t0_visit + 2 * (t1_visit - t0_visit) / 3, t1_visit)
+    c_out = generator.uniform(0, 0.1)
+    c_in = generator.uniform(0.8, 1)
 
-    df = pd.concat(
+    measurement_before_t0 = (
+        visit_care_site[visit_care_site[date_col] <= t0][[id_visit_col, date_col]]
+        .sample(frac=c_out)
+        .rename(columns={date_col: bio_date_col})
+    )
+    measurement_between_t0_t1 = (
+        visit_care_site[
+            (visit_care_site[date_col] > t0) & (visit_care_site[date_col] <= t1)
+        ][[id_visit_col, date_col]]
+        .sample(frac=c_in)
+        .rename(columns={date_col: bio_date_col})
+    )
+
+    measurement_after_t1 = (
+        visit_care_site[(visit_care_site[date_col] > t1)][[id_visit_col, date_col]]
+        .sample(frac=c_out)
+        .rename(columns={date_col: bio_date_col})
+    )
+
+    measurement = pd.concat(
         [
-            before_t0,
-            around_t0,
-            between_t0_t1,
-            around_t1,
-            after_t1,
+            measurement_before_t0,
+            measurement_between_t0_t1,
+            measurement_after_t1,
         ]
-    ).to_frame()
+    )
 
-    df.columns = [bio_date_col]
-    df["unit_source_value"] = unit
-    df["measurement_source_concept_id"] = concept_code
-    df["t_0_min"] = t0 - increase_time / 2
-    df["t_0_max"] = t0 + increase_time / 2
-    df["t_1_min"] = t1 - increase_time / 2
-    df["t_1_max"] = t1 + increase_time / 2
-    logger.debug("Generate measurement deploying as rectangle function")
+    measurement[bio_date_col] = pd.to_datetime(measurement[bio_date_col], unit="s")
+    measurement["unit_source_value"] = unit
+    measurement["measurement_source_concept_id"] = concept_code
+    measurement["t_0"] = t0
+    measurement["t_1"] = t1
+    logger.debug("Generate synthetic measurement deploying as rectangle function")
 
-    return df
+    return measurement
