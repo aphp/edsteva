@@ -1,7 +1,9 @@
 # Changelog
-## Unreleased
+## v0.2.7 - 20-09-2023
 
+- Add new test for BiologyProbe
 - Custom probe is simplified
+- New parameters GHM and Condition for probe computation
 ## v0.2.6 - 09-08-2023
 
 - Update LocalData for EDS-Tuto.
