@@ -56,7 +56,7 @@ def prepare_visit_occurrence(
         invalid_naming="supprimé",
     )
 
-    if stay_sources:
+    if stay_sources and isinstance(stay_sources, (dict, str)):
         visit_occurrence = filter_table_by_type(
             table=visit_occurrence,
             table_name="visit_occurrence",
@@ -65,7 +65,7 @@ def prepare_visit_occurrence(
             target_col="stay_source",
         )
 
-    if provenance_sources:
+    if provenance_sources and isinstance(provenance_sources, (dict, str)):
         visit_occurrence = filter_table_by_type(
             table=visit_occurrence,
             table_name="visit_occurrence",
@@ -74,7 +74,7 @@ def prepare_visit_occurrence(
             target_col="provenance_source",
         )
 
-    if length_of_stays:
+    if length_of_stays and isinstance(length_of_stays, list):
         visit_occurrence = filter_table_by_length_of_stay(
             visit_occurrence=visit_occurrence, length_of_stays=length_of_stays
         )
@@ -103,7 +103,7 @@ def prepare_visit_occurrence(
             target_col="stay_type",
         )
 
-    if age_ranges:
+    if age_ranges and isinstance(age_ranges, list):
         visit_occurrence = visit_occurrence.merge(person, on="person_id")
         visit_occurrence = filter_table_by_age(
             visit_occurrence=visit_occurrence,
@@ -184,7 +184,7 @@ def prepare_measurement(
             )
         measurement = get_framework(measurement).concat(measurement_by_terminology)
 
-    if concepts_sets:
+    if concepts_sets and isinstance(concepts_sets, (dict, str)):
         measurement_by_terminology = []
         for standard_terminology in standard_terminologies:
             measurement_by_terminology.append(

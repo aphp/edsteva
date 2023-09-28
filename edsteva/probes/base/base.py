@@ -289,6 +289,7 @@ class BaseProbe(metaclass=ABCMeta):
                     "field": field,
                     "type": "nominal",
                     "sort": "-y",
+                    "toggle": True,
                 }
                 for field in vertical_variables
             ],
@@ -318,6 +319,7 @@ class BaseProbe(metaclass=ABCMeta):
                     "field": field,
                     "type": "nominal",
                     "sort": "-x",
+                    "toggle": True,
                 }
                 for field in horizontal_variables
             ],

@@ -105,7 +105,10 @@ def generate_horizontal_bar_charts(
         if y_variable["field"] not in predictor.columns:
             continue
         y_variable_bar_charts = []
-        y_variable_selection = alt.selection_point(fields=[y_variable["field"]])
+        y_variable_selection = alt.selection_point(
+            fields=[y_variable["field"]], toggle=y_variable["toggle"]
+        )
+        del y_variable["toggle"]
         y_variables_selections[y_variable["field"]] = y_variable_selection
         y_variable_base_chart = (
             base.mark_bar()
@@ -146,7 +149,10 @@ def generate_vertical_bar_charts(
         if x_variable["field"] not in predictor.columns:
             continue
         x_variable_bar_charts = []
-        x_variable_selection = alt.selection_point(fields=[x_variable["field"]])
+        x_variable_selection = alt.selection_point(
+            fields=[x_variable["field"]], toggle=x_variable["toggle"]
+        )
+        del x_variable["toggle"]
         x_variables_selections[x_variable["field"]] = x_variable_selection
         x_variable_base_chart = (
             base.mark_bar()
