@@ -1,4 +1,8 @@
 # Changelog
+
+## Unreleased
+- Introduce a new "toggle" parameter for histogram filters:\
+  *It allows to select only one value for probe variable that are not unique for each visit (e.g. a visit can have multiple notes)*
 ## v0.2.7 - 20-09-2023
 
 - Add new test for BiologyProbe
