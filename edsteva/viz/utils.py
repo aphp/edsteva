@@ -98,6 +98,7 @@ def generate_horizontal_bar_charts(
     base: alt.Chart,
     horizontal_bar_charts_config: Dict[str, str],
     predictor: pd.DataFrame,
+    index_selection=None,
 ):
     horizontal_bar_charts = {}
     y_variables_selections = {}
@@ -105,8 +106,11 @@ def generate_horizontal_bar_charts(
         if y_variable["field"] not in predictor.columns:
             continue
         y_variable_bar_charts = []
+        toggle = alt.param(
+            expr=alt.expr.if_(index_selection == y_variable["field"], True, False)
+        )
         y_variable_selection = alt.selection_point(
-            fields=[y_variable["field"]], toggle=y_variable["toggle"]
+            fields=[y_variable["field"]], toggle=toggle
         )
         del y_variable["toggle"]
         y_variables_selections[y_variable["field"]] = y_variable_selection
@@ -142,6 +146,7 @@ def generate_vertical_bar_charts(
     base: alt.Chart,
     vertical_bar_charts_config: Dict[str, str],
     predictor: pd.DataFrame,
+    index_selection=None,
 ):
     vertical_bar_charts = {}
     x_variables_selections = {}
@@ -149,8 +154,11 @@ def generate_vertical_bar_charts(
         if x_variable["field"] not in predictor.columns:
             continue
         x_variable_bar_charts = []
+        toggle = alt.param(
+            expr=alt.expr.if_(index_selection == x_variable["field"], True, False)
+        )
         x_variable_selection = alt.selection_point(
-            fields=[x_variable["field"]], toggle=x_variable["toggle"]
+            fields=[x_variable["field"]], toggle=toggle
         )
         del x_variable["toggle"]
         x_variables_selections[x_variable["field"]] = x_variable_selection
@@ -259,8 +267,7 @@ def create_groupby_selection(
         index_labels = [
             index["title"] for index in indexes if index["field"] in predictor.columns
         ]
-        index_selection = alt.selection_point(
-            fields=["index"],
+        index_selection = alt.param(
             bind=alt.binding_radio(
                 name="Group by: ", options=index_fields, labels=index_labels
             ),

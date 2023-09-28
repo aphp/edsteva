@@ -54,15 +54,21 @@ def probe_only_dashboard(
         base=base,
         time_line_config=time_line_config,
     )
+    index_selection, index_fields = create_groupby_selection(
+        indexes=vertical_bar_charts_config["x"] + horizontal_bar_charts_config["y"],
+        predictor=predictor,
+    )
     horizontal_bar_charts, y_variables_selections = generate_horizontal_bar_charts(
         base=base,
         horizontal_bar_charts_config=horizontal_bar_charts_config,
         predictor=predictor,
+        index_selection=index_selection,
     )
     vertical_bar_charts, x_variables_selections = generate_vertical_bar_charts(
         base=base,
         vertical_bar_charts_config=vertical_bar_charts_config,
         predictor=predictor,
+        index_selection=index_selection,
     )
     selections = dict(
         date=time_selection,
