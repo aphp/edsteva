@@ -15,7 +15,7 @@ from edsteva.probes.utils.utils import CARE_SITE_LEVEL_NAMES
 def generate_main_chart(
     base: alt.Chart,
     main_chart_config: Dict[str, str],
-    index_selection: alt.SelectionParameter = None,
+    index_selection: alt.VariableParameter = None,
     index_fields: List[str] = None,
     x_axis_title: str = None,
     y_axis_title: str = None,
@@ -25,6 +25,8 @@ def generate_main_chart(
     if y_axis_title:
         main_chart_config["encode"]["y"]["title"] = y_axis_title
     if index_fields:
+        if index_selection:
+            base = base.transform_calculate(value=f"datum[{index_selection.name}]")
         base = base.transform_fold(index_fields, as_=["index", "value"])
         if "aggregates" in main_chart_config.keys():
             for aggregate in main_chart_config["aggregates"]:
@@ -36,8 +38,6 @@ def generate_main_chart(
             for filter in main_chart_config["filters"]:
                 base = base.transform_filter(**filter)
         main_chart = base.encode(**main_chart_config["encode"])
-        if index_selection:
-            main_chart = main_chart.transform_filter(index_selection)
     else:
         main_chart = base.encode(
             x=main_chart_config["encode"]["x"],
@@ -98,7 +98,7 @@ def generate_horizontal_bar_charts(
     base: alt.Chart,
     horizontal_bar_charts_config: Dict[str, str],
     predictor: pd.DataFrame,
-    index_selection=None,
+    index_selection: alt.VariableParameter,
 ):
     horizontal_bar_charts = {}
     y_variables_selections = {}
@@ -106,14 +106,18 @@ def generate_horizontal_bar_charts(
         if y_variable["field"] not in predictor.columns:
             continue
         y_variable_bar_charts = []
-        toggle = alt.param(
-            expr=alt.expr.if_(index_selection == y_variable["field"], True, False)
-        )
-        y_variable_selection = alt.selection_point(
-            fields=[y_variable["field"]], toggle=toggle
-        )
+        if not y_variable["toggle"]:
+            y_variable_selection = alt.selection_point(
+                fields=[y_variable["field"]],
+                value=predictor[y_variable["field"]].iloc[0],
+                clear=alt.expr.if_(index_selection == y_variable["field"], True, False),
+                toggle=alt.expr.if_(
+                    index_selection == y_variable["field"], True, False
+                ),
+            )
+        else:
+            y_variable_selection = alt.selection_point(fields=[y_variable["field"]])
         del y_variable["toggle"]
-        y_variables_selections[y_variable["field"]] = y_variable_selection
         y_variable_base_chart = (
             base.mark_bar()
             .encode(
@@ -146,7 +150,7 @@ def generate_vertical_bar_charts(
     base: alt.Chart,
     vertical_bar_charts_config: Dict[str, str],
     predictor: pd.DataFrame,
-    index_selection=None,
+    index_selection: alt.VariableParameter,
 ):
     vertical_bar_charts = {}
     x_variables_selections = {}
@@ -154,12 +158,17 @@ def generate_vertical_bar_charts(
         if x_variable["field"] not in predictor.columns:
             continue
         x_variable_bar_charts = []
-        toggle = alt.param(
-            expr=alt.expr.if_(index_selection == x_variable["field"], True, False)
-        )
-        x_variable_selection = alt.selection_point(
-            fields=[x_variable["field"]], toggle=toggle
-        )
+        if not x_variable["toggle"]:
+            x_variable_selection = alt.selection_point(
+                fields=[x_variable["field"]],
+                value=predictor[x_variable["field"]].iloc[0],
+                clear=alt.expr.if_(index_selection == x_variable["field"], True, False),
+                toggle=alt.expr.if_(
+                    index_selection == x_variable["field"], True, False
+                ),
+            )
+        else:
+            x_variable_selection = alt.selection_point(fields=[x_variable["field"]])
         del x_variable["toggle"]
         x_variables_selections[x_variable["field"]] = x_variable_selection
         x_variable_base_chart = (
@@ -267,7 +276,8 @@ def create_groupby_selection(
         index_labels = [
             index["title"] for index in indexes if index["field"] in predictor.columns
         ]
-        index_selection = alt.param(
+        index_selection = alt.selection_point(
+            fields=["index"],
             bind=alt.binding_radio(
                 name="Group by: ", options=index_fields, labels=index_labels
             ),
