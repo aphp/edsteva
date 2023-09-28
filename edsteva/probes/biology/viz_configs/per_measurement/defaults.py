@@ -9,36 +9,56 @@ vertical_bar_charts = dict(
             "field": "care_site_level",
             "type": "nominal",
             "sort": "-y",
+            "toggle": True,
         },
         {
             "title": "Stay type",
             "field": "stay_type",
             "type": "nominal",
             "sort": "-y",
+            "toggle": True,
         },
         {
             "title": "Stay source",
             "field": "stay_source",
             "type": "nominal",
             "sort": "-y",
+            "toggle": True,
         },
         {
             "title": "Length of stay",
             "field": "length_of_stay",
             "type": "nominal",
             "sort": "-y",
+            "toggle": True,
         },
         {
             "title": "Provenance source",
             "field": "provenance_source",
             "type": "nominal",
             "sort": "-y",
+            "toggle": True,
         },
         {
             "title": "Age range",
             "field": "age_range",
             "type": "nominal",
             "sort": "-y",
+            "toggle": True,
+        },
+        {
+            "title": "Condition type",
+            "field": "condition_type",
+            "type": "nominal",
+            "sort": "-y",
+            "toggle": False,
+        },
+        {
+            "title": "GHM",
+            "field": "drg_source",
+            "type": "nominal",
+            "sort": "-y",
+            "toggle": False,
         },
     ],
     y=[
@@ -69,29 +89,39 @@ def get_horizontal_bar_charts(standard_terminologies: List[str]):
                 "title": "Care site",
                 "field": "care_site_short_name",
                 "sort": "-x",
+                "toggle": True,
             },
             {
                 "title": "Care site specialty",
                 "field": "care_site_specialty",
                 "sort": "-x",
+                "toggle": True,
             },
             {
                 "title": "Specialties-set",
                 "field": "specialties_set",
                 "sort": "-x",
+                "toggle": True,
             },
             {
                 "title": "Care sites-set",
                 "field": "care_sites_set",
                 "sort": "-x",
+                "toggle": True,
             },
-            {"title": "Concepts-set", "field": "concepts_set", "sort": "-x"},
+            {
+                "title": "Concepts-set",
+                "field": "concepts_set",
+                "sort": "-x",
+                "toggle": True,
+            },
         ]
         + [
             {
                 "title": "{} concept".format(terminology),
                 "field": "{}_concept_name".format(terminology),
                 "sort": "-x",
+                "toggle": True,
             }
             for terminology in standard_terminologies
         ],

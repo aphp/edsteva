@@ -87,10 +87,8 @@ def prepare_visit_occurrence(
             visit_occurrence=visit_occurrence, length_of_stays=length_of_stays
         )
 
-    visit_occurrence = visit_occurrence.rename(
-        columns={"visit_source_value": "stay_type", "visit_start_datetime": "date"}
-    )
-
+    # Filter date
+    visit_occurrence = visit_occurrence.rename(columns={"visit_start_datetime": "date"})
     visit_occurrence = filter_table_by_date(
         table=visit_occurrence,
         table_name="visit_occurrence",
@@ -102,6 +100,10 @@ def prepare_visit_occurrence(
         cost = cost[["visit_occurrence_id", "drg_source"]].drop_duplicates()
         visit_occurrence = visit_occurrence.merge(cost, on="visit_occurrence_id")
 
+    # Filter stay type (hospitalisation, consultation, urgence)
+    visit_occurrence = visit_occurrence.rename(
+        columns={"visit_source_value": "stay_type"}
+    )
     if stay_types and isinstance(stay_types, (dict, str)):
         visit_occurrence = filter_table_by_type(
             table=visit_occurrence,
@@ -408,12 +410,11 @@ def prepare_note(
             "note_text",
         ]
     ]
-    note = note.rename(
-        columns={"note_class_source_value": "note_type", "note_datetime": "date"}
-    )
     note = note[~(note["note_text"].isna())]
     note = note.drop(columns=["note_text"])
 
+    # Filter date
+    note = note.rename(columns={"note_datetime": "date"})
     note = filter_table_by_date(
         table=note,
         table_name="note",
@@ -425,7 +426,8 @@ def prepare_note(
         table=note, table_name="note", valid_naming="Actif"
     )
 
-    # Add note type
+    # Filter note type
+    note = note.rename(columns={"note_class_source_value": "note_type"})
     if note_types and isinstance(note_types, (dict, str)):
         note = filter_table_by_type(
             table=note,
