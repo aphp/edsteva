@@ -58,6 +58,16 @@ def compute_completeness_predictor_per_visit(
 
     Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,condition}$ the number of stays having at least one biological measurement recorded and $t$ is the month.
     """
+
+    self._biology_columns = list(
+        set(
+            ["concepts_set"]
+            + [
+                "{}_concept_code".format(terminology)
+                for terminology in self._standard_terminologies
+            ]
+        ).intersection(set(self._index))
+    )
     self._metrics = ["c", "n_visit", "n_visit_with_measurement"]
     check_tables(
         data=data,
@@ -185,11 +195,7 @@ def compute_completeness(
         partition_cols=partition_cols,
     )
     # Visit total
-    biology_columns = ["concepts_set"] + [
-        "{}_concept_code".format(terminology)
-        for terminology in self._standard_terminologies
-    ]
-    partition_cols = list(set(partition_cols) - set(biology_columns))
+    partition_cols = list(set(partition_cols) - set(self._biology_columns))
     n_visit = (
         biology_predictor.groupby(
             partition_cols,
@@ -227,9 +233,7 @@ def get_hospital_visit(
     care_site: DataFrame,
 ):
     hospital_measurement = measurement[
-        set(measurement.columns).intersection(
-            set(["visit_occurrence_id", *self._index])
-        )
+        ["visit_occurrence_id", *self._biology_columns]
     ].drop_duplicates()
     hospital_measurement["has_measurement"] = True
     hospital_visit = visit_occurrence.merge(

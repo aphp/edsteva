@@ -56,6 +56,11 @@ def compute_completeness_predictor_per_visit(
     Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,condition}$ the number of stays having at least one claim code (e.g. ICD-10) recorded and $t$ is the month.
     """
 
+    self._condition_columns = list(
+        set(["diag_type", "condition_type", "source_system"]).intersection(
+            set(self._index)
+        )
+    )
     self._metrics = ["c", "n_visit", "n_visit_with_condition"]
     check_tables(
         data=data,
@@ -106,6 +111,7 @@ def compute_completeness_predictor_per_visit(
     )
 
     hospital_visit = get_hospital_visit(
+        self,
         condition_occurrence,
         visit_occurrence,
         care_site,
@@ -118,6 +124,7 @@ def compute_completeness_predictor_per_visit(
         visit_detail = prepare_visit_detail(data, start_date, end_date)
 
         uf_visit = get_uf_visit(
+            self,
             condition_occurrence=condition_occurrence,
             visit_occurrence=visit_occurrence,
             visit_detail=visit_detail,
@@ -169,8 +176,7 @@ def compute_completeness(
     )
 
     # Visit total
-    condition_columns = ["diag_type", "condition_type", "source_system"]
-    partition_cols = list(set(partition_cols) - set(condition_columns))
+    partition_cols = list(set(partition_cols) - set(self._condition_columns))
     n_visit = (
         condition_predictor.groupby(
             partition_cols,
@@ -202,13 +208,14 @@ def compute_completeness(
 
 
 def get_hospital_visit(
+    self,
     condition_occurrence: DataFrame,
     visit_occurrence: DataFrame,
     care_site: DataFrame,
 ):
-    condition_hospital = condition_occurrence.drop_duplicates(
-        ["visit_occurrence_id", "diag_type", "condition_type", "source_system"]
-    )
+    condition_hospital = condition_occurrence[
+        [*self._condition_columns.copy(), "visit_occurrence_id"]
+    ].drop_duplicates()
     condition_hospital["has_condition"] = True
     hospital_visit = visit_occurrence.merge(
         condition_hospital,
@@ -225,6 +232,7 @@ def get_hospital_visit(
 
 
 def get_uf_visit(
+    self,
     condition_occurrence: DataFrame,
     visit_occurrence: DataFrame,
     visit_detail: DataFrame,
@@ -232,14 +240,7 @@ def get_uf_visit(
 ):  # pragma: no cover
     visit_detail = visit_detail[visit_detail.visit_detail_type == "RUM"]
     condition_uf = (
-        condition_occurrence[
-            [
-                "visit_detail_id",
-                "diag_type",
-                "condition_type",
-                "source_system",
-            ]
-        ]
+        condition_occurrence[[*self._condition_columns.copy(), "visit_detail_id"]]
         .drop_duplicates()
         .rename(columns={"visit_detail_id": "visit_id"})
     )
