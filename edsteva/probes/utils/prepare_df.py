@@ -114,7 +114,6 @@ def prepare_visit_occurrence(
     if person is not None:
         visit_occurrence = visit_occurrence.merge(person, on="person_id")
         if age_ranges and isinstance(age_ranges, list):
-            visit_occurrence = visit_occurrence.merge(person, on="person_id")
             visit_occurrence = filter_table_by_age(
                 visit_occurrence=visit_occurrence,
                 age_ranges=age_ranges,
