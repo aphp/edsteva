@@ -54,6 +54,7 @@ class VisitProbe(BaseProbe):
             "age_range",
             "drg_source",
             "condition_type",
+            "gender_source_value",
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -78,6 +79,7 @@ class VisitProbe(BaseProbe):
         provenance_sources: Union[bool, str, Dict[str, str]] = None,
         drg_sources: Union[bool, str, Dict[str, str]] = None,
         age_ranges: List[int] = None,
+        gender_source_values: str = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -116,6 +118,8 @@ class VisitProbe(BaseProbe):
             **EXAMPLE**: `{"Pulmonary_infection": "J22|J15|J13|J958|..."}`
         drg_sources :  Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
+        gender_source_values: Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"women" : "f"}`
         """
         if not care_site_levels and "care_site_level" in self._index:
             self._index.remove("care_site_level")
@@ -135,6 +139,8 @@ class VisitProbe(BaseProbe):
             self._index.remove("provenance_source")
         if not age_ranges and "age_range" in self._index:
             self._index.remove("age_range")
+        if not gender_source_values and "gender_source_value" in self._index:
+            self._index.remove("gender_source_value")
         if condition_types is None and "condition_type" in self._index:
             self._index.remove("condition_type")
         if not drg_sources and "drg_source" in self._index:
@@ -157,6 +163,7 @@ class VisitProbe(BaseProbe):
             condition_types=condition_types,
             age_ranges=age_ranges,
             drg_sources=drg_sources,
+            gender_source_values=gender_source_values,
             **kwargs,
         )
 

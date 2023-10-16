@@ -56,6 +56,7 @@ class ConditionProbe(BaseProbe):
             "provenance_source",
             "age_range",
             "drg_source",
+            "gender_source_value",
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -81,8 +82,9 @@ class ConditionProbe(BaseProbe):
         stay_sources: Union[bool, str, Dict[str, str]] = None,
         length_of_stays: List[float] = None,
         provenance_sources: Union[bool, str, Dict[str, str]] = None,
-        age_ranges: List[int] = None,
         drg_sources: Union[bool, str, Dict[str, str]] = None,
+        age_ranges: List[int] = None,
+        gender_source_values: Union[bool, str, Dict[str, str]] = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -127,6 +129,8 @@ class ConditionProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         age_ranges: List[int], optional
             **EXAMPLE**: `[18, 64]`
+        gender_source_values: Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"women" : "f"}`
         """
         if not diag_types and "diag_type" in self._index:
             self._index.remove("diag_type")
@@ -154,6 +158,8 @@ class ConditionProbe(BaseProbe):
             self._index.remove("age_range")
         if not drg_sources and "drg_source" in self._index:
             self._index.remove("drg_source")
+        if not gender_source_values and "gender_source_value" in self._index:
+            self._index.remove("gender_source_value")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -175,6 +181,7 @@ class ConditionProbe(BaseProbe):
             stay_sources=stay_sources,
             drg_sources=drg_sources,
             age_ranges=age_ranges,
+            gender_source_values=gender_source_values,
             **kwargs,
         )
 

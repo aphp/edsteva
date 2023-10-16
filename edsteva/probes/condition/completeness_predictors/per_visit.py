@@ -40,6 +40,7 @@ def compute_completeness_predictor_per_visit(
     source_systems: Union[bool, List[str]],
     length_of_stays: List[float],
     age_ranges: List[int],
+    gender_source_values: Union[bool, str, Dict[str, str]],
     provenance_sources: Union[bool, str, Dict[str, str]],
     stay_sources: Union[bool, str, Dict[str, str]],
     drg_sources: Union[bool, str, Dict[str, str]],
@@ -70,7 +71,11 @@ def compute_completeness_predictor_per_visit(
         data=data,
     )
     self.care_site_relationship = care_site_relationship
-    person = prepare_person(data) if age_ranges else None
+    person = (
+        prepare_person(data, gender_source_values)
+        if (age_ranges or gender_source_values)
+        else None
+    )
     cost = prepare_cost(data, drg_sources) if drg_sources else None
 
     visit_occurrence = prepare_visit_occurrence(

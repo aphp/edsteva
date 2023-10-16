@@ -55,6 +55,7 @@ class NoteProbe(BaseProbe):
             "age_range",
             "drg_source",
             "condition_type",
+            "gender_source_value",
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -85,6 +86,7 @@ class NoteProbe(BaseProbe):
         condition_types: Union[bool, str, Dict[str, str]] = None,
         drg_sources: Union[bool, str, Dict[str, str]] = None,
         age_ranges: List[int] = None,
+        gender_source_values: Union[bool, str, Dict[str, str]] = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -127,6 +129,8 @@ class NoteProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         age_ranges: List[int], optional
             **EXAMPLE**: `[18, 64]`
+        gender_source_values: Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"women" : "f"}`
         """
         if not note_types and "note_type" in self._index:
             self._index.remove("note_type")
@@ -152,6 +156,8 @@ class NoteProbe(BaseProbe):
             self._index.remove("condition_type")
         if not drg_sources and "drg_source" in self._index:
             self._index.remove("drg_source")
+        if not gender_source_values and "gender_source_value" in self._index:
+            self._index.remove("gender_source_value")
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -172,6 +178,7 @@ class NoteProbe(BaseProbe):
             age_ranges=age_ranges,
             drg_sources=drg_sources,
             condition_types=condition_types,
+            gender_source_values=gender_source_values,
             **kwargs,
         )
 
