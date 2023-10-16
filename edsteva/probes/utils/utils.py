@@ -126,6 +126,40 @@ def concatenate_predictor_by_level(
 def get_child_and_parent_cs(
     care_site_sample: DataFrame, care_site_relationship: DataFrame
 ):
+    """Computes hierarchical care site structure
+
+    Arguments
+    ---------
+    care_site_sample : DataFrame
+    care_site_relationship : DataFrame
+
+    Example
+    -------
+    Input
+    |   care_site_id | care_site_level            | care_site_specialty   |
+    |---------------:|:---------------------------|:----------------------|
+    |  care_site_id1 | Unité d`hébergement (UH)   | Non renseigné         |
+    |  care_site_id2 | Unité de consultation (UC) | CARDIO                |
+    |  care_site_id3 | Unité de consultation (UC) | PNEUMO                |
+
+    Output
+    |   care_site_id  | care_site_level            | care_site_specialty   |
+    |----------------:|:---------------------------|:----------------------|
+    |  care_site_id1  | Unité d`hébergement (UH)   | Non renseigné         |
+    |  care_site_id2  | Unité de consultation (UC) | CARDIO                |
+    |  care_site_id3  | Unité de consultation (UC) | PNEUMO                |
+    |  care_site_id4  | Unité de consultation (UC) | CARDIO                |
+    |  care_site_id5  | Unité Fonctionnelle (UF)   | Non renseigné         |
+    |  care_site_id6  | Unité Fonctionnelle (UF)   | Non renseigné         |
+    |  care_site_id7  | Service/Département        | Non renseigné         |
+    |  care_site_id8  | Pôle/DMU                   | Non renseigné         |
+    |  care_site_id9  | Service/Département        | Non renseigné         |
+    |  care_site_id10 | Pôle/DMU                   | Non renseigné         |
+    |  care_site_id11 | Hôpital                    | Non renseigné         |
+    |  care_site_id12 | Hôpital                    | Non renseigné         |
+    |  care_site_id13 | GHU                        | GHU                   |
+    |  care_site_id14 | Unité de consultation (UC) | PNEUMO                |
+    """
     extended_care_site_id_to_filter = []
 
     # Parent care site to get

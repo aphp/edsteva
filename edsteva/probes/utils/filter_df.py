@@ -154,6 +154,18 @@ def filter_table_by_care_site(
     care_site_short_names: Union[str, List[str]] = None,
     care_site_specialties: Union[str, List[str]] = None,
 ):
+    """
+    Extend all care_site_ids and care_site_short_names by computing recursively their parents and child.
+    For each extended lists of care sites, keep those with specialties in care_site_specialties.
+
+    Arguments
+    ---------
+    table_to_filter : DataFrame
+    care_site_relationship : DataFrame
+    care_site_ids: Union[int, List[int]]
+    care_site_short_names: Union[str, List[str]]
+    care_site_specialties: Union[str, List[str]]
+    """
     care_site = care_site_relationship[
         [
             "care_site_id",
