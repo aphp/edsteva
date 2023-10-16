@@ -59,6 +59,7 @@ def compute_completeness_predictor_per_visit(
     Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,doc}$ the number of visits having at least one document and $t$ is the month.
     """
 
+    self._note_columns = list(set(["note_type"]).intersection(set(self._index)))
     self._metrics = ["c", "n_visit", "n_visit_with_note"]
     check_tables(
         data=data,
@@ -120,7 +121,7 @@ def compute_completeness_predictor_per_visit(
 
     note = prepare_note(data, note_types)
 
-    hospital_visit = get_hospital_visit(note, visit_occurrence, care_site)
+    hospital_visit = get_hospital_visit(self, note, visit_occurrence, care_site)
     hospital_name = CARE_SITE_LEVEL_NAMES["Hospital"]
     note_predictor_by_level = {hospital_name: hospital_visit}
 
@@ -130,6 +131,7 @@ def compute_completeness_predictor_per_visit(
             visit_detail = prepare_visit_detail(data, start_date, end_date)
 
             uf_visit, uc_visit, uh_visit = get_visit_detail(
+                self,
                 extra_data=extra_data,
                 note=note,
                 visit_occurrence=visit_occurrence,
@@ -187,8 +189,7 @@ def compute_completeness(
     )
 
     # Visit total
-    note_columns = ["note_type"]
-    partition_cols = list(set(partition_cols) - set(note_columns))
+    partition_cols = list(set(partition_cols) - set(self._note_columns))
     n_visit = (
         note_predictor.groupby(
             partition_cols,
@@ -220,11 +221,14 @@ def compute_completeness(
 
 
 def get_hospital_visit(
+    self,
     note: DataFrame,
     visit_occurrence: DataFrame,
     care_site: DataFrame,
 ):
-    note_hospital = note[["visit_occurrence_id", "note_type"]].drop_duplicates()
+    note_hospital = note[
+        [*self._note_columns.copy(), "visit_occurrence_id"]
+    ].drop_duplicates()
     note_hospital["has_note"] = True
     hospital_visit = visit_occurrence.merge(
         note_hospital, on="visit_occurrence_id", how="left"
@@ -238,6 +242,7 @@ def get_hospital_visit(
 
 
 def get_visit_detail(
+    self,
     extra_data: Data,
     note: DataFrame,
     visit_occurrence: DataFrame,
@@ -255,7 +260,7 @@ def get_visit_detail(
 
     note_detail = prepare_note_care_site(extra_data=extra_data, note=note)
     note_detail = note_detail[
-        ["visit_occurrence_id", "note_type", "care_site_id"]
+        [*self._note_columns.copy(), "visit_occurrence_id", "care_site_id"]
     ].drop_duplicates()
     note_detail["has_note"] = True
     note_detail = visit_detail.merge(
