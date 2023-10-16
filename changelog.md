@@ -1,7 +1,7 @@
 # Changelog
 ## Unreleased - 16-10-2023
-- Fix partition columns issue, now each probes have specific partition columns attribute
 
+- Fix partition columns issue, now each probes have specific partition columns attribute
 ## v0.2.7 - 20-09-2023
 
 - Add new test for BiologyProbe
