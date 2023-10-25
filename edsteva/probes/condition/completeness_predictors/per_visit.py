@@ -264,6 +264,7 @@ def get_uf_visit(
                         "age_range",
                         "drg_source",
                         "condition_type",
+                        "gender_source_value",
                     ]
                 )
             )

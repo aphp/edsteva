@@ -282,6 +282,7 @@ def get_uc_visit(
                         "age_range",
                         "drg_source",
                         "condition_type",
+                        "gender_source_value",
                     ]
                 )
             )
@@ -315,6 +316,7 @@ def get_uh_visit(
                         "age_range",
                         "drg_source",
                         "condition_type",
+                        "gender_source_value",
                     ]
                 )
             )
