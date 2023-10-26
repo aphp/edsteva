@@ -34,7 +34,7 @@ def compute_completeness_predictor_per_measurement(
     care_site_ids: List[int],
     care_site_short_names: List[str],
     care_site_specialties: Union[bool, List[str]],
-    concept_codes: Union[bool, List[str]],
+    measurement_concept_codes: Union[bool, List[str]],
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     concepts_sets: Union[str, Dict[str, str]],
@@ -96,7 +96,7 @@ def compute_completeness_predictor_per_measurement(
     measurement = prepare_measurement(
         data=data,
         biology_relationship=biology_relationship,
-        concept_codes=concept_codes,
+        measurement_concept_codes=measurement_concept_codes,
         concepts_sets=concepts_sets,
         start_date=start_date,
         end_date=end_date,

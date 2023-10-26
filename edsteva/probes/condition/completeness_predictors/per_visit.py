@@ -37,6 +37,7 @@ def compute_completeness_predictor_per_visit(
     specialties_sets: Union[str, Dict[str, str]],
     diag_types: Union[bool, str, Dict[str, str]],
     condition_types: Union[bool, str, Dict[str, str]],
+    condition_concept_codes: Union[bool, List[str]],
     source_systems: Union[bool, List[str]],
     length_of_stays: List[float],
     age_ranges: List[int],

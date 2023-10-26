@@ -124,7 +124,7 @@ def prepare_visit_occurrence(
 def prepare_measurement(
     data: Data,
     biology_relationship: pd.DataFrame,
-    concept_codes: Union[bool, List[str]],
+    measurement_concept_codes: Union[bool, List[str]],
     concepts_sets: Union[str, Dict[str, str]],
     root_terminology: str,
     standard_terminologies: List[str],
@@ -180,13 +180,13 @@ def prepare_measurement(
             end_date=end_date,
         )
 
-    if concept_codes and isinstance(concept_codes, list):
+    if measurement_concept_codes and isinstance(measurement_concept_codes, list):
         measurement_by_terminology = []
         for standard_terminology in standard_terminologies:
             measurement_by_terminology.append(
                 measurement[
                     measurement["{}_concept_code".format(standard_terminology)].isin(
-                        concept_codes
+                        measurement_concept_codes
                     )
                 ]
             )
@@ -215,6 +215,7 @@ def prepare_condition_occurrence(
     source_systems: Union[bool, List[str]],
     diag_types: Union[bool, str, Dict[str, str]],
     condition_types: Union[bool, str, Dict[str, str]],
+    condition_concept_code: Union[bool, List[str]] = None,
     start_date: datetime = None,
     end_date: datetime = None,
 ):
@@ -278,16 +279,17 @@ def prepare_condition_occurrence(
             target_col="diag_type",
         )
 
-    # Filter conditions
-    condition_occurrence = condition_occurrence.rename(
-        columns={"condition_source_value": "condition_type"}
-    )
+    if condition_concept_code and isinstance(condition_concept_code, list):
+        condition_occurrence = condition_occurrence[
+            condition_occurrence.condition_source_value.isin(condition_concept_code)
+        ]
+
     if condition_types and isinstance(condition_types, (dict, str)):
         condition_occurrence = filter_table_by_type(
             table=condition_occurrence,
             table_name="condition_occurrence",
             type_groups=condition_types,
-            source_col="condition_type",
+            source_col="condition_source_value",
             target_col="condition_type",
         )
 

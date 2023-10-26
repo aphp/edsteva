@@ -37,6 +37,7 @@ def compute_completeness_predictor_per_condition(
     specialties_sets: Union[str, Dict[str, str]],
     diag_types: Union[bool, str, Dict[str, str]],
     condition_types: Union[bool, str, Dict[str, str]],
+    condition_concept_codes: Union[bool, List[str]],
     source_systems: Union[bool, List[str]],
     length_of_stays: List[float],
     age_ranges: List[int],
@@ -96,6 +97,7 @@ def compute_completeness_predictor_per_condition(
         source_systems=source_systems,
         diag_types=diag_types,
         condition_types=condition_types,
+        condition_concept_codes=condition_concept_codes,
         start_date=start_date,
         end_date=end_date,
     )

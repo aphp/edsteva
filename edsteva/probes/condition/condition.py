@@ -57,6 +57,7 @@ class ConditionProbe(BaseProbe):
             "age_range",
             "drg_source",
             "gender_source_value",
+            "condition_source_value",
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -71,6 +72,7 @@ class ConditionProbe(BaseProbe):
         extra_data: Data = None,
         diag_types: Union[bool, str, Dict[str, str]] = None,
         condition_types: Union[bool, str, Dict[str, str]] = None,
+        condition_concept_codes: Union[str, List[str]] = None,
         source_systems: Union[bool, List[str]] = ["ORBIS"],
         care_site_ids: List[int] = None,
         care_site_short_names: List[str] = None,
@@ -103,6 +105,8 @@ class ConditionProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "DP\DR": "DP|DR"}` or `"DP"`
         condition_types: Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "Pulmonary_embolism": "I26"}`
+        condition_concept_codes: Union[bool, List[str]], optional
+            **EXAMPLE**: ['E3180', 'G1974', 'J1002', 'A7813', 'A0094', 'G1975', 'J1172', 'G7834', 'F9409', 'F9410', 'C0697', 'H4038']`
         source_systems: Union[bool, List[str]], optional
             **EXAMPLE**: `["AREM", "ORBIS"]`
         care_site_ids : List[int], optional
@@ -136,6 +140,8 @@ class ConditionProbe(BaseProbe):
             self._index.remove("diag_type")
         if not condition_types and "condition_type" in self._index:
             self._index.remove("condition_type")
+        if not condition_concept_codes and "condition_source_value" in self._index:
+            self._index.remove("condition_source_value")
         if not source_systems and "source_system" in self._index:
             self._index.remove("source_system")
         if not care_site_levels and "care_site_level" in self._index:
@@ -177,6 +183,7 @@ class ConditionProbe(BaseProbe):
             provenance_sources=provenance_sources,
             length_of_stays=length_of_stays,
             condition_types=condition_types,
+            condition_concept_codes=condition_concept_codes,
             source_systems=source_systems,
             stay_sources=stay_sources,
             drg_sources=drg_sources,

@@ -102,7 +102,7 @@ class BiologyProbe(BaseProbe):
             ("GLIMS_ANABIO", "ANABIO_ITM", "Mapped from"),
             ("ANABIO_ITM", "LOINC_ITM", "Maps to"),
         ],
-        concept_codes: Union[bool, List[str]] = None,
+        measurement_concept_codes: Union[bool, List[str]] = None,
         concepts_sets: Union[str, Dict[str, str]] = {
             "Leucocytes": "A0174|K3232|H6740|E4358|C9784|C8824|E6953",
             "Plaquettes": "E4812|C0326|A1636|A0230|H6751|A1598|G7728|G7727|G7833|A2538|A2539|J4463",
@@ -147,7 +147,7 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `[("ANALYSES_LABORATOIRE", "GLIMS_ANABIO", "Maps to")]`
         concepts_sets: Union[str, Dict[str, str]] , optional
             **EXAMPLE**: `{"Créatinine": "E3180|G1974|J1002|A7813|A0094|G1975|J1172|G7834|F9409|F9410|C0697|H4038|F2621", "Leucocytes": r"A0174|K3232|H6740|E4358|C9784|C8824|E6953"}`
-        concept_codes: Union[bool, List[str]], optional
+        measurement_concept_codes: Union[bool, List[str]], optional
             **EXAMPLE**: ['E3180', 'G1974', 'J1002', 'A7813', 'A0094', 'G1975', 'J1172', 'G7834', 'F9409', 'F9410', 'C0697', 'H4038']`
         care_site_ids : List[int], optional
             **EXAMPLE**: `[8312056386, 8312027648]`
@@ -180,7 +180,7 @@ class BiologyProbe(BaseProbe):
         """
         if not concepts_sets and "concepts_set" in self._index:
             self._index.remove("concepts_set")
-        if not concept_codes:
+        if not measurement_concept_codes:
             for terminology in self._standard_terminologies:
                 if "{}_concept_code".format(terminology) in self._index:
                     self._index.remove("{}_concept_code".format(terminology))
@@ -219,7 +219,7 @@ class BiologyProbe(BaseProbe):
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
             care_site_specialties=care_site_specialties,
-            concept_codes=concept_codes,
+            measurement_concept_codes=measurement_concept_codes,
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             concepts_sets=concepts_sets,
