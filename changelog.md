@@ -1,6 +1,8 @@
 # Changelog
 ## Unreleased - 16-10-2023
 
+- Add UF, UH, UC care sites in biology probes
+- Add gender as filtering features in all probes
 - Fix partition columns issue, now each probes have specific partition columns attribute
 ## v0.2.7 - 20-09-2023
 

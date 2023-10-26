@@ -77,6 +77,7 @@ class BiologyProbe(BaseProbe):
             "age_range",
             "drg_source",
             "condition_type",
+            "gender_source_value",
         ]
         super().__init__(
             completeness_predictor=completeness_predictor,
@@ -125,6 +126,7 @@ class BiologyProbe(BaseProbe):
         length_of_stays: List[float] = [1],
         provenance_sources: Union[bool, str, Dict[str, str]] = None,
         age_ranges: List[int] = None,
+        gender_source_values: Union[bool, str, Dict[str, str]] = None,
         **kwargs,
     ):
         """Script to be used by [``compute()``][edsteva.probes.base.BaseProbe.compute]
@@ -139,11 +141,9 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `"2021-07-01"`
         source_terminologies: Dict[str, str], optional
             Dictionary of regex used to detect terminology in the column `vocabulary_id`.
-
             **EXAMPLE**: `{"GLIMS_LOINC": r"GLIMS.{0,20}LOINC"}`
         mapping: List[Tuple[str, str, str]], optional
             List of values to filter in the column `relationship_id` in order to map between 2 terminologies.
-
             **EXAMPLE**: `[("ANALYSES_LABORATOIRE", "GLIMS_ANABIO", "Maps to")]`
         concepts_sets: Union[str, Dict[str, str]] , optional
             **EXAMPLE**: `{"Créatinine": "E3180|G1974|J1002|A7813|A0094|G1975|J1172|G7834|F9409|F9410|C0697|H4038|F2621", "Leucocytes": r"A0174|K3232|H6740|E4358|C9784|C8824|E6953"}`
@@ -175,6 +175,8 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         age_ranges: List[int], optional
             **EXAMPLE**: `[18, 64]`
+        gender_source_values: Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}, {"women" : "f"}`
         """
         if not concepts_sets and "concepts_set" in self._index:
             self._index.remove("concepts_set")
@@ -204,6 +206,9 @@ class BiologyProbe(BaseProbe):
             self._index.remove("condition_type")
         if not drg_sources and "drg_source" in self._index:
             self._index.remove("drg_source")
+        if not gender_source_values and "gender_source_value" in self._index:
+            self._index.remove("gender_source_value")
+
         return completeness_predictors.get(self._completeness_predictor)(
             self,
             data=data,
@@ -226,6 +231,7 @@ class BiologyProbe(BaseProbe):
             stay_sources=stay_sources,
             drg_sources=drg_sources,
             age_ranges=age_ranges,
+            gender_source_values=gender_source_values,
             **kwargs,
         )
 

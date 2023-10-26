@@ -111,13 +111,13 @@ def prepare_visit_occurrence(
             target_col="stay_type",
         )
 
-    if age_ranges and isinstance(age_ranges, list):
+    if person is not None:
         visit_occurrence = visit_occurrence.merge(person, on="person_id")
-        visit_occurrence = filter_table_by_age(
-            visit_occurrence=visit_occurrence,
-            age_ranges=age_ranges,
-        )
-
+        if age_ranges and isinstance(age_ranges, list):
+            visit_occurrence = filter_table_by_age(
+                visit_occurrence=visit_occurrence,
+                age_ranges=age_ranges,
+            )
     return visit_occurrence
 
 
@@ -701,25 +701,33 @@ def prepare_biology_relationship(
     return biology_relationship
 
 
-def prepare_person(
-    data: Data,
-):
+def prepare_person(data: Data, gender_source_values: Union[str, Dict[str, str]]):
     check_tables(
         data=data,
         required_tables=["person"],
     )
 
-    person_columns = ["person_id", "birth_datetime"]
+    person_columns = ["person_id", "birth_datetime", "gender_source_value"]
 
     check_columns(
         data.person,
         required_columns=person_columns,
         df_name="person",
     )
-    return data.person[person_columns]
+    person = data.person[person_columns]
+
+    if gender_source_values:
+        person = filter_table_by_type(
+            table=person,
+            table_name="person",
+            type_groups=gender_source_values,
+            source_col="gender_source_value",
+            target_col="gender_source_value",
+        )
+    return person
 
 
-def prepare_cost(data: Data, drg_source):
+def prepare_cost(data: Data, drg_sources):
     check_tables(
         data=data,
         required_tables=["cost"],
@@ -739,7 +747,7 @@ def prepare_cost(data: Data, drg_source):
     return filter_table_by_type(
         table=cost,
         table_name="cost",
-        type_groups=drg_source,
+        type_groups=drg_sources,
         source_col="drg_source_value",
         target_col="drg_source",
     )

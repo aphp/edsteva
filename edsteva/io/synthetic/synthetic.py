@@ -127,7 +127,17 @@ OTHER_MEASUREMENT_COLUMNS = dict(
     ],
 )
 
-PERSON_COLUMN = dict(ratio_of_visits=0.9, age_mean=45, age_std=25)
+PERSON_COLUMN = dict(
+    ratio_of_visits=0.9,
+    age_mean=45,
+    age_std=25,
+)
+OTHER_PERSON_COLUMNS = dict(
+    gender_source_value=[
+        ("m", 0.5),
+        ("f", 0.5),
+    ]
+)
 OTHER_COST_COLUMNS = dict(drg_source_value=[("M", 0.9), ("K", 0.05), ("Z", 0.05)])
 
 
@@ -175,6 +185,7 @@ class SyntheticData:
         default_factory=lambda: OTHER_MEASUREMENT_COLUMNS
     )
     other_cost_columns: Dict = field(default_factory=lambda: OTHER_COST_COLUMNS)
+    other_person_columns: Dict = field(default_factory=lambda: OTHER_PERSON_COLUMNS)
     person_column: Dict = field(default_factory=lambda: PERSON_COLUMN)
     seed: int = None
     mode: str = "step"
@@ -687,7 +698,11 @@ class SyntheticData:
             unit="D",
         )
 
-        return person
+        return add_other_columns(
+            generator=self.generator,
+            table=person,
+            other_columns=self.other_person_columns,
+        )
 
     def _generate_cost(self, visit_occurrence):
         cost = visit_occurrence[[self.id_visit_col]].rename(

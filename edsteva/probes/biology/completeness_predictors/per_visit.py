@@ -1,8 +1,6 @@
 from datetime import datetime
 from typing import Dict, List, Tuple, Union
 
-from loguru import logger
-
 from edsteva.probes.utils.prepare_df import (
     prepare_biology_relationship,
     prepare_care_site,
@@ -11,6 +9,7 @@ from edsteva.probes.utils.prepare_df import (
     prepare_cost,
     prepare_measurement,
     prepare_person,
+    prepare_visit_detail,
     prepare_visit_occurrence,
 )
 from edsteva.probes.utils.utils import (
@@ -42,6 +41,7 @@ def compute_completeness_predictor_per_visit(
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
     age_ranges: List[int],
+    gender_source_values: Union[bool, str, Dict[str, str]],
     condition_types: Union[bool, str, Dict[str, str]],
     provenance_sources: Union[bool, str, Dict[str, str]],
     stay_sources: Union[bool, str, Dict[str, str]],
@@ -95,9 +95,12 @@ def compute_completeness_predictor_per_visit(
     self.biology_relationship = biology_relationship
     root_terminology = mapping[0][0]
 
-    person = prepare_person(data) if age_ranges else None
+    person = (
+        prepare_person(data, gender_source_values)
+        if (age_ranges or gender_source_values)
+        else None
+    )
     cost = prepare_cost(data, drg_sources) if drg_sources else None
-
     visit_occurrence = prepare_visit_occurrence(
         data=data,
         start_date=start_date,
@@ -154,10 +157,36 @@ def compute_completeness_predictor_per_visit(
     biology_predictor_by_level = {hospital_name: hospital_visit}
 
     if care_site_levels and not hospital_only(care_site_levels=care_site_levels):
-        logger.info(
-            "Biological measurements are only available at hospital level for now"
+        visit_detail = prepare_visit_detail(data, start_date, end_date)
+        uc_visit = get_uc_visit(
+            self=self,
+            measurement=measurement,
+            visit_occurrence=visit_occurrence,
+            visit_detail=visit_detail,
+            care_site=care_site,
         )
-        care_site_levels = "Hospital"
+        uc_name = CARE_SITE_LEVEL_NAMES["UC"]
+        biology_predictor_by_level[uc_name] = uc_visit
+
+        uf_visit = get_uf_visit(
+            self=self,
+            measurement=measurement,
+            visit_occurrence=visit_occurrence,
+            visit_detail=visit_detail,
+            care_site=care_site,
+        )
+        uf_name = CARE_SITE_LEVEL_NAMES["UF"]
+        biology_predictor_by_level[uf_name] = uf_visit
+
+        uh_visit = get_uh_visit(
+            self=self,
+            measurement=measurement,
+            visit_occurrence=visit_occurrence,
+            visit_detail=visit_detail,
+            care_site=care_site,
+        )
+        uh_name = CARE_SITE_LEVEL_NAMES["UH"]
+        biology_predictor_by_level[uh_name] = uh_visit
 
     biology_predictor = concatenate_predictor_by_level(
         predictor_by_level=biology_predictor_by_level,
@@ -249,3 +278,112 @@ def get_hospital_visit(
         hospital_visit = hospital_visit.spark.cache()
 
     return hospital_visit
+
+
+def get_uc_visit(
+    self,
+    measurement: DataFrame,
+    visit_occurrence: DataFrame,
+    visit_detail: DataFrame,
+    care_site: DataFrame,
+):
+    hospital_measurement = measurement[
+        set(measurement.columns).intersection(
+            set(["visit_occurrence_id", *self._index])
+        )
+    ].drop_duplicates()
+    hospital_measurement["has_measurement"] = True
+
+    visit_detail = visit_detail[
+        ["visit_occurrence_id", "care_site_id"]
+    ].drop_duplicates()
+    visit_detail = visit_detail.merge(care_site, on="care_site_id")
+    visit_detail = visit_detail[
+        visit_detail["care_site_level"] == CARE_SITE_LEVEL_NAMES["UC"]
+    ]
+    visit_occurrence = visit_occurrence.drop(columns=["care_site_id"])
+
+    visit_occurrence = visit_occurrence.merge(visit_detail, on="visit_occurrence_id")
+    uc_visit = visit_occurrence.merge(
+        hospital_measurement,
+        on="visit_occurrence_id",
+        how="left",
+    )
+    uc_visit = uc_visit.rename(columns={"visit_occurrence_id": "visit_id"})
+
+    if is_koalas(uc_visit):
+        uc_visit = uc_visit.spark.cache()
+
+    return uc_visit
+
+
+def get_uf_visit(
+    self,
+    measurement: DataFrame,
+    visit_occurrence: DataFrame,
+    visit_detail: DataFrame,
+    care_site: DataFrame,
+):
+    hospital_measurement = measurement[
+        set(measurement.columns).intersection(
+            set(["visit_occurrence_id", *self._index])
+        )
+    ].drop_duplicates()
+    hospital_measurement["has_measurement"] = True
+
+    visit_detail = visit_detail[
+        ["visit_occurrence_id", "care_site_id"]
+    ].drop_duplicates()
+    visit_detail = visit_detail.merge(care_site, on="care_site_id")
+    visit_detail = visit_detail[
+        visit_detail["care_site_level"] == CARE_SITE_LEVEL_NAMES["UF"]
+    ]
+    visit_occurrence = visit_occurrence.drop(columns=["care_site_id"])
+    visit_occurrence = visit_occurrence.merge(visit_detail, on="visit_occurrence_id")
+    uf_visit = visit_occurrence.merge(
+        hospital_measurement,
+        on="visit_occurrence_id",
+        how="left",
+    )
+    uf_visit = uf_visit.rename(columns={"visit_occurrence_id": "visit_id"})
+
+    if is_koalas(uf_visit):
+        uf_visit = uf_visit.spark.cache()
+
+    return uf_visit
+
+
+def get_uh_visit(
+    self,
+    measurement: DataFrame,
+    visit_occurrence: DataFrame,
+    visit_detail: DataFrame,
+    care_site: DataFrame,
+):
+    hospital_measurement = measurement[
+        set(measurement.columns).intersection(
+            set(["visit_occurrence_id", *self._index])
+        )
+    ].drop_duplicates()
+    hospital_measurement["has_measurement"] = True
+
+    visit_detail = visit_detail[
+        ["visit_occurrence_id", "care_site_id"]
+    ].drop_duplicates()
+    visit_detail = visit_detail.merge(care_site, on="care_site_id")
+    visit_detail = visit_detail[
+        visit_detail["care_site_level"] == CARE_SITE_LEVEL_NAMES["UH"]
+    ]
+    visit_occurrence = visit_occurrence.drop(columns=["care_site_id"])
+    visit_occurrence = visit_occurrence.merge(visit_detail, on="visit_occurrence_id")
+    uh_visit = visit_occurrence.merge(
+        hospital_measurement,
+        on="visit_occurrence_id",
+        how="left",
+    )
+    uh_visit = uh_visit.rename(columns={"visit_occurrence_id": "visit_id"})
+
+    if is_koalas(uh_visit):
+        uh_visit = uh_visit.spark.cache()
+
+    return uh_visit

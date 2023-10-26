@@ -42,6 +42,7 @@ def compute_completeness_predictor_per_measurement(
     source_terminologies: Dict[str, str],
     mapping: List[Tuple[str, str, str]],
     age_ranges: List[int],
+    gender_source_values: Union[bool, str, Dict[str, str]],
     condition_types: Union[bool, str, Dict[str, str]],
     provenance_sources: Union[bool, str, Dict[str, str]],
     stay_sources: Union[bool, str, Dict[str, str]],
@@ -85,7 +86,11 @@ def compute_completeness_predictor_per_measurement(
     self.biology_relationship = biology_relationship
     root_terminology = mapping[0][0]
 
-    person = prepare_person(data) if age_ranges else None
+    person = (
+        prepare_person(data, gender_source_values)
+        if (age_ranges or gender_source_values)
+        else None
+    )
     cost = prepare_cost(data, drg_sources) if drg_sources else None
 
     measurement = prepare_measurement(
