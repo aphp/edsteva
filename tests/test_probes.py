@@ -511,6 +511,7 @@ def test_compute_condition_probe(data, params):
         stay_sources=params["stay_sources"],
         provenance_sources=params["provenance_sources"],
         age_ranges=params["age_ranges"],
+        condition_concept_codes=params["condition_concept_codes"],
     )
 
     # Care site levels
@@ -697,10 +698,11 @@ def test_compute_biology_probe(data, params):
         specialties_sets=params["specialties_sets"],
         length_of_stays=params["length_of_stays"],
         concepts_sets=params["concepts_sets"],
-        concept_codes=params["concept_codes"],
+        measurement_concept_codes=params["measurement_concept_codes"],
         stay_sources=params["stay_sources"],
         provenance_sources=params["provenance_sources"],
         condition_types=params["condition_types"],
+        diag_types=params["diag_types"],
         age_ranges=params["age_ranges"],
     )
 
