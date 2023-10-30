@@ -77,6 +77,7 @@ class BiologyProbe(BaseProbe):
             "age_range",
             "drg_source",
             "condition_type",
+            "diag_types",
             "gender_source_value",
         ]
         super().__init__(
@@ -114,6 +115,7 @@ class BiologyProbe(BaseProbe):
             "Bicarbonate": "A0422|H9622|C6408|F4161",
         },
         condition_types: Union[bool, str, Dict[str, str]] = None,
+        diag_types: Union[bool, str, Dict[str, str]] = None,
         drg_sources: Union[bool, str, Dict[str, str]] = None,
         care_site_ids: List[int] = None,
         care_site_short_names: List[str] = None,
@@ -171,6 +173,8 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
         condition_types : Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"Pulmonary_infection": "J22|J15|J13|J958|..."}`
+        diag_types : Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "DP\DR": "DP|DR"}` or `"DP"`
         drg_sources : Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         age_ranges: List[int], optional
@@ -204,6 +208,8 @@ class BiologyProbe(BaseProbe):
             self._index.remove("age_range")
         if not condition_types and "condition_type" in self._index:
             self._index.remove("condition_type")
+        if not diag_types and "diag_type" in self._index:
+            self._index.remove("diag_type")
         if not drg_sources and "drg_source" in self._index:
             self._index.remove("drg_source")
         if not gender_source_values and "gender_source_value" in self._index:
@@ -224,6 +230,7 @@ class BiologyProbe(BaseProbe):
             specialties_sets=specialties_sets,
             concepts_sets=concepts_sets,
             condition_types=condition_types,
+            diag_types=diag_types,
             length_of_stays=length_of_stays,
             source_terminologies=source_terminologies,
             mapping=mapping,
