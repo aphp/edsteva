@@ -215,7 +215,7 @@ def prepare_condition_occurrence(
     source_systems: Union[bool, List[str]],
     diag_types: Union[bool, str, Dict[str, str]],
     condition_types: Union[bool, str, Dict[str, str]],
-    condition_concept_code: Union[bool, List[str]] = None,
+    condition_concept_codes: Union[bool, List[str]] = None,
     start_date: datetime = None,
     end_date: datetime = None,
 ):
@@ -279,9 +279,9 @@ def prepare_condition_occurrence(
             target_col="diag_type",
         )
 
-    if condition_concept_code and isinstance(condition_concept_code, list):
+    if condition_concept_codes and isinstance(condition_concept_codes, list):
         condition_occurrence = condition_occurrence[
-            condition_occurrence.condition_source_value.isin(condition_concept_code)
+            condition_occurrence.condition_source_value.isin(condition_concept_codes)
         ]
 
     if condition_types and isinstance(condition_types, (dict, str)):
