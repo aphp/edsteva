@@ -77,7 +77,7 @@ class BiologyProbe(BaseProbe):
             "age_range",
             "drg_source",
             "condition_type",
-            "diag_types",
+            "diag_type",
             "gender_source_value",
         ]
         super().__init__(
