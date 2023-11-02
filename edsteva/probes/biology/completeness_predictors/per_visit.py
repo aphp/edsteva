@@ -127,7 +127,6 @@ def compute_completeness_predictor_per_visit(
             end_date=end_date,
         )[["visit_occurrence_id", "condition_type", "diag_type"]].drop_duplicates()
         visit_occurrence = visit_occurrence.merge(conditions, on="visit_occurrence_id")
-
     measurement = prepare_measurement(
         data=data,
         biology_relationship=biology_relationship,
@@ -147,7 +146,6 @@ def compute_completeness_predictor_per_visit(
         specialties_sets=specialties_sets,
         care_site_relationship=care_site_relationship,
     )
-
     hospital_visit = get_hospital_visit(
         self,
         measurement=measurement,
@@ -347,7 +345,6 @@ def get_uf_visit(
         how="left",
     )
     uf_visit = uf_visit.rename(columns={"visit_occurrence_id": "visit_id"})
-
     if is_koalas(uf_visit):
         uf_visit = uf_visit.spark.cache()
 

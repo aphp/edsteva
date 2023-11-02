@@ -284,19 +284,14 @@ def prepare_condition_occurrence(
             condition_occurrence.condition_source_value.isin(condition_concept_codes)
         ]
 
-    condition_occurrence = condition_occurrence.rename(
-        columns={"condition_source_value": "condition_type"}
-    )
-
     if condition_types and isinstance(condition_types, (dict, str)):
         condition_occurrence = filter_table_by_type(
             table=condition_occurrence,
             table_name="condition_occurrence",
             type_groups=condition_types,
-            source_col="condition_type",
+            source_col="condition_source_value",
             target_col="condition_type",
         )
-
     return condition_occurrence
 
 
