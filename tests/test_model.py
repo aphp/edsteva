@@ -205,7 +205,7 @@ def test_step_function_biology():
         care_site_ids=["1", "2"],
         care_site_short_names=["Hôpital-1", "Hôpital-2"],
         concepts_sets=None,
-        concept_codes=True,
+        measurement_concept_codes=True,
         length_of_stays=None,
     )
 

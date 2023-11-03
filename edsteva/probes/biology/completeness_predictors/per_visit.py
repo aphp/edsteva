@@ -33,7 +33,7 @@ def compute_completeness_predictor_per_visit(
     care_site_ids: List[int],
     care_site_short_names: List[str],
     care_site_specialties: Union[bool, List[str]],
-    concept_codes: Union[bool, List[str]],
+    measurement_concept_codes: Union[bool, List[str]],
     care_sites_sets: Union[str, Dict[str, str]],
     specialties_sets: Union[str, Dict[str, str]],
     concepts_sets: Union[str, Dict[str, str]],
@@ -43,6 +43,7 @@ def compute_completeness_predictor_per_visit(
     age_ranges: List[int],
     gender_source_values: Union[bool, str, Dict[str, str]],
     condition_types: Union[bool, str, Dict[str, str]],
+    diag_types: Union[bool, str, Dict[str, str]],
     provenance_sources: Union[bool, str, Dict[str, str]],
     stay_sources: Union[bool, str, Dict[str, str]],
     drg_sources: Union[bool, str, Dict[str, str]],
@@ -120,17 +121,16 @@ def compute_completeness_predictor_per_visit(
             extra_data=None,
             visit_occurrence=None,
             source_systems="ORBIS",
-            diag_types=None,
+            diag_types=diag_types,
             condition_types=condition_types,
             start_date=start_date,
             end_date=end_date,
-        )[["visit_occurrence_id", "condition_type"]].drop_duplicates()
+        )[["visit_occurrence_id", "condition_type", "diag_type"]].drop_duplicates()
         visit_occurrence = visit_occurrence.merge(conditions, on="visit_occurrence_id")
-
     measurement = prepare_measurement(
         data=data,
         biology_relationship=biology_relationship,
-        concept_codes=concept_codes,
+        measurement_concept_codes=measurement_concept_codes,
         concepts_sets=concepts_sets,
         root_terminology=root_terminology,
         standard_terminologies=standard_terminologies,
@@ -146,7 +146,6 @@ def compute_completeness_predictor_per_visit(
         specialties_sets=specialties_sets,
         care_site_relationship=care_site_relationship,
     )
-
     hospital_visit = get_hospital_visit(
         self,
         measurement=measurement,
@@ -346,7 +345,6 @@ def get_uf_visit(
         how="left",
     )
     uf_visit = uf_visit.rename(columns={"visit_occurrence_id": "visit_id"})
-
     if is_koalas(uf_visit):
         uf_visit = uf_visit.spark.cache()
 

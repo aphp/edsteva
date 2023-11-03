@@ -45,7 +45,8 @@ params = [
             "entity 4": "A3",
             "entity 5": "A4",
         },
-        concept_codes=None,
+        measurement_concept_codes=None,
+        condition_concept_codes=None,
         start_date=None,
         end_date=datetime(2020, 1, 1),
         test_save=False,
@@ -66,7 +67,8 @@ params = [
         care_site_specialties=None,
         specialties_sets={"All": ".*"},
         care_sites_sets=None,
-        concept_codes=["A0009", "A0209", "A3109"],
+        measurement_concept_codes=["A0009", "A0209", "A3109"],
+        condition_concept_codes=["A001", "C001", "D001"],
         length_of_stays=None,
         note_types="CRH",
         stay_types="hospitalisés",
@@ -101,7 +103,8 @@ params = [
         condition_types={"ALL": ".*", "Cancer": "C"},
         source_systems=["ORBIS"],
         concepts_sets=None,
-        concept_codes=["A0009", "A0209", "A3109"],
+        measurement_concept_codes=["A0009", "A0209", "A3109"],
+        condition_concept_codes=["C"],
         start_date=datetime(2010, 5, 10),
         end_date=datetime(2020, 1, 1),
         test_save=True,
@@ -508,6 +511,7 @@ def test_compute_condition_probe(data, params):
         stay_sources=params["stay_sources"],
         provenance_sources=params["provenance_sources"],
         age_ranges=params["age_ranges"],
+        condition_concept_codes=params["condition_concept_codes"],
     )
 
     # Care site levels
@@ -694,10 +698,11 @@ def test_compute_biology_probe(data, params):
         specialties_sets=params["specialties_sets"],
         length_of_stays=params["length_of_stays"],
         concepts_sets=params["concepts_sets"],
-        concept_codes=params["concept_codes"],
+        measurement_concept_codes=params["measurement_concept_codes"],
         stay_sources=params["stay_sources"],
         provenance_sources=params["provenance_sources"],
         condition_types=params["condition_types"],
+        diag_types=params["diag_types"],
         age_ranges=params["age_ranges"],
     )
 

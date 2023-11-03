@@ -37,6 +37,7 @@ def compute_completeness_predictor_per_visit(
     specialties_sets: Union[str, Dict[str, str]],
     diag_types: Union[bool, str, Dict[str, str]],
     condition_types: Union[bool, str, Dict[str, str]],
+    condition_concept_codes: Union[bool, List[str]],
     source_systems: Union[bool, List[str]],
     length_of_stays: List[float],
     age_ranges: List[int],
@@ -56,11 +57,10 @@ def compute_completeness_predictor_per_visit(
 
     Where $n_{visit}(t)$ is the number of administrative stays, $n_{with\,condition}$ the number of stays having at least one claim code (e.g. ICD-10) recorded and $t$ is the month.
     """
-
     self._condition_columns = list(
-        set(["diag_type", "condition_type", "source_system"]).intersection(
-            set(self._index)
-        )
+        set(
+            ["diag_type", "condition_type", "condition_source_value", "source_system"]
+        ).intersection(set(self._index))
     )
     self._metrics = ["c", "n_visit", "n_visit_with_condition"]
     check_tables(
@@ -265,6 +265,7 @@ def get_uf_visit(
                         "drg_source",
                         "condition_type",
                         "gender_source_value",
+                        "condition_source_value",
                     ]
                 )
             )

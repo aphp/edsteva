@@ -77,6 +77,7 @@ class BiologyProbe(BaseProbe):
             "age_range",
             "drg_source",
             "condition_type",
+            "diag_type",
             "gender_source_value",
         ]
         super().__init__(
@@ -102,7 +103,7 @@ class BiologyProbe(BaseProbe):
             ("GLIMS_ANABIO", "ANABIO_ITM", "Mapped from"),
             ("ANABIO_ITM", "LOINC_ITM", "Maps to"),
         ],
-        concept_codes: Union[bool, List[str]] = None,
+        measurement_concept_codes: Union[bool, List[str]] = None,
         concepts_sets: Union[str, Dict[str, str]] = {
             "Leucocytes": "A0174|K3232|H6740|E4358|C9784|C8824|E6953",
             "Plaquettes": "E4812|C0326|A1636|A0230|H6751|A1598|G7728|G7727|G7833|A2538|A2539|J4463",
@@ -114,6 +115,7 @@ class BiologyProbe(BaseProbe):
             "Bicarbonate": "A0422|H9622|C6408|F4161",
         },
         condition_types: Union[bool, str, Dict[str, str]] = None,
+        diag_types: Union[bool, str, Dict[str, str]] = None,
         drg_sources: Union[bool, str, Dict[str, str]] = None,
         care_site_ids: List[int] = None,
         care_site_short_names: List[str] = None,
@@ -147,7 +149,7 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `[("ANALYSES_LABORATOIRE", "GLIMS_ANABIO", "Maps to")]`
         concepts_sets: Union[str, Dict[str, str]] , optional
             **EXAMPLE**: `{"Créatinine": "E3180|G1974|J1002|A7813|A0094|G1975|J1172|G7834|F9409|F9410|C0697|H4038|F2621", "Leucocytes": r"A0174|K3232|H6740|E4358|C9784|C8824|E6953"}`
-        concept_codes: Union[bool, List[str]], optional
+        measurement_concept_codes: Union[bool, List[str]], optional
             **EXAMPLE**: ['E3180', 'G1974', 'J1002', 'A7813', 'A0094', 'G1975', 'J1172', 'G7834', 'F9409', 'F9410', 'C0697', 'H4038']`
         care_site_ids : List[int], optional
             **EXAMPLE**: `[8312056386, 8312027648]`
@@ -171,6 +173,8 @@ class BiologyProbe(BaseProbe):
             **EXAMPLE**: `{"All": ".*"}, {"urgence" : "service d'urgence"}`
         condition_types : Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"Pulmonary_infection": "J22|J15|J13|J958|..."}`
+        diag_types : Union[bool, str, Dict[str, str]], optional
+            **EXAMPLE**: `{"All": ".*"}` or `{"All": ".*", "DP\DR": "DP|DR"}` or `"DP"`
         drg_sources : Union[bool, str, Dict[str, str]], optional
             **EXAMPLE**: `{"All": ".*"}, {"medical" : ".{2}M"}`
         age_ranges: List[int], optional
@@ -180,7 +184,7 @@ class BiologyProbe(BaseProbe):
         """
         if not concepts_sets and "concepts_set" in self._index:
             self._index.remove("concepts_set")
-        if not concept_codes:
+        if not measurement_concept_codes:
             for terminology in self._standard_terminologies:
                 if "{}_concept_code".format(terminology) in self._index:
                     self._index.remove("{}_concept_code".format(terminology))
@@ -204,6 +208,8 @@ class BiologyProbe(BaseProbe):
             self._index.remove("age_range")
         if not condition_types and "condition_type" in self._index:
             self._index.remove("condition_type")
+        if not diag_types and "diag_type" in self._index:
+            self._index.remove("diag_type")
         if not drg_sources and "drg_source" in self._index:
             self._index.remove("drg_source")
         if not gender_source_values and "gender_source_value" in self._index:
@@ -219,11 +225,12 @@ class BiologyProbe(BaseProbe):
             care_site_ids=care_site_ids,
             care_site_short_names=care_site_short_names,
             care_site_specialties=care_site_specialties,
-            concept_codes=concept_codes,
+            measurement_concept_codes=measurement_concept_codes,
             care_sites_sets=care_sites_sets,
             specialties_sets=specialties_sets,
             concepts_sets=concepts_sets,
             condition_types=condition_types,
+            diag_types=diag_types,
             length_of_stays=length_of_stays,
             source_terminologies=source_terminologies,
             mapping=mapping,
