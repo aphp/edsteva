@@ -1,6 +1,7 @@
 # Changelog
-## Unreleased - 16-10-2023
+## Unreleased - 03-11-2023
 
+## v0.2.8 - 16-10-2023
 - Add condition filtering on biology
 - Add by-concept-code predictor
 - Add UF, UH, UC care sites in biology probes
